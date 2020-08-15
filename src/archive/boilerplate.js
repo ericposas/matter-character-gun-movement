@@ -29,7 +29,7 @@ export function matterBoilerplate(width, height) {
 
 	// fit the render viewport to the scene
 	Render.lookAt(render, {
-		min: { x: 0, y: 0 }, max: { x: width, y: height }
+		min: { x: 0, y: 0 }, max: { x: width-100, y: height }
 	})
 
 	var mouse = Mouse.create(render.canvas),

@@ -1,5 +1,5 @@
 import {
-	Bodies, Body, World, Constraint, Composite, Events
+	Bodies, Body, World, Constraint, Composite, Events, Vector
 } from 'matter-js'
 import { width, height } from './config'
 import { matterBoilerplate as boilerplate } from 'matterjs-boilerplate'
@@ -8,6 +8,11 @@ import './index.scss'
 window.start = () => {
 
 	let { world, render, engine } = boilerplate(width, height)
+	world.bounds = {
+		min: { x: 0, y: 0 },
+		max: { x: width, y: height },
+	}
+	console.log(world.bounds)
 
 	let ground = Bodies.rectangle(width/2, height, width, 100, { isStatic: true })
 	ground.label = 'ground'
@@ -115,6 +120,7 @@ window.start = () => {
 	let keys = []
 	let lastDirection = ''
 	let mousePos = { x: 0, y: 0 }
+	let bullets = []
 
 	// function renderMouse() {
 	// 	requestAnimationFrame(renderMouse)
@@ -133,9 +139,26 @@ window.start = () => {
 	// 	mouse_point.position.y = e.clientY
 	//
 	// })
+	const calculateBulletAngle = () => {
+		let targetAngle = Vector.angle(player.bodies[0].position, mousePos)
+		let force = .015
+		return {
+			x: Math.cos(targetAngle) * force,
+			y: Math.sin(targetAngle) * force
+		}
+	}
 
 	render.canvas.addEventListener('mousemove', e => {
 		mousePos = { x: e.clientX, y: e.clientY }
+	})
+	render.canvas.addEventListener('click', e => {
+		let playerArm = player.bodies[3]
+		let bullet = Bodies.circle(playerArm.position.x, playerArm.position.y, 5, {
+			restitution: .5
+		})
+		World.add(world, bullet)
+		bullets.push(bullet)
+		Body.applyForce(bullet, bullet.position, calculateBulletAngle())
 	})
 	document.body.addEventListener("keydown", e => {
   	keys[e.keyCode] = true
@@ -174,6 +197,18 @@ window.start = () => {
 		let groundHeight = (height - (ground.bounds.max.y - ground.bounds.min.y))
 		groundHeight -= (ground.position.y - groundHeight)
 
+		// remove out-of-bounds bullets
+		for (let i = 0; i < bullets.length; ++i) {
+			let bullet = bullets[i]
+			if (bullet.position.x > world.bounds.max.x ||
+					bullet.position.x < 0 ||
+					bullet.position.y < 0 ) {
+				World.remove(world, bullet)
+				bullets = bullets.filter(b => b != bullet)
+			}
+		}
+		// console.log(bullets)
+
 		// render mouse
 		mouse_point.position.x = mousePos.x
 		mouse_point.position.y = mousePos.y
@@ -198,7 +233,7 @@ window.start = () => {
 			Body.setDensity(player.bodies[1], .025)
 		}
 
-		console.log(playerProps.acceleration)
+		// console.log(playerProps.acceleration)
 
 		if (keys[65] || keys[68]) {
 			if (playerProps.acceleration < playerProps.movementSpeed) {

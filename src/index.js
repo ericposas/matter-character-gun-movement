@@ -10,35 +10,56 @@ window.start = () => {
 	let { world, render, engine } = boilerplate(width, height)
 
 	let ground = Bodies.rectangle(width/2, height, width, 100, { isStatic: true })
+	ground.label = 'ground'
+	// let groundHeight = ground.position.y - 50
+	// console.log(ground.position.y)
 
 	let category1 = 0x0001 // bit field collisionFilter category, objects will collide if their filters match another's mask
 	let category2 = 0x0002
 	let category3 = 0x0004
 	let head = Bodies.rectangle(110, 400, 20, 25)
-	head.id = 'char_head'
-	let bod = Bodies.rectangle(100, 450, 25, 100, {
+	head.label = 'char_head'
+	let playerProps = {
+		radius: 25,
+		jumpForce: -3,
+		defaultVelocity: .2,
+		velocity: .2,
+		inAirMovementSpeed: 3,
+		movementSpeed: 6,
+		acceleration: 0
+	}
+	let bod = Bodies.rectangle(100, 450, 60, 100, {
 		inertia: Infinity,
-		collisionFilter: { category: category2 },
-		isStatic: true
+		density: .25,
+		friction: 1,
+		frictionStatic: 1,
+		// frictionAir: 1,
+		restitution: 0,
+		collisionFilter: {
+			category: category1
+		}
 	})
-	bod.id = 'char_body'
+	bod.label = 'char_body'
 	let head_to_bod = Constraint.create({
 		bodyA: head,
 		bodyB: bod,
 		pointA: { x: 0, y: 10 },
 		pointB: { x: 0, y: -50 },
-		length: 0
+		length: 0,
+		collisionFilter: {
+			mask: category2
+		}
 	})
 	let upperarm = Bodies.rectangle(160, 400, 20, 15, {
 		collisionFilter: {
-			category: category2,
-			mask: category1
+			category: category1,
+			mask: category2
 		}
 	})
 	let lowerarm = Bodies.rectangle(160, 400, 20, 12, {
 		collisionFilter: {
-			category: category3,
-			mask: category1
+			category: category1,
+			mask: category2
 		}
 	})
 	let upperarm_to_lowerarm = Constraint.create({
@@ -60,7 +81,7 @@ window.start = () => {
 	let mouse_point = Bodies.circle(20, 20, 1, {
 		collisionFilter: {
 			category: 0x0008,
-			mask: category1 | category2 | category3
+			mask: category1
 		}
 	})
 	let mouse_control = Constraint.create({
@@ -73,25 +94,9 @@ window.start = () => {
 			visible: true
 		}
 	})
-	let playerProps = {
-		radius: 25,
-		jumpForce: -.1,
-		defaultVelocity: .2,
-		velocity: .2,
-		inAirMovementSpeed: 3,
-		movementSpeed: 6,
-		acceleration: 0
-	}
 	let player = Composite.create({
-		density: .001,
-		friction: .5,
-		frictionStatic: 0,
-		frictionAir: .01,
-		restitution: 0,
 		ground: false,
-		// touchingWall: false,
-		// touchingSideOfPlatform: false,
-		// inertia: Infinity
+
 	})
 	Composite.add(player, [
 		head, bod, head_to_bod,
@@ -108,14 +113,20 @@ window.start = () => {
 	])
 
 	let keys = []
+	let lastDirection = ''
 	let mousePos = { x: 0, y: 0 }
 
-	function renderMouse() {
-		requestAnimationFrame(renderMouse)
-		mouse_point.position.x = mousePos.x
-		mouse_point.position.y = mousePos.y
-	}
-	renderMouse()
+	// function renderMouse() {
+	// 	requestAnimationFrame(renderMouse)
+	// 	mouse_point.position.x = mousePos.x
+	// 	mouse_point.position.y = mousePos.y
+	// 	if (mouse_point.position.x > player.bodies[1].position.x) {
+	// 		lastDirection = 'left'
+	// 	} else {
+	// 		lastDirection = 'right'
+	// 	}
+	// }
+	// renderMouse()
 
 	// Events.on(engine, 'beforeUpdate', e => {
 	// 	mouse_point.position.x = e.clientX
@@ -125,22 +136,22 @@ window.start = () => {
 
 	render.canvas.addEventListener('mousemove', e => {
 		mousePos = { x: e.clientX, y: e.clientY }
-		// Body.translate(mouse_point, { x: e.clientX, y: e.clientY })
 	})
-	document.body.addEventListener("keydown", function(e) {
+	document.body.addEventListener("keydown", e => {
   	keys[e.keyCode] = true
 	})
-	document.body.addEventListener("keyup", function(e) {
+	document.body.addEventListener("keyup", e => {
   	keys[e.keyCode] = false
 	})
 
 	const checkGround = (event, bool) => {
 		var pairs = event.pairs
 		for (var i = 0, j = pairs.length; i != j; ++i) {
-			var pair = pairs[i];
-			if (pair.bodyA === player) {
+			var pair = pairs[i]
+			// console.log(pair)
+			if (pair.bodyA === player.bodies[1]) {
 				player.ground = bool
-			} else if (pair.bodyB === player) {
+			} else if (pair.bodyB === player.bodies[1]) {
 				player.ground = bool
 			}
 		}
@@ -158,29 +169,55 @@ window.start = () => {
 
 	// main engine update loop
 	Events.on(engine, 'beforeTick', e => {
+		// math calculating size / pos of elms
+		let playerHeight = (player.bodies[1].bounds.max.y - player.bodies[1].bounds.min.y)
+		let groundHeight = (height - (ground.bounds.max.y - ground.bounds.min.y))
+		groundHeight -= (ground.position.y - groundHeight)
 
-		// if (keys[32]) console.log(player)
-		// jump key
-		if (keys[38]) { //&& player.ground) {
-			player.force = { x: 0, y: playerProps.jumpForce }
+		// render mouse
+		mouse_point.position.x = mousePos.x
+		mouse_point.position.y = mousePos.y
+		if (mouse_point.position.x > player.bodies[1].position.x) {
+			lastDirection = 'left'
+		} else {
+			lastDirection = 'right'
 		}
 
-		if (keys[37] || keys[39]) {
+		// jump key
+		if (keys[87] &&
+				(player.bodies[1].position.y - playerHeight) > (groundHeight-15) &&
+				player.ground) {
+			player.bodies[1].force = (
+				lastDirection == 'left'
+				?	{ x: -0.1, y: playerProps.jumpForce }
+				: { x: 0.1, y: playerProps.jumpForce }
+			)
+			// console.log('should jump..')
+		} else {
+			Body.setAngle(player.bodies[1], 0)
+			Body.setDensity(player.bodies[1], .025)
+		}
+
+		console.log(playerProps.acceleration)
+
+		if (keys[65] || keys[68]) {
 			if (playerProps.acceleration < playerProps.movementSpeed) {
-				playerProps.acceleration += 0.5
+				playerProps.acceleration += 0.2
 			}
 		} else {
 			playerProps.acceleration = 0
 		}
 
-		if (keys[37]) {
+		if (keys[65]) {
+			lastDirection = 'left'
 			if (player.ground) {
 				Composite.translate(player, { x: -playerProps.acceleration, y: 0 })
 			} else {
 				Composite.translate(player, { x: -playerProps.inAirMovementSpeed, y: 0 })
 			}
 		} else {
-			if (keys[39]) {
+			if (keys[68]) {
+				lastDirection = 'right'
 				if (player.ground) {
 					Composite.translate(player, { x: playerProps.acceleration, y: 0 })
 				} else {

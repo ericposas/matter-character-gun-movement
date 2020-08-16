@@ -20,8 +20,8 @@ window.start = () => {
 	ground.label = 'ground'
 
 	let { player, playerProps, mouse_point, mouse_control, collisionCategories  } = createPlayer()
-	let { category1, category2, category3, box_to_bullet } = collisionCategories
-	let { stack1, stack2, stack3, stack4 } = makeStacks()
+	let { playerBodyCategory, playerArmCategory, category3, box_to_bullet } = collisionCategories
+	let { stack1, stack2, stack3, stack4, stack5 } = makeStacks()
 
 	World.add(world, [
 		ground,
@@ -30,6 +30,7 @@ window.start = () => {
 		stack2,
 		stack3,
 		stack4,
+		stack5,
 
 	])
 
@@ -59,7 +60,7 @@ window.start = () => {
 			x: reticlePos.x + calcMovingReticlePosition(),
 			y: reticlePos.y
 		})
-		let force = .01
+		let force = .015
 		return {
 			x: Math.cos(targetAngle) * force,
 			y: Math.sin(targetAngle) * force

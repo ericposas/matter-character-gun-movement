@@ -3,8 +3,8 @@ import {
 } from 'matter-js'
 
 // collision groups
-let category1 = 0x0001 // bit field collisionFilter category, objects will collide if their filters match another's mask
-let category2 = 0x0002
+let playerBodyCategory = 0x0001 // bit field collisionFilter category, objects will collide if their filters match another's mask
+let playerArmCategory = 0x0002
 let category3 = 0x0004
 let box_to_bullet = 0x0016
 
@@ -30,7 +30,8 @@ export const createPlayer = () => {
 		// frictionAir: 1,
 		restitution: 0,
 		collisionFilter: {
-			category: category1
+			category: playerBodyCategory,
+			mask: playerBodyCategory
 		}
 	})
 	bod.label = 'char_body'
@@ -39,21 +40,18 @@ export const createPlayer = () => {
 		bodyB: bod,
 		pointA: { x: 0, y: 10 },
 		pointB: { x: 0, y: -50 },
-		length: 0,
-		collisionFilter: {
-			mask: category2
-		}
+		length: 0
 	})
 	let upperarm = Bodies.rectangle(260, 400, 20, 15, {
 		collisionFilter: {
-			category: category1,
-			mask: category2
+			category: playerBodyCategory,
+			mask: playerArmCategory
 		}
 	})
 	let lowerarm = Bodies.rectangle(260, 400, 20, 12, {
 		collisionFilter: {
-			category: category1,
-			mask: category2
+			category: playerBodyCategory,
+			mask: playerArmCategory
 		}
 	})
 	let upperarm_to_lowerarm = Constraint.create({
@@ -72,12 +70,7 @@ export const createPlayer = () => {
 		length: 0,
 		stiffness: 1.0
 	})
-	let mouse_point = Bodies.circle(120, 20, 1, {
-		collisionFilter: {
-			category: 0x0008,
-			mask: category1
-		}
-	})
+	let mouse_point = Bodies.circle(120, 20, 1)
 	let mouse_control = Constraint.create({
 		bodyA: lowerarm,
 		bodyB: mouse_point,
@@ -104,8 +97,8 @@ export const createPlayer = () => {
 		mouse_point,
 		mouse_control,
 		collisionCategories: {
-			category1,
-			category2,
+			playerBodyCategory,
+			playerArmCategory,
 			category3,
 			box_to_bullet
 		}
@@ -145,10 +138,19 @@ export const makeStacks = () => {
 			}
 		})
 	})
+	let stack5 = Composites.stack(100, 200, 1, 7, 0, 0, (x,y) => {
+		return Bodies.rectangle(x, y, 30, 30, {
+			label: 'box',
+			collisionFilter: {
+				category: box_to_bullet
+			}
+		})
+	})
 	return {
 		stack1,
 		stack2,
 		stack3,
-		stack4
+		stack4,
+		stack5,
 	}
 }

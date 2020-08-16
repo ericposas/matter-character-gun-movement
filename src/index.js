@@ -43,7 +43,7 @@ window.start = () => {
 	}
 
 	const renderMouse = () => {
-		requestAnimationFrame(renderMouse)
+		// requestAnimationFrame(renderMouse)
 		mouse_point.position.x = reticlePos.x + calcMovingReticlePosition()
 		mouse_point.position.y = reticlePos.y
 		if (mouse_point.position.x > player.bodies[1].position.x) {
@@ -119,6 +119,19 @@ window.start = () => {
 		}
 	}
 
+	const removeOutOfBoundsBullets = () => {
+		// remove out-of-bounds bullets
+		for (let i = 0; i < bullets.length; ++i) {
+			let bullet = bullets[i]
+			if (bullet.position.x > world.bounds.max.x ||
+					bullet.position.x < 0 ||
+					bullet.position.y < 0 ) {
+				World.remove(world, bullet)
+				bullets = bullets.filter(b => b != bullet)
+			}
+		}
+	}
+
 	Events.on(engine, 'collisionStart', e => {
 		checkGround(e, true)
 	})
@@ -134,6 +147,10 @@ window.start = () => {
 	// main engine update loop
 	Events.on(engine, 'beforeTick', e => {
 
+		renderMouse() // renderMouse() will draw the white line if it is in the requestAnimationFrame() loop
+
+		// removeOutOfBoundsBullets()
+
 		let playerPos = player.bodies[0].position
 		// try to keep render view in-step with player character
 		Render.lookAt(render, {
@@ -145,17 +162,6 @@ window.start = () => {
 		let playerHeight = (player.bodies[1].bounds.max.y - player.bodies[1].bounds.min.y)
 		let groundHeight = (height - (ground.bounds.max.y - ground.bounds.min.y))
 		groundHeight -= (ground.position.y - groundHeight)
-
-		// remove out-of-bounds bullets
-		for (let i = 0; i < bullets.length; ++i) {
-			let bullet = bullets[i]
-			if (bullet.position.x > world.bounds.max.x ||
-					bullet.position.x < 0 ||
-					bullet.position.y < 0 ) {
-				World.remove(world, bullet)
-				bullets = bullets.filter(b => b != bullet)
-			}
-		}
 
 		// jump key
 		if (keys[87] &&

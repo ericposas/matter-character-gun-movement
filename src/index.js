@@ -1,5 +1,6 @@
 import {
-	Bodies, Body, World, Constraint, Composite, Composites, Events, Vector
+	Bodies, Body, World, Constraint,
+	Composite, Composites, Events, Vector, Render
 } from 'matter-js'
 import { width, height } from './config'
 import { matterBoilerplate as boilerplate } from 'matterjs-boilerplate'
@@ -10,11 +11,11 @@ window.start = () => {
 	let { world, render, engine } = boilerplate(width, height)
 	world.bounds = {
 		min: { x: 0, y: 0 },
-		max: { x: width, y: height },
+		max: { x: width * 2, y: height * 1.5 },
 	}
 	console.log(world.bounds)
 
-	let ground = Bodies.rectangle(width/2, height, width, 100, { isStatic: true })
+	let ground = Bodies.rectangle(width, height, width * 2, 100, { isStatic: true })
 	ground.label = 'ground'
 	// let groundHeight = ground.position.y - 50
 	// console.log(ground.position.y)
@@ -24,7 +25,7 @@ window.start = () => {
 	let category3 = 0x0004
 	let box_to_bullet = 0x0016
 	// let bullet = 0x0032
-	let head = Bodies.rectangle(110, 400, 20, 25)
+	let head = Bodies.rectangle(210, 400, 20, 25)
 	head.label = 'char_head'
 	let playerProps = {
 		radius: 25,
@@ -35,7 +36,7 @@ window.start = () => {
 		movementSpeed: 6,
 		acceleration: 0
 	}
-	let bod = Bodies.rectangle(100, 450, 60, 100, {
+	let bod = Bodies.rectangle(200, 450, 60, 100, {
 		inertia: Infinity,
 		density: .25,
 		friction: 1,
@@ -57,13 +58,13 @@ window.start = () => {
 			mask: category2
 		}
 	})
-	let upperarm = Bodies.rectangle(160, 400, 20, 15, {
+	let upperarm = Bodies.rectangle(260, 400, 20, 15, {
 		collisionFilter: {
 			category: category1,
 			mask: category2
 		}
 	})
-	let lowerarm = Bodies.rectangle(160, 400, 20, 12, {
+	let lowerarm = Bodies.rectangle(260, 400, 20, 12, {
 		collisionFilter: {
 			category: category1,
 			mask: category2
@@ -85,7 +86,7 @@ window.start = () => {
 		length: 0,
 		stiffness: 1.0
 	})
-	let mouse_point = Bodies.circle(20, 20, 1, {
+	let mouse_point = Bodies.circle(120, 20, 1, {
 		collisionFilter: {
 			category: 0x0008,
 			mask: category1
@@ -102,8 +103,7 @@ window.start = () => {
 		}
 	})
 	let player = Composite.create({
-		ground: false,
-
+		ground: false
 	})
 	Composite.add(player, [
 		head, bod, head_to_bod,
@@ -138,20 +138,26 @@ window.start = () => {
 
 	let keys = []
 	let lastDirection = ''
-	let mousePos = { x: 0, y: 0 }
+	let reticlePos = { x: 0, y: 0 }
 	let bullets = []
+	// let playerTranslation = { x: -(player.bodies[0].position.x), y: 0 }
+	// player translation set to player's initial location
 
-	// function renderMouse() {
-	// 	requestAnimationFrame(renderMouse)
-	// 	mouse_point.position.x = mousePos.x
-	// 	mouse_point.position.y = mousePos.y
-	// 	if (mouse_point.position.x > player.bodies[1].position.x) {
-	// 		lastDirection = 'left'
-	// 	} else {
-	// 		lastDirection = 'right'
-	// 	}
-	// }
-	// renderMouse()
+	const calcMovingReticlePosition = () => {
+		return player.bodies[0].position.x + ((render.bounds.min.x - render.bounds.max.x)/2)
+	}
+	// render mouse
+	function renderMouse() {
+		requestAnimationFrame(renderMouse)
+		mouse_point.position.x = reticlePos.x + calcMovingReticlePosition()
+		mouse_point.position.y = reticlePos.y
+		if (mouse_point.position.x > player.bodies[1].position.x) {
+			lastDirection = 'left'
+		} else {
+			lastDirection = 'right'
+		}
+	}
+	renderMouse()
 
 	// Events.on(engine, 'beforeUpdate', e => {
 	// 	mouse_point.position.x = e.clientX
@@ -160,13 +166,16 @@ window.start = () => {
 	// })
 	const calculateBulletAngle = () => {
 		let playerPos = player.bodies[0].position
-		let targetAngle = Vector.angle(playerPos, mousePos)
+		let targetAngle = Vector.angle(playerPos, {
+			x: reticlePos.x + calcMovingReticlePosition(),
+			y: reticlePos.y
+		})
 		let force = .015
 		// variable force based on distance of cursor
 		// let force = (
-		// 	playerPos.x > mousePos.x
-		// 	? (playerPos.x - mousePos.x) * .0001
-		// 	: (mousePos.x - playerPos.x) * .0001
+		// 	playerPos.x > reticlePos.x
+		// 	? (playerPos.x - reticlePos.x) * .0001
+		// 	: (reticlePos.x - playerPos.x) * .0001
 		// )
 		return {
 			x: Math.cos(targetAngle) * force,
@@ -175,7 +184,10 @@ window.start = () => {
 	}
 
 	render.canvas.addEventListener('mousemove', e => {
-		mousePos = { x: e.clientX, y: e.clientY }
+		reticlePos = {
+			x: e.clientX,
+			y: e.clientY
+		}
 	})
 	render.canvas.addEventListener('click', e => {
 		let playerArm = player.bodies[3]
@@ -235,6 +247,28 @@ window.start = () => {
 
 	// main engine update loop
 	Events.on(engine, 'beforeTick', e => {
+
+		// console.log(playerTranslation)
+
+		let playerPos = player.bodies[0].position
+		// try to keep render view in-step with player character
+		Render.lookAt(render, {
+			min: { x: playerPos.x + width/2, y: 0 },
+			max: { x: playerPos.x - width/2, y: height }
+		})
+
+		// if (playerPos.x < reticlePos.x) {
+		// 	Render.lookAt(render, {
+		// 		min: { x: player.bodies[0].position.x/2, y: 0 },
+		// 		max: { x: reticlePos.x/2 + width, y: height }
+		// 	})
+		// } else {
+		// 	Render.lookAt(render, {
+		// 		min: { x: reticlePos.x/2, y: 0 },
+		// 		max: { x: player.bodies[0].position.x/2, y: height }
+		// 	})
+		// }
+
 		// math calculating size / pos of elms
 		let playerHeight = (player.bodies[1].bounds.max.y - player.bodies[1].bounds.min.y)
 		let groundHeight = (height - (ground.bounds.max.y - ground.bounds.min.y))
@@ -253,13 +287,13 @@ window.start = () => {
 		// console.log(bullets)
 
 		// render mouse
-		mouse_point.position.x = mousePos.x
-		mouse_point.position.y = mousePos.y
-		if (mouse_point.position.x > player.bodies[1].position.x) {
-			lastDirection = 'left'
-		} else {
-			lastDirection = 'right'
-		}
+		// mouse_point.position.x = reticlePos.x
+		// mouse_point.position.y = reticlePos.y
+		// if (mouse_point.position.x > player.bodies[1].position.x) {
+		// 	lastDirection = 'left'
+		// } else {
+		// 	lastDirection = 'right'
+		// }
 
 		// jump key
 		if (keys[87] &&
@@ -290,16 +324,20 @@ window.start = () => {
 			lastDirection = 'left'
 			if (player.ground) {
 				Composite.translate(player, { x: -playerProps.acceleration, y: 0 })
+				// playerTranslation.x -= playerProps.acceleration
 			} else {
 				Composite.translate(player, { x: -playerProps.inAirMovementSpeed, y: 0 })
+				// playerTranslation.x -= playerProps.inAirMovementSpeed
 			}
 		} else {
 			if (keys[68]) {
 				lastDirection = 'right'
 				if (player.ground) {
 					Composite.translate(player, { x: playerProps.acceleration, y: 0 })
+					// playerTranslation.x += playerProps.acceleration
 				} else {
 					Composite.translate(player, { x: playerProps.inAirMovementSpeed, y: 0 })
+					// playerTranslation.x += playerProps.inAirMovementSpeed
 				}
 			}
 		}

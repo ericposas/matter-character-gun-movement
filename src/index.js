@@ -1,5 +1,5 @@
 import {
-	Bodies, Body, World, Constraint, Composite, Events, Vector
+	Bodies, Body, World, Constraint, Composite, Composites, Events, Vector
 } from 'matter-js'
 import { width, height } from './config'
 import { matterBoilerplate as boilerplate } from 'matterjs-boilerplate'
@@ -22,6 +22,8 @@ window.start = () => {
 	let category1 = 0x0001 // bit field collisionFilter category, objects will collide if their filters match another's mask
 	let category2 = 0x0002
 	let category3 = 0x0004
+	let box_to_bullet = 0x0016
+	// let bullet = 0x0032
 	let head = Bodies.rectangle(110, 400, 20, 25)
 	head.label = 'char_head'
 	let playerProps = {
@@ -108,13 +110,30 @@ window.start = () => {
 		upperarm, bod_to_upperarm, lowerarm, upperarm_to_lowerarm,
 		// mouse_point,
 		mouse_control,
-
 	])
+
+	let stack1 = Composites.stack(400, 200, 1, 5, 0, 0, (x,y) => {
+		return Bodies.rectangle(x, y, 30, 30, {
+			label: 'box',
+			collisionFilter: {
+				category: box_to_bullet
+			}
+		})
+	})
+	let stack2 = Composites.stack(500, 200, 1, 10, 0, 0, (x,y) => {
+		return Bodies.rectangle(x, y, 30, 30, {
+			label: 'box',
+			collisionFilter: {
+				category: box_to_bullet
+			}
+		})
+	})
 
 	World.add(world, [
 		ground,
-		player
-
+		player,
+		stack1,
+		stack2
 	])
 
 	let keys = []
@@ -140,8 +159,15 @@ window.start = () => {
 	//
 	// })
 	const calculateBulletAngle = () => {
-		let targetAngle = Vector.angle(player.bodies[0].position, mousePos)
+		let playerPos = player.bodies[0].position
+		let targetAngle = Vector.angle(playerPos, mousePos)
 		let force = .015
+		// variable force based on distance of cursor
+		// let force = (
+		// 	playerPos.x > mousePos.x
+		// 	? (playerPos.x - mousePos.x) * .0001
+		// 	: (mousePos.x - playerPos.x) * .0001
+		// )
 		return {
 			x: Math.cos(targetAngle) * force,
 			y: Math.sin(targetAngle) * force
@@ -153,9 +179,14 @@ window.start = () => {
 	})
 	render.canvas.addEventListener('click', e => {
 		let playerArm = player.bodies[3]
-		let bullet = Bodies.circle(playerArm.position.x, playerArm.position.y, 5, {
-			restitution: .5
+		let bullet = Bodies.circle(playerArm.position.x, playerArm.position.y, 6, {
+			restitution: .5,
+			collisionFilter: {
+				category: box_to_bullet,
+				// mask: box
+			}
 		})
+		bullet.label = 'bullet'
 		World.add(world, bullet)
 		bullets.push(bullet)
 		Body.applyForce(bullet, bullet.position, calculateBulletAngle())
@@ -180,6 +211,16 @@ window.start = () => {
 		}
 	}
 
+	const checkBulletCollisionGroundRemove = e => {
+		for (let i = 0; i < e.pairs.length; ++i) {
+			if (e.pairs[i].bodyA.label === 'bullet' && e.pairs[i].bodyB.label === 'ground') {
+				World.remove(world, e.pairs[i].bodyA)
+			} else if (e.pairs[i].bodyB.label === 'bullet' && e.pairs[i].bodyA.label === 'ground') {
+				World.remove(world, e.pairs[i].bodyB)
+			}
+		}
+	}
+
 	Events.on(engine, 'collisionStart', e => {
 		checkGround(e, true)
 	})
@@ -188,6 +229,8 @@ window.start = () => {
 	})
 	Events.on(engine, 'collisionEnd', e => {
 		checkGround(e, false)
+		// check bullet collision and remove
+		checkBulletCollisionGroundRemove(e)
 	})
 
 	// main engine update loop

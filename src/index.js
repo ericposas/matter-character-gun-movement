@@ -17,14 +17,13 @@ window.start = () => {
 
 	let ground = Bodies.rectangle(width, height, width * 2, 100, { isStatic: true })
 	ground.label = 'ground'
-	// let groundHeight = ground.position.y - 50
-	// console.log(ground.position.y)
 
+	// collision groups
 	let category1 = 0x0001 // bit field collisionFilter category, objects will collide if their filters match another's mask
 	let category2 = 0x0002
 	let category3 = 0x0004
 	let box_to_bullet = 0x0016
-	// let bullet = 0x0032
+
 	let head = Bodies.rectangle(210, 400, 20, 25)
 	head.label = 'char_head'
 	let playerProps = {
@@ -128,20 +127,37 @@ window.start = () => {
 			}
 		})
 	})
+	let stack3 = Composites.stack(800, 200, 1, 10, 0, 0, (x,y) => {
+		return Bodies.rectangle(x, y, 30, 30, {
+			label: 'box',
+			collisionFilter: {
+				category: box_to_bullet
+			}
+		})
+	})
+	let stack4 = Composites.stack(1200, 200, 1, 7, 0, 0, (x,y) => {
+		return Bodies.rectangle(x, y, 30, 30, {
+			label: 'box',
+			collisionFilter: {
+				category: box_to_bullet
+			}
+		})
+	})
 
 	World.add(world, [
 		ground,
 		player,
 		stack1,
-		stack2
+		stack2,
+		stack3,
+		stack4,
+
 	])
 
 	let keys = []
 	let lastDirection = ''
 	let reticlePos = { x: 0, y: 0 }
 	let bullets = []
-	// let playerTranslation = { x: -(player.bodies[0].position.x), y: 0 }
-	// player translation set to player's initial location
 
 	const calcMovingReticlePosition = () => {
 		return player.bodies[0].position.x + ((render.bounds.min.x - render.bounds.max.x)/2)
@@ -159,24 +175,13 @@ window.start = () => {
 	}
 	renderMouse()
 
-	// Events.on(engine, 'beforeUpdate', e => {
-	// 	mouse_point.position.x = e.clientX
-	// 	mouse_point.position.y = e.clientY
-	//
-	// })
 	const calculateBulletAngle = () => {
 		let playerPos = player.bodies[0].position
 		let targetAngle = Vector.angle(playerPos, {
 			x: reticlePos.x + calcMovingReticlePosition(),
 			y: reticlePos.y
 		})
-		let force = .015
-		// variable force based on distance of cursor
-		// let force = (
-		// 	playerPos.x > reticlePos.x
-		// 	? (playerPos.x - reticlePos.x) * .0001
-		// 	: (reticlePos.x - playerPos.x) * .0001
-		// )
+		let force = .01
 		return {
 			x: Math.cos(targetAngle) * force,
 			y: Math.sin(targetAngle) * force
@@ -214,7 +219,6 @@ window.start = () => {
 		var pairs = event.pairs
 		for (var i = 0, j = pairs.length; i != j; ++i) {
 			var pair = pairs[i]
-			// console.log(pair)
 			if (pair.bodyA === player.bodies[1]) {
 				player.ground = bool
 			} else if (pair.bodyB === player.bodies[1]) {
@@ -248,26 +252,12 @@ window.start = () => {
 	// main engine update loop
 	Events.on(engine, 'beforeTick', e => {
 
-		// console.log(playerTranslation)
-
 		let playerPos = player.bodies[0].position
 		// try to keep render view in-step with player character
 		Render.lookAt(render, {
 			min: { x: playerPos.x + width/2, y: 0 },
 			max: { x: playerPos.x - width/2, y: height }
 		})
-
-		// if (playerPos.x < reticlePos.x) {
-		// 	Render.lookAt(render, {
-		// 		min: { x: player.bodies[0].position.x/2, y: 0 },
-		// 		max: { x: reticlePos.x/2 + width, y: height }
-		// 	})
-		// } else {
-		// 	Render.lookAt(render, {
-		// 		min: { x: reticlePos.x/2, y: 0 },
-		// 		max: { x: player.bodies[0].position.x/2, y: height }
-		// 	})
-		// }
 
 		// math calculating size / pos of elms
 		let playerHeight = (player.bodies[1].bounds.max.y - player.bodies[1].bounds.min.y)
@@ -284,16 +274,6 @@ window.start = () => {
 				bullets = bullets.filter(b => b != bullet)
 			}
 		}
-		// console.log(bullets)
-
-		// render mouse
-		// mouse_point.position.x = reticlePos.x
-		// mouse_point.position.y = reticlePos.y
-		// if (mouse_point.position.x > player.bodies[1].position.x) {
-		// 	lastDirection = 'left'
-		// } else {
-		// 	lastDirection = 'right'
-		// }
 
 		// jump key
 		if (keys[87] &&
@@ -304,13 +284,10 @@ window.start = () => {
 				?	{ x: -0.1, y: playerProps.jumpForce }
 				: { x: 0.1, y: playerProps.jumpForce }
 			)
-			// console.log('should jump..')
 		} else {
 			Body.setAngle(player.bodies[1], 0)
 			Body.setDensity(player.bodies[1], .025)
 		}
-
-		// console.log(playerProps.acceleration)
 
 		if (keys[65] || keys[68]) {
 			if (playerProps.acceleration < playerProps.movementSpeed) {
@@ -324,29 +301,19 @@ window.start = () => {
 			lastDirection = 'left'
 			if (player.ground) {
 				Composite.translate(player, { x: -playerProps.acceleration, y: 0 })
-				// playerTranslation.x -= playerProps.acceleration
 			} else {
 				Composite.translate(player, { x: -playerProps.inAirMovementSpeed, y: 0 })
-				// playerTranslation.x -= playerProps.inAirMovementSpeed
 			}
 		} else {
 			if (keys[68]) {
 				lastDirection = 'right'
 				if (player.ground) {
 					Composite.translate(player, { x: playerProps.acceleration, y: 0 })
-					// playerTranslation.x += playerProps.acceleration
 				} else {
 					Composite.translate(player, { x: playerProps.inAirMovementSpeed, y: 0 })
-					// playerTranslation.x += playerProps.inAirMovementSpeed
 				}
 			}
 		}
-
-		// if ((player.touchingWall || player.touchingSideOfPlatform) && !player.ground) {
-		// 	player.friction = 0
-		// } else {
-		// 	player.friction = .5
-		// }
 
 	})
 

@@ -1,11 +1,17 @@
+import './index.scss'
 import {
 	Bodies, Body, World, Constraint,
 	Composite, Composites, Events, Vector, Render
 } from 'matter-js'
 import { width, height } from './config'
 import { matterBoilerplate as boilerplate } from 'matterjs-boilerplate'
-import { createPlayer, makeStacks } from './modules/abstractions'
-import './index.scss'
+import { createPlayer, createEnemy, makeStacks } from './modules/Abstractions'
+import {
+	GROUND, BULLET, BOX,
+	PLAYER_HEAD, PLAYER_BODY,
+	ENEMY_HEAD, ENEMY_BODY,
+} from './modules/CollisionFilterConstants'
+
 
 window.start = () => {
 
@@ -16,12 +22,18 @@ window.start = () => {
 	}
 	// console.log(world.bounds)
 
-	let ground = Bodies.rectangle(width, height, width * 2, 100, { isStatic: true })
+	let ground = Bodies.rectangle(width, height, width * 2, 100, {
+		isStatic: true,
+		collisionFilter: {
+			category: GROUND
+		}
+	})
 	ground.label = 'ground'
 
-	let { player, playerProps, mouse_point, mouse_control, collisionCategories  } = createPlayer()
-	let { playerBodyCategory, playerArmCategory, category3, box_to_bullet } = collisionCategories
-	let { stack1, stack2, stack3, stack4, stack5 } = makeStacks()
+	let { player, playerProps, mouse_point, mouse_control } = createPlayer('player', null, {x:50,y:0})
+	let { stacks: { stack1, stack2, stack3, stack4, stack5 } } = makeStacks()
+	let { enemy } = createEnemy(null, { x: 250, y: 0 })
+	// Composite.translate(enemy, { x: 400 })
 
 	World.add(world, [
 		ground,
@@ -31,13 +43,14 @@ window.start = () => {
 		stack3,
 		stack4,
 		stack5,
+		enemy,
 
 	])
 
 	let keys = []
 	let lastDirection = ''
 	let reticlePos = { x: 0, y: 0 }
-	let bullets = []
+	let bullets = [], bulletForce = 0.0075
 
 	const calcMovingReticlePosition = () => {
 		return player.bodies[0].position.x + ((render.bounds.min.x - render.bounds.max.x)/2)
@@ -60,10 +73,9 @@ window.start = () => {
 			x: reticlePos.x + calcMovingReticlePosition(),
 			y: reticlePos.y
 		})
-		let force = .015
 		return {
-			x: Math.cos(targetAngle) * force,
-			y: Math.sin(targetAngle) * force
+			x: Math.cos(targetAngle) * bulletForce,
+			y: Math.sin(targetAngle) * bulletForce
 		}
 	}
 
@@ -81,8 +93,7 @@ window.start = () => {
 		let bullet = Bodies.circle(playerArm.position.x, playerArm.position.y, 6, {
 			restitution: .5,
 			collisionFilter: {
-				category: box_to_bullet,
-				// mask: box
+				category: BULLET | BOX
 			}
 		})
 		bullet.label = 'bullet'
@@ -133,8 +144,33 @@ window.start = () => {
 		}
 	}
 
+	const checkBulletsHitEnemyStart = (e, bool) => {
+		for (let i = 0; i < e.pairs.length; ++i) {
+			if (e.pairs[i].bodyA.label.indexOf('enemy') > -1 && e.pairs[i].bodyB.label == 'bullet') {
+
+				// console.log(bool)
+			} else if (e.pairs[i].bodyB.label.indexOf('enemy') > -1 && e.pairs[i].bodyA.label == 'bullet') {
+
+				// console.log(bool)
+			}
+		}
+	}
+
+	const checkBulletsHitEnemyEnd = (e, bool) => {
+		for (let i = 0; i < e.pairs.length; ++i) {
+			if (e.pairs[i].bodyA.label.indexOf('enemy') > -1 && e.pairs[i].bodyB.label == 'bullet') {
+				World.remove(world, e.pairs[i].bodyB)
+				// console.log(bool)
+			} else if (e.pairs[i].bodyB.label.indexOf('enemy') > -1 && e.pairs[i].bodyA.label == 'bullet') {
+				World.remove(world, e.pairs[i].bodyA)
+				// console.log(bool)
+			}
+		}
+	}
+
 	Events.on(engine, 'collisionStart', e => {
 		checkGround(e, true)
+		checkBulletsHitEnemyStart(e, true)
 	})
 	Events.on(engine, 'collisionActive', e => {
 		checkGround(e, true)
@@ -143,6 +179,7 @@ window.start = () => {
 		checkGround(e, false)
 		// check bullet collision and remove
 		checkBulletCollisionGroundRemove(e)
+		checkBulletsHitEnemyEnd(e, false)
 	})
 
 	// main engine update loop

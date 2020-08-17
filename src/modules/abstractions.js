@@ -1,17 +1,34 @@
 import {
 	Composite, Composites, Constraint, Bodies
 } from 'matter-js'
+import {
+	GROUND, BULLET, BOX,
+	PLAYER_HEAD, PLAYER_BODY,
+	ENEMY_HEAD, ENEMY_BODY,
+} from './CollisionFilterConstants'
 
-// collision groups
-let playerBodyCategory = 0x0001 // bit field collisionFilter category, objects will collide if their filters match another's mask
-let playerArmCategory = 0x0002
-let category3 = 0x0004
-let box_to_bullet = 0x0016
+export const createEnemy = (mouse_point, position) => {
+	// 'player' is the main player to pass here so we can track his movements
+	let { player: enemy } = createPlayer('enemy', mouse_point, position)
 
-export const createPlayer = () => {
+	return {
+		enemy
+	}
 
-	let head = Bodies.rectangle(210, 400, 20, 25)
-	head.label = 'char_head'
+}
+
+export const createPlayer = (type, mouse_point, position) => {
+	type = type || 'player'
+	position = position || { x: 0, y: 0 }
+	let { x, y } = position
+
+	let head = Bodies.rectangle(x, 400, 20, 25, {
+		collisionFilter: {
+			category: PLAYER_HEAD,
+			mask: GROUND
+		}
+	})
+	head.label = type == 'player' ? 'player head' : 'enemy head'
 
 	let playerProps = {
 		radius: 25,
@@ -22,7 +39,7 @@ export const createPlayer = () => {
 		movementSpeed: 6,
 		acceleration: 0
 	}
-	let bod = Bodies.rectangle(200, 450, 60, 100, {
+	let bod = Bodies.rectangle(x, 450, 60, 100, {
 		inertia: Infinity,
 		density: .25,
 		friction: 1,
@@ -30,30 +47,39 @@ export const createPlayer = () => {
 		// frictionAir: 1,
 		restitution: 0,
 		collisionFilter: {
-			category: playerBodyCategory,
-			mask: playerBodyCategory
+			category: PLAYER_BODY,
+			mask: GROUND
 		}
 	})
-	bod.label = 'char_body'
-	let head_to_bod = Constraint.create({
+	bod.label = type == 'player' ? 'player body' : 'enemy body'
+	let head_to_bod1 = Constraint.create({
 		bodyA: head,
 		bodyB: bod,
-		pointA: { x: 0, y: 10 },
-		pointB: { x: 0, y: -50 },
+		pointA: { x: -10, y: 10 },
+		pointB: { x: -10, y: -50 },
 		length: 0
 	})
-	let upperarm = Bodies.rectangle(260, 400, 20, 15, {
+	let head_to_bod2 = Constraint.create({
+		bodyA: head,
+		bodyB: bod,
+		pointA: { x: 10, y: 10 },
+		pointB: { x: 10, y: -50 },
+		length: 0
+	})
+	let upperarm = Bodies.rectangle(x, 400, 20, 15, {
 		collisionFilter: {
-			category: playerBodyCategory,
-			mask: playerArmCategory
+			category: PLAYER_BODY,
+			mask: GROUND
 		}
 	})
-	let lowerarm = Bodies.rectangle(260, 400, 20, 12, {
+	bod.label = type == 'player' ? 'player arm' : 'enemy arm'
+	let lowerarm = Bodies.rectangle(x, 400, 20, 12, {
 		collisionFilter: {
-			category: playerBodyCategory,
-			mask: playerArmCategory
+			category: PLAYER_BODY,
+			mask: GROUND
 		}
 	})
+	bod.label = type == 'player' ? 'player arm' : 'enemy arm'
 	let upperarm_to_lowerarm = Constraint.create({
 		bodyA: upperarm,
 		bodyB: lowerarm,
@@ -70,7 +96,7 @@ export const createPlayer = () => {
 		length: 0,
 		stiffness: 1.0
 	})
-	let mouse_point = Bodies.circle(120, 20, 1)
+	mouse_point = mouse_point || Bodies.circle(120, 20, 1)
 	let mouse_control = Constraint.create({
 		bodyA: lowerarm,
 		bodyB: mouse_point,
@@ -85,7 +111,8 @@ export const createPlayer = () => {
 		ground: false
 	})
 	Composite.add(player, [
-		head, bod, head_to_bod,
+		head, bod,
+		head_to_bod1, head_to_bod2,
 		upperarm, bod_to_upperarm,
 		lowerarm, upperarm_to_lowerarm,
 		// mouse_point,
@@ -95,13 +122,7 @@ export const createPlayer = () => {
 		player,
 		playerProps,
 		mouse_point,
-		mouse_control,
-		collisionCategories: {
-			playerBodyCategory,
-			playerArmCategory,
-			category3,
-			box_to_bullet
-		}
+		mouse_control
 	}
 }
 
@@ -110,7 +131,8 @@ export const makeStacks = () => {
 		return Bodies.rectangle(x, y, 30, 30, {
 			label: 'box',
 			collisionFilter: {
-				category: box_to_bullet
+				category: BOX,
+				mask: GROUND
 			}
 		})
 	})
@@ -118,7 +140,8 @@ export const makeStacks = () => {
 		return Bodies.rectangle(x, y, 30, 30, {
 			label: 'box',
 			collisionFilter: {
-				category: box_to_bullet
+				category: BOX,
+				mask: GROUND
 			}
 		})
 	})
@@ -126,7 +149,8 @@ export const makeStacks = () => {
 		return Bodies.rectangle(x, y, 30, 30, {
 			label: 'box',
 			collisionFilter: {
-				category: box_to_bullet
+				category: BOX,
+				mask: GROUND
 			}
 		})
 	})
@@ -134,7 +158,8 @@ export const makeStacks = () => {
 		return Bodies.rectangle(x, y, 30, 30, {
 			label: 'box',
 			collisionFilter: {
-				category: box_to_bullet
+				category: BOX,
+				mask: GROUND
 			}
 		})
 	})
@@ -142,15 +167,18 @@ export const makeStacks = () => {
 		return Bodies.rectangle(x, y, 30, 30, {
 			label: 'box',
 			collisionFilter: {
-				category: box_to_bullet
+				category: BOX,
+				mask: GROUND
 			}
 		})
 	})
 	return {
-		stack1,
-		stack2,
-		stack3,
-		stack4,
-		stack5,
+		stacks: {
+			stack1,
+			stack2,
+			stack3,
+			stack4,
+			stack5
+		}
 	}
 }

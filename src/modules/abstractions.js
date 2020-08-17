@@ -7,7 +7,7 @@ import {
 	ENEMY_HEAD, ENEMY_BODY,
 } from './CollisionFilterConstants'
 
-export const createEnemy = (world, mouse_point, position) => {
+export const createEnemy = (enemiesArray, world, mouse_point, position) => {
 	// 'player' is the main player to pass here so we can track his movements
 	let { player: enemy } = createPlayer(world, 'enemy', mouse_point, position)
 
@@ -36,6 +36,7 @@ export const createEnemy = (world, mouse_point, position) => {
 	enemy.bodies[0]._barsize = size
 	enemy.bodies[1]._barsize = size
 	// console.log(render)
+	enemiesArray.push(enemy)
 
 	return enemy
 

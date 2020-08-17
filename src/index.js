@@ -36,17 +36,11 @@ window.start = () => {
 	let { player, playerProps, mouse_point, mouse_control } = createPlayer(world, 'player', null, {x:50,y:0})
 	let { stacks: { stack1, stack2, stack3, stack4, stack5 } } = makeStacks()
 	let enemies = []
-	let enemy1 = createEnemy(world, null, { x: 250, y: 0 })
-	enemies.push(enemy1)
-
+	let enemy1 = createEnemy(enemies, world, null, { x: 250, y: 0 })
+	let enemy2 = createEnemy(enemies, world, null, { x: 450, y: 0 })
+	
 	World.add(world, [
-		ground,
-		stack1,
-		stack2,
-		stack3,
-		stack4,
-		stack5,
-
+		ground
 	])
 
 	let keys = []
@@ -189,7 +183,7 @@ window.start = () => {
 			}
 		}
 	}
-	
+
 	const checkBulletsHitEnemyEnd = (e, bool) => {
 		for (let i = 0; i < e.pairs.length; ++i) {
 			if (e.pairs[i].bodyA.label.indexOf('enemy') > -1 && e.pairs[i].bodyB.label == 'bullet') {
@@ -224,10 +218,10 @@ window.start = () => {
 
 		renderMouse() // renderMouse() will draw the white line if it is in the requestAnimationFrame() loop
 
+		removeOutOfBoundsBullets()
+
 		enemies.forEach((enemy, i) => { positionEnemyLifebar(enemy) })
 
-
-		// removeOutOfBoundsBullets()
 		// if (Date.now() < then + 2000) {
 		// 	console.log(render)
 		// }

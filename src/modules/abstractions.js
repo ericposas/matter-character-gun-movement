@@ -144,6 +144,9 @@ export const createPlayer = (world, type, mouse_point, position) => {
 		mouse_control,
 	])
 	World.add(world, player)
+	// need ot keep a reference to the player/enemy object that we can remove
+	head._composite = player
+	bod._composite = player
 	return {
 		player,
 		playerProps,

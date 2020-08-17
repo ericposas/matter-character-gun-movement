@@ -36,9 +36,11 @@ window.start = () => {
 	let { player, playerProps, mouse_point, mouse_control } = createPlayer(world, 'player', null, {x:50,y:0})
 	let { stacks: { stack1, stack2, stack3, stack4, stack5 } } = makeStacks()
 	let enemies = []
+	// enemies are added to the world in the createEnemy() method
 	let enemy1 = createEnemy(enemies, world, null, { x: 250, y: 0 })
 	let enemy2 = createEnemy(enemies, world, null, { x: 450, y: 0 })
-	
+	let enemy3 = createEnemy(enemies, world, null, { x: 1000, y: 0 })
+
 	World.add(world, [
 		ground
 	])
@@ -151,6 +153,16 @@ window.start = () => {
 		lifeBar.style.width = lifeAmt + 'px'
 	}
 
+	const removeEnemy = (enemy) => {
+		let lifeAmt = parseInt(enemy._lifebar.style.width, 10)
+		if (lifeAmt <= 0) {
+			World.remove(world, enemy._composite)
+			if (enemy._outerLifebar) {
+				document.body.removeChild(enemy._outerLifebar)
+			}
+		}
+	}
+	
 	// const positionEnemyLifebar = (enemy) => {
 	// 	let lifebar = enemy.bodies[0]._outerLifebar
 	// 	let size = enemy.bodies[0]._barsize
@@ -189,10 +201,12 @@ window.start = () => {
 			if (e.pairs[i].bodyA.label.indexOf('enemy') > -1 && e.pairs[i].bodyB.label == 'bullet') {
 				let enemy = e.pairs[i].bodyA
 				World.remove(world, enemy)
+				removeEnemy(enemy)
 				// console.log(bool)
 			} else if (e.pairs[i].bodyB.label.indexOf('enemy') > -1 && e.pairs[i].bodyA.label == 'bullet') {
 				let enemy = e.pairs[i].bodyB
 				World.remove(world, enemy)
+				removeEnemy(enemy)
 				// console.log(bool)
 			}
 		}

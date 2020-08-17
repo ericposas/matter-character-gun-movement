@@ -1,5 +1,5 @@
 import {
-	Composite, Composites, Constraint, Bodies
+	Composite, Composites, Constraint, Bodies, World
 } from 'matter-js'
 import {
 	GROUND, BULLET, BOX,
@@ -7,17 +7,41 @@ import {
 	ENEMY_HEAD, ENEMY_BODY,
 } from './CollisionFilterConstants'
 
-export const createEnemy = (mouse_point, position) => {
+export const createEnemy = (world, mouse_point, position) => {
 	// 'player' is the main player to pass here so we can track his movements
-	let { player: enemy } = createPlayer('enemy', mouse_point, position)
+	let { player: enemy } = createPlayer(world, 'enemy', mouse_point, position)
 
-	return {
-		enemy
+	const createEnemyLifeBar = () => {
+		let barWd = 60, barHt = 10
+		let outerbar = document.createElement('div')
+		let bar = document.createElement('div')
+		let outerbarStyle = `position:absolute;border:1px solid black;width:${barWd}px;height:${barHt}px;`
+		let barStyle = `position:absolute;background-color:red;width:${barWd}px;height:${barHt}px;`;
+		outerbar.style = outerbarStyle
+		bar.style = barStyle
+		document.body.appendChild(outerbar)
+		outerbar.appendChild(bar)
+		return {
+			bar,
+			outerbar,
+			size: { w: barWd, h: barHt}
+		}
 	}
+	let { outerbar, bar, size } = createEnemyLifeBar()
+	// set enemy part to reference the dom lifebar element
+	enemy.bodies[0]._lifebar = bar
+	enemy.bodies[1]._lifebar = bar
+	enemy.bodies[0]._outerLifebar = outerbar
+	enemy.bodies[1]._outerLifebar = outerbar
+	enemy.bodies[0]._barsize = size
+	enemy.bodies[1]._barsize = size
+	// console.log(render)
+
+	return enemy
 
 }
 
-export const createPlayer = (type, mouse_point, position) => {
+export const createPlayer = (world, type, mouse_point, position) => {
 	type = type || 'player'
 	position = position || { x: 0, y: 0 }
 	let { x, y } = position
@@ -118,6 +142,7 @@ export const createPlayer = (type, mouse_point, position) => {
 		// mouse_point,
 		mouse_control,
 	])
+	World.add(world, player)
 	return {
 		player,
 		playerProps,

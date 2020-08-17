@@ -11,6 +11,9 @@ import {
 	PLAYER_HEAD, PLAYER_BODY,
 	ENEMY_HEAD, ENEMY_BODY,
 } from './modules/CollisionFilterConstants'
+import {
+	HEAD_DAMAGE, BODY_DAMAGE
+} from './modules/DamageConstants'
 
 
 window.start = () => {
@@ -30,20 +33,19 @@ window.start = () => {
 	})
 	ground.label = 'ground'
 
-	let { player, playerProps, mouse_point, mouse_control } = createPlayer('player', null, {x:50,y:0})
+	let { player, playerProps, mouse_point, mouse_control } = createPlayer(world, 'player', null, {x:50,y:0})
 	let { stacks: { stack1, stack2, stack3, stack4, stack5 } } = makeStacks()
-	let { enemy } = createEnemy(null, { x: 250, y: 0 })
-	// Composite.translate(enemy, { x: 400 })
+	let enemies = []
+	let enemy1 = createEnemy(world, null, { x: 250, y: 0 })
+	enemies.push(enemy1)
 
 	World.add(world, [
 		ground,
-		player,
 		stack1,
 		stack2,
 		stack3,
 		stack4,
 		stack5,
-		enemy,
 
 	])
 
@@ -144,25 +146,59 @@ window.start = () => {
 		}
 	}
 
+	const damageEnemy = (enemy, dmg) => {
+		let lifeAmt = parseInt(enemy._lifebar.style.width, 10)
+		let lifeBar = enemy._lifebar
+		if (lifeAmt < dmg) {
+			lifeAmt = 0
+		} else {
+			lifeAmt -= dmg
+		}
+		lifeBar.style.width = lifeAmt + 'px'
+	}
+
+	// const positionEnemyLifebar = (enemy) => {
+	// 	let lifebar = enemy.bodies[0]._outerLifebar
+	// 	let size = enemy.bodies[0]._barsize
+	// 	let renderBoundsX = ((render.bounds.max.x - render.bounds.min.x)/2)
+	// 	let enemyPosX = enemy.bodies[0].position.x - (enemy.bodies[0].bounds.max.x - enemy.bodies[0].bounds.min.x)
+	// 	let renderBoundsY = ((render.bounds.max.x - render.bounds.min.y)/2)
+	// 	let enemyPosY = enemy.bodies[0].position.y
+	// 	let enemyHeadHt = enemy.bodies[0].bounds.max.y - enemy.bodies[0].bounds.min.y
+	// 	lifebar.style.left = enemyPosX - size.w + renderBoundsX + 'px'
+	// 	lifebar.style.top = enemyPosY - enemyHeadHt - (size.h + (size.h/2)) + 'px'
+	// }
+
+	const positionEnemyLifebar = enemy => {
+		let lifebar = enemy.bodies[0]._outerLifebar
+		let headHt = enemy.bodies[0].bounds.max.y - enemy.bodies[0].bounds.min.y
+		lifebar.style.left = enemy.bodies[0].position.x - (enemy.bodies[0]._barsize.w/2) - render.bounds.min.x + 'px'
+		lifebar.style.top = enemy.bodies[0].position.y - headHt - enemy.bodies[0]._barsize.h - render.bounds.min.y + 'px'
+	}
+
+	// for performance, we may need to check all collision types in one function
+	// instead of running separate loops for all collision types
 	const checkBulletsHitEnemyStart = (e, bool) => {
 		for (let i = 0; i < e.pairs.length; ++i) {
 			if (e.pairs[i].bodyA.label.indexOf('enemy') > -1 && e.pairs[i].bodyB.label == 'bullet') {
-
-				// console.log(bool)
+				let enemy = e.pairs[i].bodyA
+				enemy.label.indexOf('head') > -1 ? damageEnemy(enemy, HEAD_DAMAGE) : damageEnemy(enemy, BODY_DAMAGE)
 			} else if (e.pairs[i].bodyB.label.indexOf('enemy') > -1 && e.pairs[i].bodyA.label == 'bullet') {
-
-				// console.log(bool)
+				let enemy = e.pairs[i].bodyB
+				enemy.label.indexOf('head') > -1 ? damageEnemy(enemy, HEAD_DAMAGE) : damageEnemy(enemy, BODY_DAMAGE)
 			}
 		}
 	}
-
+	
 	const checkBulletsHitEnemyEnd = (e, bool) => {
 		for (let i = 0; i < e.pairs.length; ++i) {
 			if (e.pairs[i].bodyA.label.indexOf('enemy') > -1 && e.pairs[i].bodyB.label == 'bullet') {
-				World.remove(world, e.pairs[i].bodyB)
+				let enemy = e.pairs[i].bodyA
+				World.remove(world, enemy)
 				// console.log(bool)
 			} else if (e.pairs[i].bodyB.label.indexOf('enemy') > -1 && e.pairs[i].bodyA.label == 'bullet') {
-				World.remove(world, e.pairs[i].bodyA)
+				let enemy = e.pairs[i].bodyB
+				World.remove(world, enemy)
 				// console.log(bool)
 			}
 		}
@@ -182,12 +218,19 @@ window.start = () => {
 		checkBulletsHitEnemyEnd(e, false)
 	})
 
+	// let then = Date.now()
 	// main engine update loop
 	Events.on(engine, 'beforeTick', e => {
 
 		renderMouse() // renderMouse() will draw the white line if it is in the requestAnimationFrame() loop
 
+		enemies.forEach((enemy, i) => { positionEnemyLifebar(enemy) })
+
+
 		// removeOutOfBoundsBullets()
+		// if (Date.now() < then + 2000) {
+		// 	console.log(render)
+		// }
 
 		let playerPos = player.bodies[0].position
 		// try to keep render view in-step with player character

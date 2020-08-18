@@ -15,6 +15,7 @@ import {
 	HEAD_DAMAGE, BODY_DAMAGE
 } from './modules/DamageConstants'
 import { createRagdoll } from './modules/Ragdoll'
+import { renderPlayerMovementViaKeyInput } from './modules/GameLoopMethods'
 
 
 window.start = () => {
@@ -252,6 +253,12 @@ window.start = () => {
 		}
 	}
 
+	const renderEntities = () => {
+		// keep enemy lifebar positions in-sync with enemies
+		enemies.forEach((enemy, i) => positionEnemyLifebar(enemy))
+
+	}
+
 	Events.on(engine, 'collisionStart', e => checkCollisions(e))
 	// Events.on(engine, 'collisionActive', e => checkCollisions(e))
 	Events.on(engine, 'collisionEnd', e => checkCollisionsEnd(e))
@@ -259,65 +266,11 @@ window.start = () => {
 
 		renderMouse() // renderMouse() will draw the white line if it is in the requestAnimationFrame() loop
 
+		renderEntities()
+
 		removeOutOfBoundsBullets()
 
-		enemies.forEach((enemy, i) => { positionEnemyLifebar(enemy) })
-
-		// if (Date.now() < then + 2000) {
-		// 	console.log(render)
-		// }
-
-		let playerPos = player.bodies[0].position
-		// try to keep render view in-step with player character
-		Render.lookAt(render, {
-			min: { x: playerPos.x + width/2, y: 0 },
-			max: { x: playerPos.x - width/2, y: height }
-		})
-
-		// math calculating size / pos of elms
-		let playerHeight = (player.bodies[1].bounds.max.y - player.bodies[1].bounds.min.y)
-		let groundHeight = (height - (ground.bounds.max.y - ground.bounds.min.y))
-		groundHeight -= (ground.position.y - groundHeight)
-
-		// jump key
-		if (keys[87] &&
-				(player.bodies[1].position.y - playerHeight) > (groundHeight-15) &&
-				player.ground) {
-			player.bodies[1].force = (
-				lastDirection == 'left'
-				?	{ x: -0.1, y: playerProps.jumpForce }
-				: { x: 0.1, y: playerProps.jumpForce }
-			)
-		} else {
-			Body.setAngle(player.bodies[1], 0)
-			Body.setDensity(player.bodies[1], .025)
-		}
-
-		if (keys[65] || keys[68]) {
-			if (playerProps.acceleration < playerProps.movementSpeed) {
-				playerProps.acceleration += 0.2
-			}
-		} else {
-			playerProps.acceleration = 0
-		}
-
-		if (keys[65]) {
-			lastDirection = 'left'
-			if (player.ground) {
-				Composite.translate(player, { x: -playerProps.acceleration, y: 0 })
-			} else {
-				Composite.translate(player, { x: -playerProps.inAirMovementSpeed, y: 0 })
-			}
-		} else {
-			if (keys[68]) {
-				lastDirection = 'right'
-				if (player.ground) {
-					Composite.translate(player, { x: playerProps.acceleration, y: 0 })
-				} else {
-					Composite.translate(player, { x: playerProps.inAirMovementSpeed, y: 0 })
-				}
-			}
-		}
+		renderPlayerMovementViaKeyInput(render, keys, player, playerProps, ground, lastDirection)
 
 	})
 

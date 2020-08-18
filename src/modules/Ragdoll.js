@@ -166,8 +166,6 @@ export function createRagdoll(world, scale) {
 		upperarm2_to_torso, lowerarm2_to_upperarm2
 	])
 	World.add(world, [collection])
-	// Composite.translate(collection, position)
-	console.log('should have created a ragdoll...')
 
 	return collection
 }

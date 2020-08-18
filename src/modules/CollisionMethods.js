@@ -11,26 +11,30 @@ export const positionEnemyLifebar = (enemy, render) => {
 }
 
 const damageEnemy = (enemy, dmg) => {
-	let lifeAmt = parseInt(enemy._lifebar.style.width, 10)
-	let lifeBar = enemy._lifebar
-	if (lifeAmt < dmg) {
-		lifeAmt = 0
-	} else {
-		lifeAmt -= dmg
+	if (enemy._lifebar) {
+		let lifeAmt = parseInt(enemy._lifebar.style.width, 10)
+		let lifeBar = enemy._lifebar
+		if (lifeAmt < dmg) {
+			lifeAmt = 0
+		} else {
+			lifeAmt -= dmg
+		}
+		lifeBar.style.width = lifeAmt + 'px'
 	}
-	lifeBar.style.width = lifeAmt + 'px'
 }
 
 const killEnemy = (enemy, world, bulletForceAngle, bulletForceMultiplier) => {
-	let lifeAmt = parseInt(enemy._lifebar.style.width, 10)
-	if (lifeAmt <= 0) {
-		World.remove(world, enemy._composite)
-		if (enemy._outerLifebar.parentNode == document.body) {
-			document.body.removeChild(enemy._outerLifebar)
-			// add a ragdoll in place of enemy character!
-			let ragdoll = createRagdoll(world, 1)
-			Composite.translate(ragdoll, { x: enemy.position.x, y: enemy.position.y - 100 })
-			Body.applyForce(ragdoll.bodies[0], ragdoll.bodies[0].position, { x: bulletForceAngle.x * bulletForceMultiplier, y: bulletForceAngle.y * bulletForceMultiplier })
+	if (enemy._lifebar) {
+		let lifeAmt = parseInt(enemy._lifebar.style.width, 10)
+		if (lifeAmt <= 0) {
+			World.remove(world, enemy._composite)
+			if (enemy._outerLifebar.parentNode == document.body) {
+				document.body.removeChild(enemy._outerLifebar)
+				// add a ragdoll in place of enemy character!
+				let ragdoll = createRagdoll(world, 1)
+				Composite.translate(ragdoll, { x: enemy.position.x, y: enemy.position.y - 100 })
+				Body.applyForce(ragdoll.bodies[0], ragdoll.bodies[0].position, { x: bulletForceAngle.x * bulletForceMultiplier, y: bulletForceAngle.y * bulletForceMultiplier })
+			}
 		}
 	}
 }

@@ -113,40 +113,27 @@ window.start = () => {
 	})
 
 	// ENGINE EVENTS
-	const checkGround = (event, bool) => {
-		var pairs = event.pairs
-		for (var i = 0, j = pairs.length; i != j; ++i) {
-			var pair = pairs[i]
-			if (pair.bodyA === player.bodies[1]) {
-				player.ground = bool
-			} else if (pair.bodyB === player.bodies[1]) {
-				player.ground = bool
-			}
-		}
-	}
+	// const checkGround = (event, bool) => {
+	// 	var pairs = event.pairs
+	// 	for (var i = 0, j = pairs.length; i != j; ++i) {
+	// 		var pair = pairs[i]
+	// 		if (pair.bodyA === player.bodies[1]) {
+	// 			player.ground = bool
+	// 		} else if (pair.bodyB === player.bodies[1]) {
+	// 			player.ground = bool
+	// 		}
+	// 	}
+	// }
 
-	const checkBulletCollisionGroundRemove = e => {
-		for (let i = 0; i < e.pairs.length; ++i) {
-			if (e.pairs[i].bodyA.label === 'bullet' && e.pairs[i].bodyB.label === 'ground') {
-				World.remove(world, e.pairs[i].bodyA)
-			} else if (e.pairs[i].bodyB.label === 'bullet' && e.pairs[i].bodyA.label === 'ground') {
-				World.remove(world, e.pairs[i].bodyB)
-			}
-		}
-	}
-
-	const removeOutOfBoundsBullets = () => {
-		// remove out-of-bounds bullets
-		for (let i = 0; i < bullets.length; ++i) {
-			let bullet = bullets[i]
-			if (bullet.position.x > world.bounds.max.x ||
-					bullet.position.x < 0 ||
-					bullet.position.y < 0 ) {
-				World.remove(world, bullet)
-				bullets = bullets.filter(b => b != bullet)
-			}
-		}
-	}
+	// const checkBulletCollisionGroundRemove = e => {
+	// 	for (let i = 0; i < e.pairs.length; ++i) {
+	// 		if (e.pairs[i].bodyA.label === 'bullet' && e.pairs[i].bodyB.label === 'ground') {
+	// 			World.remove(world, e.pairs[i].bodyA)
+	// 		} else if (e.pairs[i].bodyB.label === 'bullet' && e.pairs[i].bodyA.label === 'ground') {
+	// 			World.remove(world, e.pairs[i].bodyB)
+	// 		}
+	// 	}
+	// }
 
 	const damageEnemy = (enemy, dmg) => {
 		let lifeAmt = parseInt(enemy._lifebar.style.width, 10)
@@ -174,17 +161,16 @@ window.start = () => {
 		}
 	}
 
-	// const positionEnemyLifebar = (enemy) => {
-	// 	let lifebar = enemy.bodies[0]._outerLifebar
-	// 	let size = enemy.bodies[0]._barsize
-	// 	let renderBoundsX = ((render.bounds.max.x - render.bounds.min.x)/2)
-	// 	let enemyPosX = enemy.bodies[0].position.x - (enemy.bodies[0].bounds.max.x - enemy.bodies[0].bounds.min.x)
-	// 	let renderBoundsY = ((render.bounds.max.x - render.bounds.min.y)/2)
-	// 	let enemyPosY = enemy.bodies[0].position.y
-	// 	let enemyHeadHt = enemy.bodies[0].bounds.max.y - enemy.bodies[0].bounds.min.y
-	// 	lifebar.style.left = enemyPosX - size.w + renderBoundsX + 'px'
-	// 	lifebar.style.top = enemyPosY - enemyHeadHt - (size.h + (size.h/2)) + 'px'
-	// }
+	const removeOutOfBoundsBullets = () => {
+		// remove out-of-bounds bullets
+		for (let i = 0; i < bullets.length; ++i) {
+			let bullet = bullets[i]
+			if (bullet.position.x > world.bounds.max.x || bullet.position.x < 0 || bullet.position.y < 0 ) {
+					World.remove(world, bullet)
+					bullets = bullets.filter(b => b != bullet)
+			}
+		}
+	}
 
 	const positionEnemyLifebar = enemy => {
 		let lifebar = enemy.bodies[0]._outerLifebar
@@ -193,56 +179,82 @@ window.start = () => {
 		lifebar.style.top = enemy.bodies[0].position.y - headHt - enemy.bodies[0]._barsize.h - render.bounds.min.y + 'px'
 	}
 
+	const checkPlayerIsOnGroundBegin = (e, i) => {
+		if (e.pairs[i].bodyA === player.bodies[1] && e.pairs[i].bodyB.label.indexOf('ground') > -1) {
+			player.ground = true
+		} else if (e.pairs[i].bodyB === player.bodies[1] && e.pairs[i].bodyA.label.indexOf('ground') > -1) {
+			player.ground = true
+		}
+	}
+
+	const enemyBulletHittestBegin = (e, i) => {
+		if (e.pairs[i].bodyA.label.indexOf('enemy') > -1 && e.pairs[i].bodyB.label == 'bullet') {
+			let enemy = e.pairs[i].bodyA
+			enemy.label.indexOf('head') > -1 ? damageEnemy(enemy, HEAD_DAMAGE) : damageEnemy(enemy, BODY_DAMAGE)
+			let bullet = e.pairs[i].bodyB
+			World.remove(world, bullet)
+		} else if (e.pairs[i].bodyB.label.indexOf('enemy') > -1 && e.pairs[i].bodyA.label == 'bullet') {
+			let enemy = e.pairs[i].bodyB
+			enemy.label.indexOf('head') > -1 ? damageEnemy(enemy, HEAD_DAMAGE) : damageEnemy(enemy, BODY_DAMAGE)
+			let bullet = e.pairs[i].bodyA
+			World.remove(world, bullet)
+		}
+	}
+
+	const bulletGroundHittest = (e, i) => {
+		if (e.pairs[i].bodyA.label === 'bullet' && e.pairs[i].bodyB.label === 'ground') {
+			World.remove(world, e.pairs[i].bodyA)
+		} else if (e.pairs[i].bodyB.label === 'bullet' && e.pairs[i].bodyA.label === 'ground') {
+			World.remove(world, e.pairs[i].bodyB)
+		}
+	}
+
 	// for performance, we may need to check all collision types in one function
 	// instead of running separate loops for all collision types
-	const checkBulletsHitEnemyStart = (e, bool) => {
+	const checkCollisions = e => {
+		// LOOP THROUGH ALL COLLISION TYPES
 		for (let i = 0; i < e.pairs.length; ++i) {
-			if (e.pairs[i].bodyA.label.indexOf('enemy') > -1 && e.pairs[i].bodyB.label == 'bullet') {
-				let enemy = e.pairs[i].bodyA
-				enemy.label.indexOf('head') > -1 ? damageEnemy(enemy, HEAD_DAMAGE) : damageEnemy(enemy, BODY_DAMAGE)
-				let bullet = e.pairs[i].bodyB
-				World.remove(world, bullet)
-			} else if (e.pairs[i].bodyB.label.indexOf('enemy') > -1 && e.pairs[i].bodyA.label == 'bullet') {
-				let enemy = e.pairs[i].bodyB
-				enemy.label.indexOf('head') > -1 ? damageEnemy(enemy, HEAD_DAMAGE) : damageEnemy(enemy, BODY_DAMAGE)
-				let bullet = e.pairs[i].bodyA
-				World.remove(world, bullet)
-			}
+			// CHECK IF PLAYER IS ON GROUND
+			checkPlayerIsOnGroundBegin(e, i)
+			// BULLET ENEMY HITTEST BEGIN
+			enemyBulletHittestBegin(e, i)
+			// BULLETS GROUND HITTEST -- REMOVE
+			bulletGroundHittest(e, i)
 		}
 	}
 
-	const checkBulletsHitEnemyEnd = (e, bool) => {
-		for (let i = 0; i < e.pairs.length; ++i) {
-			if (e.pairs[i].bodyA.label.indexOf('enemy') > -1 && e.pairs[i].bodyB.label == 'bullet') {
-				let enemy = e.pairs[i].bodyA
-				World.remove(world, enemy)
-				killEnemy(enemy)
-				// console.log(bool)
-			} else if (e.pairs[i].bodyB.label.indexOf('enemy') > -1 && e.pairs[i].bodyA.label == 'bullet') {
-				let enemy = e.pairs[i].bodyB
-				World.remove(world, enemy)
-				killEnemy(enemy)
-				// console.log(bool)
-			}
+	const checkPlayerIsOnGroundEnd = (e, i) => {
+		if (e.pairs[i].bodyA === player.bodies[1] && e.pairs[i].bodyB.label.indexOf('ground') > -1) {
+			player.ground = false
+		} else if (e.pairs[i].bodyB === player.bodies[1] && e.pairs[i].bodyA.label.indexOf('ground') > -1) {
+			player.ground = false
 		}
 	}
 
-	Events.on(engine, 'collisionStart', e => {
-		checkGround(e, true)
-		checkBulletsHitEnemyStart(e, true)
-	})
-	Events.on(engine, 'collisionActive', e => {
-		checkGround(e, true)
-	})
-	Events.on(engine, 'collisionEnd', e => {
-		checkGround(e, false)
-		// check bullet collision and remove
-		checkBulletCollisionGroundRemove(e)
-		checkBulletsHitEnemyEnd(e, false)
-	})
+	const enemyBulletHittestEnd = (e, i) => {
+		if (e.pairs[i].bodyA.label.indexOf('enemy') > -1 && e.pairs[i].bodyB.label == 'bullet') {
+			let enemy = e.pairs[i].bodyA
+			World.remove(world, enemy)
+			killEnemy(enemy)
+		} else if (e.pairs[i].bodyB.label.indexOf('enemy') > -1 && e.pairs[i].bodyA.label == 'bullet') {
+			let enemy = e.pairs[i].bodyB
+			World.remove(world, enemy)
+			killEnemy(enemy)
+		}
+	}
 
-	// let then = Date.now()
-	// main engine update loop
+	const checkCollisionsEnd = e => {
+		for (let i = 0; i < e.pairs.length; ++i) {
+			// SET PLAYER IS ON GROUND
+			checkPlayerIsOnGroundEnd(e, i)
+			// BULLET ENEMY HITTEST END
+			enemyBulletHittestEnd(e, i)
+		}
+	}
+
+	Events.on(engine, 'collisionStart', e => checkCollisions(e))
+	// Events.on(engine, 'collisionActive', e => checkCollisions(e))
+	Events.on(engine, 'collisionEnd', e => checkCollisionsEnd(e))
 	Events.on(engine, 'beforeTick', e => {
 
 		renderMouse() // renderMouse() will draw the white line if it is in the requestAnimationFrame() loop

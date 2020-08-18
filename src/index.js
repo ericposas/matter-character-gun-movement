@@ -140,6 +140,7 @@ window.start = () => {
 		}
 	}
 
+	// move to utilities file
 	const getAngleBetweenTwoPoints = (p1, p2) => {
 		// angle in radians
 		let angleRadians = Math.atan2(p2.y - p1.y, p2.x - p1.x)
@@ -151,7 +152,7 @@ window.start = () => {
 		plHeadHeight = player.bodies[1].bounds.max.y - player.bodies[1].bounds.min.y
 		let playerPos = {
 			x: player.bodies[0].position.x,
-			y: player.bodies[0].position.y - plHeadHeight
+			y: player.bodies[0].position.y - (plHeadHeight * 2)
 		}
 		let armAngle = getAngleBetweenTwoPoints(arm.position, playerPos)
 		Body.setAngle(arm, armAngle)

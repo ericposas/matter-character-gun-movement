@@ -7,6 +7,13 @@ import {
 	ENEMY_HEAD, ENEMY_BODY,
 } from './CollisionFilterConstants'
 
+// move to a utilities file
+const getAngleBetweenTwoPoints = (p1, p2) => {
+	// angle in radians
+	let angleRadians = Math.atan2(p2.y - p1.y, p2.x - p1.x)
+	return angleRadians
+}
+
 export const createEnemy = (enemiesArray, world, mouse_point, position) => {
 	// 'player' is the main player to pass here so we can track his movements
 	let { player: enemy } = createPlayer(world, 'enemy', mouse_point, position)
@@ -44,6 +51,13 @@ export const createEnemy = (enemiesArray, world, mouse_point, position) => {
 	])
 	// Body.setWidth(enemy.bodies[2], 200)
 	// enemy.bodies[2].width = 100
+	// test enemy shooting code
+	setInterval(() => {
+		let enemyBullet = Bodies.circle(enemy.bodies[2].position.x, enemy.bodies[2].position.y, 6, {
+		})
+		World.add(world, enemyBullet)
+
+	}, 3000)
 
 	return enemy
 

@@ -124,7 +124,7 @@ export const createPlayer = (world, type, mouse_point, position) => {
 		bodyA: bod,
 		bodyB: upperarm,
 		pointA: { x: 0, y: -35 },
-		pointB: { x: -10, y: 0 },
+		pointB: { x: type == 'player' ? -10 : -15, y: 0 },
 		length: 0,
 		stiffness: 1.0
 	})

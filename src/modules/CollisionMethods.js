@@ -2,6 +2,14 @@ import { World, Body, Composite } from 'matter-js'
 import { BODY_DAMAGE, HEAD_DAMAGE } from './DamageConstants'
 import { createRagdoll } from './Ragdoll'
 
+
+export const positionEnemyLifebar = (enemy, render) => {
+	let lifebar = enemy.bodies[0]._outerLifebar
+	let headHt = enemy.bodies[0].bounds.max.y - enemy.bodies[0].bounds.min.y
+	lifebar.style.left = enemy.bodies[0].position.x - (enemy.bodies[0]._barsize.w/2) - render.bounds.min.x + 'px'
+	lifebar.style.top = enemy.bodies[0].position.y - headHt - enemy.bodies[0]._barsize.h - render.bounds.min.y + 'px'
+}
+
 const damageEnemy = (enemy, dmg) => {
 	let lifeAmt = parseInt(enemy._lifebar.style.width, 10)
 	let lifeBar = enemy._lifebar
@@ -35,15 +43,17 @@ export const checkPlayerIsOnGroundBegin = (e, i, player) => {
 	}
 }
 
-export const enemyBulletHittestBegin = (e, i, world) => {
+export const enemyBulletHittestBegin = (e, i, world, bulletForceAngle, bulletForceMultiplier) => {
 	if (e.pairs[i].bodyA.label.indexOf('enemy') > -1 && e.pairs[i].bodyB.label == 'bullet') {
 		let enemy = e.pairs[i].bodyA
 		enemy.label.indexOf('head') > -1 ? damageEnemy(enemy, HEAD_DAMAGE) : damageEnemy(enemy, BODY_DAMAGE)
+		Body.applyForce(enemy, enemy.position, { x: bulletForceAngle.x * bulletForceMultiplier })
 		let bullet = e.pairs[i].bodyB
 		World.remove(world, bullet)
 	} else if (e.pairs[i].bodyB.label.indexOf('enemy') > -1 && e.pairs[i].bodyA.label == 'bullet') {
 		let enemy = e.pairs[i].bodyB
 		enemy.label.indexOf('head') > -1 ? damageEnemy(enemy, HEAD_DAMAGE) : damageEnemy(enemy, BODY_DAMAGE)
+		Body.applyForce(enemy, enemy.position, { x: bulletForceAngle.x * bulletForceMultiplier })
 		let bullet = e.pairs[i].bodyA
 		World.remove(world, bullet)
 	}

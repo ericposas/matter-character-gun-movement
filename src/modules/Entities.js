@@ -97,14 +97,14 @@ export const createPlayer = (world, type, mouse_point, position) => {
 			mask: GROUND
 		}
 	})
-	bod.label = type == 'player' ? 'player arm' : 'enemy arm'
+	upperarm.label = type == 'player' ? 'player arm' : 'enemy arm'
 	let lowerarm = Bodies.rectangle(x, 400, 20, 12, {
 		collisionFilter: {
 			category: PLAYER_BODY,
 			mask: GROUND
 		}
 	})
-	bod.label = type == 'player' ? 'player arm' : 'enemy arm'
+	lowerarm.label = type == 'player' ? 'player arm' : 'enemy arm'
 	let upperarm_to_lowerarm = Constraint.create({
 		bodyA: upperarm,
 		bodyB: lowerarm,

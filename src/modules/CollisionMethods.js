@@ -24,13 +24,13 @@ const damageEnemy = (enemy, dmg) => {
 const killEnemy = (enemy, world, bulletForceAngle, bulletForceMultiplier) => {
 	let lifeAmt = parseInt(enemy._lifebar.style.width, 10)
 	if (lifeAmt <= 0) {
-		// add a ragdoll in place of enemy character! xxx
-		let ragdoll = createRagdoll(world, 1)
-		Composite.translate(ragdoll, { x: enemy.position.x, y: enemy.position.y - 100 })
-		Body.applyForce(ragdoll.bodies[0], ragdoll.bodies[0].position, { x: bulletForceAngle.x * bulletForceMultiplier, y: bulletForceAngle.y * bulletForceMultiplier })
 		World.remove(world, enemy._composite)
-		if (enemy._outerLifebar) {
+		if (enemy._outerLifebar.parentNode == document.body) {
 			document.body.removeChild(enemy._outerLifebar)
+			// add a ragdoll in place of enemy character!
+			let ragdoll = createRagdoll(world, 1)
+			Composite.translate(ragdoll, { x: enemy.position.x, y: enemy.position.y - 100 })
+			Body.applyForce(ragdoll.bodies[0], ragdoll.bodies[0].position, { x: bulletForceAngle.x * bulletForceMultiplier, y: bulletForceAngle.y * bulletForceMultiplier })
 		}
 	}
 }

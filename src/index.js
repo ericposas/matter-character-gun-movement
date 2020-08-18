@@ -29,7 +29,7 @@ window.start = () => {
 	let lastDirection = ''
 	let reticlePos = { x: 0, y: 0 }
 	let bullets = []
-	let bulletForce = 0.0135
+	let bulletForce = 0.015
 	let bulletForceAngle = { x: 0, y: 0 }
 	let bulletForceMultiplier = 6 // TIMES SIX!!
 	let enemies = []

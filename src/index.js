@@ -140,9 +140,30 @@ window.start = () => {
 		}
 	}
 
+	const getAngleBetweenTwoPoints = (p1, p2) => {
+		// angle in radians
+		let angleRadians = Math.atan2(p2.y - p1.y, p2.x - p1.x)
+		return angleRadians
+	}
+
+	const positionEnemyAim = enemy => {
+		let arm = enemy.bodies[2],
+		plHeadHeight = player.bodies[1].bounds.max.y - player.bodies[1].bounds.min.y
+		let playerPos = {
+			x: player.bodies[0].position.x,
+			y: player.bodies[0].position.y - plHeadHeight
+		}
+		let armAngle = getAngleBetweenTwoPoints(arm.position, playerPos)
+		Body.setAngle(arm, armAngle)
+	}
+
 	const renderEntities = () => {
 		// keep enemy lifebar positions in-sync with enemies
-		enemies.forEach((enemy, i) => positionEnemyLifebar(enemy, render))
+		enemies.forEach((enemy, i) => {
+			positionEnemyLifebar(enemy, render)
+			positionEnemyAim(enemy)
+
+		})
 
 	}
 

@@ -1,5 +1,5 @@
 import {
-	Composite, Composites, Constraint, Bodies, World
+	Composite, Composites, Constraint, Bodies, World, Body
 } from 'matter-js'
 import {
 	GROUND, BULLET, BOX,
@@ -37,6 +37,13 @@ export const createEnemy = (enemiesArray, world, mouse_point, position) => {
 	enemy.bodies[1]._barsize = size
 	// console.log(render)
 	enemiesArray.push(enemy)
+	Composite.remove(enemy, [
+		enemy.bodies[3],
+		enemy.constraints[3],
+		enemy.constraints[4]
+	])
+	// Body.setWidth(enemy.bodies[2], 200)
+	// enemy.bodies[2].width = 100
 
 	return enemy
 
@@ -49,7 +56,7 @@ export const createPlayer = (world, type, mouse_point, position) => {
 
 	let head = Bodies.rectangle(x, 400, 25, 30, {
 		collisionFilter: {
-			category: PLAYER_HEAD,
+			category: PLAYER_BODY,
 			mask: GROUND
 		}
 	})
@@ -91,7 +98,7 @@ export const createPlayer = (world, type, mouse_point, position) => {
 		pointB: { x: 10, y: -50 },
 		length: 0
 	})
-	let upperarm = Bodies.rectangle(x, 400, 20, 15, {
+	let upperarm = Bodies.rectangle(x, 400, type == 'player' ? 20 : 40, 15, {
 		collisionFilter: {
 			category: PLAYER_BODY,
 			mask: GROUND

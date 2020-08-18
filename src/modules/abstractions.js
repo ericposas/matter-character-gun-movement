@@ -47,7 +47,7 @@ export const createPlayer = (world, type, mouse_point, position) => {
 	position = position || { x: 0, y: 0 }
 	let { x, y } = position
 
-	let head = Bodies.rectangle(x, 400, 20, 25, {
+	let head = Bodies.rectangle(x, 400, 25, 30, {
 		collisionFilter: {
 			category: PLAYER_HEAD,
 			mask: GROUND

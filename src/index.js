@@ -14,6 +14,7 @@ import {
 import {
 	HEAD_DAMAGE, BODY_DAMAGE
 } from './modules/DamageConstants'
+import { createRagdoll } from './modules/Ragdoll'
 
 
 window.start = () => {
@@ -42,13 +43,17 @@ window.start = () => {
 	let enemy3 = createEnemy(enemies, world, null, { x: 1000, y: 0 })
 
 	World.add(world, [
-		ground
+		ground,
+
 	])
 
 	let keys = []
 	let lastDirection = ''
 	let reticlePos = { x: 0, y: 0 }
-	let bullets = [], bulletForce = 0.0075
+	let bullets = [],
+	bulletForce = 0.0075,
+	bulletForceAngle = { x: 0, y: 0 },
+	bulletForceMultiplier = 10
 
 	const calcMovingReticlePosition = () => {
 		return player.bodies[0].position.x + ((render.bounds.min.x - render.bounds.max.x)/2)
@@ -71,10 +76,11 @@ window.start = () => {
 			x: reticlePos.x + calcMovingReticlePosition(),
 			y: reticlePos.y
 		})
-		return {
+		bulletForceAngle = {
 			x: Math.cos(targetAngle) * bulletForce,
 			y: Math.sin(targetAngle) * bulletForce
 		}
+		return bulletForceAngle
 	}
 
 	renderMouse()
@@ -153,16 +159,21 @@ window.start = () => {
 		lifeBar.style.width = lifeAmt + 'px'
 	}
 
-	const removeEnemy = (enemy) => {
+	let lastRagAdded = null
+	const killEnemy = (enemy) => {
 		let lifeAmt = parseInt(enemy._lifebar.style.width, 10)
 		if (lifeAmt <= 0) {
+			// add a ragdoll in place of enemy character! xxx
+			let ragdoll = createRagdoll(world, 1)
+			Composite.translate(ragdoll, { x: enemy.position.x, y: enemy.position.y - 100 })
+			Body.applyForce(ragdoll.bodies[0], ragdoll.bodies[0].position, { x: bulletForceAngle.x * bulletForceMultiplier, y: bulletForceAngle.y * bulletForceMultiplier })
 			World.remove(world, enemy._composite)
 			if (enemy._outerLifebar) {
 				document.body.removeChild(enemy._outerLifebar)
 			}
 		}
 	}
-	
+
 	// const positionEnemyLifebar = (enemy) => {
 	// 	let lifebar = enemy.bodies[0]._outerLifebar
 	// 	let size = enemy.bodies[0]._barsize
@@ -189,9 +200,13 @@ window.start = () => {
 			if (e.pairs[i].bodyA.label.indexOf('enemy') > -1 && e.pairs[i].bodyB.label == 'bullet') {
 				let enemy = e.pairs[i].bodyA
 				enemy.label.indexOf('head') > -1 ? damageEnemy(enemy, HEAD_DAMAGE) : damageEnemy(enemy, BODY_DAMAGE)
+				let bullet = e.pairs[i].bodyB
+				World.remove(world, bullet)
 			} else if (e.pairs[i].bodyB.label.indexOf('enemy') > -1 && e.pairs[i].bodyA.label == 'bullet') {
 				let enemy = e.pairs[i].bodyB
 				enemy.label.indexOf('head') > -1 ? damageEnemy(enemy, HEAD_DAMAGE) : damageEnemy(enemy, BODY_DAMAGE)
+				let bullet = e.pairs[i].bodyA
+				World.remove(world, bullet)
 			}
 		}
 	}
@@ -201,12 +216,12 @@ window.start = () => {
 			if (e.pairs[i].bodyA.label.indexOf('enemy') > -1 && e.pairs[i].bodyB.label == 'bullet') {
 				let enemy = e.pairs[i].bodyA
 				World.remove(world, enemy)
-				removeEnemy(enemy)
+				killEnemy(enemy)
 				// console.log(bool)
 			} else if (e.pairs[i].bodyB.label.indexOf('enemy') > -1 && e.pairs[i].bodyA.label == 'bullet') {
 				let enemy = e.pairs[i].bodyB
 				World.remove(world, enemy)
-				removeEnemy(enemy)
+				killEnemy(enemy)
 				// console.log(bool)
 			}
 		}

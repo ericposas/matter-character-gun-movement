@@ -5,7 +5,7 @@ import {
 	Composite, Composites, Events, Vector, Render
 } from 'matter-js'
 import { matterBoilerplate as boilerplate } from 'matterjs-boilerplate'
-import { createPlayer, createEnemy } from './modules/Abstractions'
+import { createPlayer, createEnemy } from './modules/Entities'
 import {
 	GROUND, BULLET, BOX,
 	PLAYER_HEAD, PLAYER_BODY,

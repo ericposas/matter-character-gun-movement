@@ -1,11 +1,11 @@
 import './index.scss'
+import { width, height } from './config'
 import {
 	Bodies, Body, World, Constraint,
 	Composite, Composites, Events, Vector, Render
 } from 'matter-js'
-import { width, height } from './config'
 import { matterBoilerplate as boilerplate } from 'matterjs-boilerplate'
-import { createPlayer, createEnemy, makeStacks } from './modules/Abstractions'
+import { createPlayer, createEnemy } from './modules/Abstractions'
 import {
 	GROUND, BULLET, BOX,
 	PLAYER_HEAD, PLAYER_BODY,
@@ -28,29 +28,25 @@ window.start = () => {
 	let keys = []
 	let lastDirection = ''
 	let reticlePos = { x: 0, y: 0 }
-	let bullets = [],
-	bulletForce = 0.0135,
-	bulletForceAngle = { x: 0, y: 0 },
-	bulletForceMultiplier = 6 // TIMES SIX!!
-
+	let bullets = []
+	let bulletForce = 0.0135
+	let bulletForceAngle = { x: 0, y: 0 }
+	let bulletForceMultiplier = 6 // TIMES SIX!!
+	let enemies = []
 	let { world, render, engine } = boilerplate(width, height)
 	world.bounds = {
 		min: { x: 0, y: 0 },
 		max: { x: width * 2, y: height * 1.5 },
 	}
-
+	let { player, playerProps, mouse_point, mouse_control } = createPlayer(world, 'player', null, {x:50,y:0})
 	let ground = Bodies.rectangle(width, height, width * 2, 100, {
+		label: 'ground',
 		isStatic: true,
 		collisionFilter: {
 			category: GROUND
 		}
 	})
-	ground.label = 'ground'
-
-	let { player, playerProps, mouse_point, mouse_control } = createPlayer(world, 'player', null, {x:50,y:0})
-	let { stacks: { stack1, stack2, stack3, stack4, stack5 } } = makeStacks()
-	let enemies = []
-	// enemies are added to the world in the createEnemy() method
+	// enemies are auto-added to the world in the createEnemy() method
 	let enemy1 = createEnemy(enemies, world, null, { x: 250, y: 0 })
 	let enemy2 = createEnemy(enemies, world, null, { x: 450, y: 0 })
 	let enemy3 = createEnemy(enemies, world, null, { x: 1000, y: 0 })

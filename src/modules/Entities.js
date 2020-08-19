@@ -73,9 +73,10 @@ export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_poi
 			World.add(world, enemyBullet)
 			bulletsArray.push(enemyBullet)
 			Body.applyForce(enemyBullet, enBulletPos, {
-				x: Math.cos(enemy.bodies[2].angle) * enemyBulletForce,
-				y: Math.sin(enemy.bodies[2].angle) * enemyBulletForce
+				x: Math.cos(arm.angle) * enemyBulletForce,
+				y: Math.sin(arm.angle) * enemyBulletForce
 			})
+			// console.log(arm.angle)
 		}
 	}, 3000)
 

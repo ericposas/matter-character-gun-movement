@@ -17,5 +17,4 @@
 - create game states for menu, pause, in-game, level-transition, game end, etc. and a way to smoothly remove bodies/graphics and build next scene
 
 ### gameplay
-- figure out if we need a ducking mechanic, use of boxes for cover, or both in order to dodge enemy bullets
-- crouching/ducking is working, need to re-align player limbs; also x. y coords of last player instance position
+- use boxes for cover in order to dodge enemy bullets

@@ -110,14 +110,14 @@ const getShortBody = (type, mouse_point, x, y) => {
 		bodyA: head,
 		bodyB: bod,
 		pointA: { x: -10, y: 10 },
-		pointB: { x: -10, y: -50 },
+		pointB: { x: -10, y: -25 },
 		length: 0
 	})
 	let head_to_bod2 = Constraint.create({
 		bodyA: head,
 		bodyB: bod,
 		pointA: { x: 10, y: 10 },
-		pointB: { x: 10, y: -50 },
+		pointB: { x: 10, y: -25 },
 		length: 0
 	})
 	let upperarm = Bodies.rectangle(x, 400, type == 'player' ? 20 : 40, 15, {
@@ -145,7 +145,7 @@ const getShortBody = (type, mouse_point, x, y) => {
 	let bod_to_upperarm = Constraint.create({
 		bodyA: bod,
 		bodyB: upperarm,
-		pointA: { x: 0, y: -35 },
+		pointA: { x: 0, y: -15 },
 		pointB: { x: type == 'player' ? -10 : -15, y: 0 },
 		length: 0,
 		stiffness: 1.0
@@ -291,7 +291,9 @@ export const createPlayer = (world, type, mouse_point, position) => {
 	let { x, y } = position
 	// let player
 
-	const swapBod = (btype, playerInstance) => {
+	const swapBod = (btype, playerInstance, x, y) => {
+		x = x || 0
+		y = y || 0
 		// console.log(playerInstance)
 		if (playerInstance) {
 			Composite.remove(world, playerInstance)
@@ -321,7 +323,7 @@ export const createPlayer = (world, type, mouse_point, position) => {
 
 	// return player
 
-	let bodyType = swapBod('normal')
+	let bodyType = swapBod('normal', null, x, y)
 	let { player, playerProps, mouse_control, mouse_point: mousePoint } = bodyType
 	// console.log(bodyType)
 

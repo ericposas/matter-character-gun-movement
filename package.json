@@ -20,7 +20,8 @@
 	},
 	"dependencies": {
 		"matter-js": "^0.14.2",
-		"matterjs-boilerplate": "^1.0.4"
+		"matterjs-boilerplate": "^1.0.4",
+		"random": "^2.2.0"
 	},
 	"scripts": {
 		"compile": "webpack --production",

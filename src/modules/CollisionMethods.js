@@ -1,5 +1,5 @@
 import { World, Body, Composite } from 'matter-js'
-import { BODY_DAMAGE, HEAD_DAMAGE } from './DamageConstants'
+import { BODY_DAMAGE, HEAD_DAMAGE, LIMB_DAMAGE } from './DamageConstants'
 import { createRagdoll } from './Ragdoll'
 
 
@@ -53,16 +53,25 @@ export const checkPlayerIsOnGroundBegin = (e, i, player) => {
 	}
 }
 
+const processDamageType = enemy => {
+	enemy.label.indexOf('head') > -1
+	? damageEnemy(enemy, HEAD_DAMAGE)
+	:
+		enemy.label.indexOf('body') > -1
+		? damageEnemy(enemy, BODY_DAMAGE)
+		: damageEnemy(enemy, LIMB_DAMAGE)
+}
+
 export const enemyBulletHittestBegin = (e, i, world, bulletForceAngle, bulletForceMultiplier) => {
 	if (e.pairs[i].bodyA.label.indexOf('enemy') > -1 && e.pairs[i].bodyB.label == 'bullet') {
 		let enemy = e.pairs[i].bodyA
-		enemy.label.indexOf('head') > -1 ? damageEnemy(enemy, HEAD_DAMAGE) : damageEnemy(enemy, BODY_DAMAGE)
+		processDamageType(enemy)
 		Body.applyForce(enemy, enemy.position, { x: bulletForceAngle.x * bulletForceMultiplier })
 		let bullet = e.pairs[i].bodyB
 		World.remove(world, bullet)
 	} else if (e.pairs[i].bodyB.label.indexOf('enemy') > -1 && e.pairs[i].bodyA.label == 'bullet') {
 		let enemy = e.pairs[i].bodyB
-		enemy.label.indexOf('head') > -1 ? damageEnemy(enemy, HEAD_DAMAGE) : damageEnemy(enemy, BODY_DAMAGE)
+		processDamageType(enemy)
 		Body.applyForce(enemy, enemy.position, { x: bulletForceAngle.x * bulletForceMultiplier })
 		let bullet = e.pairs[i].bodyA
 		World.remove(world, bullet)

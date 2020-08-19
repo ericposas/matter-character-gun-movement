@@ -164,11 +164,16 @@ window.start = () => {
 		Body.setAngle(arm, armAngle)
 	}
 
+	const randomizeEnemyMovements = () => {
+		
+	}
+
 	const renderEntities = () => {
 		// keep enemy lifebar positions in-sync with enemies
 		enemies.forEach((enemy, i) => {
 			positionEnemyLifebar(enemy, render)
 			positionEnemyAim(enemy)
+			randomizeEnemyMovements(enemy)
 
 		})
 

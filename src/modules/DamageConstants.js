@@ -1,2 +1,3 @@
 export const HEAD_DAMAGE = 15
-export const BODY_DAMAGE = 5
+export const BODY_DAMAGE = 7
+export const LIMB_DAMAGE = 3

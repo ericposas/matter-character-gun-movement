@@ -21,7 +21,6 @@ import {
 	bulletGroundHittest,
 	removeOutOfBoundsBullets, positionEnemyLifebar
 } from './modules/CollisionMethods'
-// import { getAngleBetweenTwoPoints } from './modules/Utilities'
 
 
 window.start = () => {
@@ -165,7 +164,7 @@ window.start = () => {
 	}
 
 	const randomizeEnemyMovements = () => {
-		
+
 	}
 
 	const renderEntities = () => {

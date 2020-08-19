@@ -6,15 +6,7 @@ import {
 	PLAYER_HEAD, PLAYER_BODY,
 	ENEMY_HEAD, ENEMY_BODY,
 } from './CollisionFilterConstants'
-// import { getAngleBetweenTwoPoints } from './Utilities'
 
-// const calculateEnemyBulletAngle = (p1, p2, force) => {
-// 	let targetAngle = Vector.angle(p1, p2)
-// 	return {
-// 		x: Math.cos(targetAngle) * force,
-// 		y: Math.sin(targetAngle) * force
-// 	}
-// }
 
 export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_point, position) => {
 	// 'player' is the main player to pass here so we can track his movements
@@ -45,7 +37,6 @@ export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_poi
 	enemy.bodies[1]._outerLifebar = outerbar
 	enemy.bodies[0]._barsize = size
 	enemy.bodies[1]._barsize = size
-	// console.log(render)
 	enemiesArray.push(enemy)
 	Composite.remove(enemy, [
 		enemy.bodies[3],
@@ -76,7 +67,6 @@ export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_poi
 				x: Math.cos(arm.angle) * enemyBulletForce,
 				y: Math.sin(arm.angle) * enemyBulletForce
 			})
-			// console.log(arm.angle)
 		}
 	}, 3000)
 
@@ -99,7 +89,7 @@ export const createPlayer = (world, type, mouse_point, position) => {
 
 	let playerProps = {
 		radius: 25,
-		jumpForce: -3,
+		jumpForce: -5,
 		defaultVelocity: .2,
 		velocity: .2,
 		inAirMovementSpeed: 3,
@@ -111,7 +101,6 @@ export const createPlayer = (world, type, mouse_point, position) => {
 		density: .25,
 		friction: 1,
 		frictionStatic: 1,
-		// frictionAir: 1,
 		restitution: 0,
 		collisionFilter: {
 			category: PLAYER_BODY,

@@ -61,6 +61,7 @@ window.start = () => {
 			crouched = !crouched
 			let swapped
 			let x = player.bodies[0].position.x, y = player.bodies[0].position.y
+			// let playerHt = player.bodies[1].bounds.max.y - player.bodies[1].bounds.min.y
 			if (crouched) {
 				// console.log(swapped)
 				swapped = addSwappedBody(playerSwapBod('short', player, x, y))
@@ -68,7 +69,7 @@ window.start = () => {
 				swapped = addSwappedBody(playerSwapBod('normal', player, x, y))
 			}
 			player = swapped.player // reassign player variable to the new swapped player
-			// console.log(player)
+			playerProps = swapped.playerProps
 			mouse_point = swapped.mouse_point
 		}
 	}

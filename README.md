@@ -17,4 +17,4 @@
 - create game states for menu, pause, in-game, level-transition, game end, etc. and a way to smoothly remove bodies/graphics and build next scene
 
 ### gameplay
-- use boxes for cover in order to dodge enemy bullets
+- use boxes for cover from enemy bullets

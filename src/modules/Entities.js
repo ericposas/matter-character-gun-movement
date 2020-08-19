@@ -74,7 +74,7 @@ export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_poi
 
 }
 
-const getShortBody = (type, mouse_point, x, y) => {
+const getShortBody = (type, btype, mouse_point, x, y) => {
 	let player = Composite.create({
 		ground: false
 	})
@@ -87,7 +87,7 @@ const getShortBody = (type, mouse_point, x, y) => {
 	head.label = type == 'player' ? 'player head' : 'enemy head'
 	let playerProps = {
 		radius: 25,
-		jumpForce: -5,
+		jumpForce: -4,
 		defaultVelocity: .2,
 		velocity: .2,
 		inAirMovementSpeed: 3,
@@ -174,12 +174,13 @@ const getShortBody = (type, mouse_point, x, y) => {
 		player,
 		playerProps,
 		mouse_point,
-		mouse_control
+		mouse_control,
+		bodyType: btype
 	}
 
 }
 
-const getNormalBody = (type, mouse_point, x, y) => {
+const getNormalBody = (type, btype, mouse_point, x, y) => {
 	let player = Composite.create({
 		ground: false
 	})
@@ -192,7 +193,7 @@ const getNormalBody = (type, mouse_point, x, y) => {
 	head.label = type == 'player' ? 'player head' : 'enemy head'
 	let playerProps = {
 		radius: 25,
-		jumpForce: -5,
+		jumpForce: -8,
 		defaultVelocity: .2,
 		velocity: .2,
 		inAirMovementSpeed: 3,
@@ -280,7 +281,8 @@ const getNormalBody = (type, mouse_point, x, y) => {
 		player,
 		playerProps,
 		mouse_point,
-		mouse_control
+		mouse_control,
+		bodyType: btype
 	}
 
 }
@@ -299,18 +301,20 @@ export const createPlayer = (world, type, mouse_point, position) => {
 			Composite.remove(world, playerInstance)
 		}
 		if (btype == 'short') {
-			return getShortBody(type, mouse_point, x, y)
+			return getShortBody(type, btype, mouse_point, x, y)
 		} else if (btype == 'normal') {
-			return getNormalBody(type, mouse_point, x, y)
+			return getNormalBody(type, btype, mouse_point, x, y)
 		}
 	}
 
 	const addSwappedBody = swappedBody => {
-		let { player, playerProps, mouse_control, mouse_point: mousePoint } = swappedBody
+		let { player, playerProps, mouse_control, mouse_point: mousePoint, bodyType } = swappedBody
 		World.add(world, player)
+		// console.log(playerProps)
 		return {
 			player,
 			playerProps,
+			bodyType,
 			mouse_point: mousePoint,
 			mouse_control,
 			swapBod, addSwappedBody

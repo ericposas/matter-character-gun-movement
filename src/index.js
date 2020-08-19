@@ -20,6 +20,7 @@ import {
 	toggleCrouch,
 	renderPlayerMovementViaKeyInput,
 	calcMovingReticlePosition,
+	positionEnemyAim
 } from './modules/PlayerControls'
 import {
 	checkPlayerIsOnGroundBegin, checkPlayerIsOnGroundEnd,
@@ -94,7 +95,7 @@ window.start = () => {
 	}
 
 	registerDOMEventListeners()
-	
+
 	const calculateBulletAngle = () => {
 		let playerPos = player.bodies[0].position
 		let targetAngle = Vector.angle(playerPos, {
@@ -140,37 +141,12 @@ window.start = () => {
 		}
 	}
 
-	const positionEnemyAim = enemy => {
-		let defaultRadians = { left: -2.45, right: -0.75 }
-		let defaultDistance = width * .75
-		let arm = enemy.bodies[2]
-		let enemyWidth = enemy.bodies[1].bounds.max.x - enemy.bodies[1].bounds.min.x
-		let plHeadHeight = player.bodies[1].bounds.max.y - player.bodies[1].bounds.min.y
-		let armAngle
-		let playerPos = {
-			x: player.bodies[0].position.x,
-			y: player.bodies[0].position.y
-		}
-		if (player.bodies[0].position.x < enemy.bodies[1].position.x && player.bodies[0].position.x > enemy.bodies[1].position.x - defaultDistance) {
-			armAngle = defaultRadians.left
-		} else if (player.bodies[0].position.x > enemy.bodies[1].position.x && player.bodies[0].position.x < enemy.bodies[1].position.x + defaultDistance) {
-			armAngle = defaultRadians.right
-		} else {
-			armAngle = Vector.angle(arm.position, playerPos)
-		}
-		Body.setAngle(arm, armAngle)
-	}
-
-	const randomizeEnemyMovements = () => {
-
-	}
-
 	const renderEntities = () => {
 		// keep enemy lifebar positions in-sync with enemies
 		enemies.forEach((enemy, i) => {
 			positionEnemyLifebar(enemy, render)
-			positionEnemyAim(enemy)
-			randomizeEnemyMovements(enemy)
+			positionEnemyAim(enemy, player)
+			
 
 		})
 

@@ -4,6 +4,10 @@
 - shooting enemy arm still not damaging correctly
 
 ## TODO
+
+### general
+- refactor/abstract away all functions except main engine functions
+
 ### enemies
 - add enemy random movement
 - decide on when enemies will shoot (use a random number probably)

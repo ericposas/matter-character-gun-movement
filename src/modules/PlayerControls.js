@@ -1,8 +1,29 @@
 import {
-	Render, Body, Composite
+	Render, Body, Composite, Vector
 } from 'matter-js'
 import { width, height } from '../config'
 
+
+export const positionEnemyAim = (enemy, player) => {
+	let defaultRadians = { left: -2.45, right: -0.75 }
+	let defaultDistance = width * .75
+	let arm = enemy.bodies[2]
+	let enemyWidth = enemy.bodies[1].bounds.max.x - enemy.bodies[1].bounds.min.x
+	let plHeadHeight = player.bodies[1].bounds.max.y - player.bodies[1].bounds.min.y
+	let armAngle
+	let playerPos = {
+		x: player.bodies[0].position.x,
+		y: player.bodies[0].position.y
+	}
+	if (player.bodies[0].position.x < enemy.bodies[1].position.x && player.bodies[0].position.x > enemy.bodies[1].position.x - defaultDistance) {
+		armAngle = defaultRadians.left
+	} else if (player.bodies[0].position.x > enemy.bodies[1].position.x && player.bodies[0].position.x < enemy.bodies[1].position.x + defaultDistance) {
+		armAngle = defaultRadians.right
+	} else {
+		armAngle = Vector.angle(arm.position, playerPos)
+	}
+	Body.setAngle(arm, armAngle)
+}
 
 export const renderMouse = (player, lastDirection, render, mouse_point, reticlePos) => { // called in the 'beforeTick' Engine event
 	mouse_point.position.x = reticlePos.x + calcMovingReticlePosition(player, render)

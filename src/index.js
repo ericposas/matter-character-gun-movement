@@ -15,7 +15,7 @@ import {
 import {
 	HEAD_DAMAGE, BODY_DAMAGE
 } from './modules/DamageConstants'
-import { renderPlayerMovementViaKeyInput } from './modules/GameLoopMethods'
+import { renderPlayerMovementViaKeyInput, toggleCrouch } from './modules/PlayerControls'
 import {
 	checkPlayerIsOnGroundBegin, checkPlayerIsOnGroundEnd,
 	enemyBulletHittestBegin, enemyBulletHittestEnd,
@@ -41,7 +41,7 @@ window.start = () => {
 		min: { x: 0, y: 0 },
 		max: { x: width * 2, y: height * 1.5 },
 	}
-	
+
 	let { player, playerProps, mouse_point, mouse_control, swapBod: playerSwapBod, addSwappedBody } = createPlayer(world, 'player', null, {x:50,y:0})
 	let ground = createGround(world, width, height)
 	// enemies are auto-added to the world in the createEnemy() method
@@ -49,21 +49,6 @@ window.start = () => {
 	let enemy2 = createEnemy(enemies, bullets, player, world, null, { x: 450, y: 0 })
 	let enemy3 = createEnemy(enemies, bullets, player, world, null, { x: 1000, y: 0 })
 
-	const toggleCrouch = () => {
-		if (player.ground) {
-			crouched = !crouched
-			let swapped
-			let x = player.bodies[0].position.x, y = player.bodies[0].position.y
-			if (crouched) {
-				swapped = addSwappedBody(playerSwapBod('short', player, x, y))
-			} else {
-				swapped = addSwappedBody(playerSwapBod('normal', player, x, y))
-			}
-			player = swapped.player // reassign player variable to the new swapped player
-			playerProps = swapped.playerProps
-			mouse_point = swapped.mouse_point
-		}
-	}
 
 	const registerDOMEventListeners = () => {
 		// EVENT LISTENERS
@@ -88,8 +73,15 @@ window.start = () => {
 		})
 		document.body.addEventListener("keydown", e => {
 			keys[e.keyCode] = true
+			// clever use of javascript closure to pass these variables to another function for setting
+			const setCrouched = (swapped) => {
+				crouched = !crouched;
+				player = swapped.player // reassign player variable to the new swapped player
+				playerProps = swapped.playerProps
+				mouse_point = swapped.mouse_point
+			}
 			if (keys[83]) {
-				toggleCrouch()
+				toggleCrouch(crouched, setCrouched, player, addSwappedBody, playerSwapBod)
 			}
 		})
 		document.body.addEventListener("keyup", e => { keys[e.keyCode] = false })

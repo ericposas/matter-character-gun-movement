@@ -3,6 +3,23 @@ import {
 } from 'matter-js'
 import { width, height } from '../config'
 
+export const toggleCrouch = (crouched, setCrouched, player, addSwappedBody, playerSwapBod) => {
+	if (player.ground) {
+		// crouched = !crouched
+		let swapped
+		let x = player.bodies[0].position.x, y = player.bodies[0].position.y
+		if (!crouched) {
+			swapped = addSwappedBody(playerSwapBod('short', player, x, y))
+		} else {
+			swapped = addSwappedBody(playerSwapBod('normal', player, x, y))
+		}
+		setCrouched(swapped)
+		// player = swapped.player // reassign player variable to the new swapped player
+		// playerProps = swapped.playerProps
+		// mouse_point = swapped.mouse_point
+	}
+}
+
 export const renderPlayerMovementViaKeyInput = (render, keys, player, playerProps, ground, lastDirection) => {
 	let playerPos = player.bodies[0].position
 	let playerBod = player.bodies[1]

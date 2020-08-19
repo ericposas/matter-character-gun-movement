@@ -61,9 +61,7 @@ window.start = () => {
 			crouched = !crouched
 			let swapped
 			let x = player.bodies[0].position.x, y = player.bodies[0].position.y
-			// let playerHt = player.bodies[1].bounds.max.y - player.bodies[1].bounds.min.y
 			if (crouched) {
-				// console.log(swapped)
 				swapped = addSwappedBody(playerSwapBod('short', player, x, y))
 			} else {
 				swapped = addSwappedBody(playerSwapBod('normal', player, x, y))
@@ -111,8 +109,7 @@ window.start = () => {
 		return player.bodies[0].position.x + ((render.bounds.min.x - render.bounds.max.x)/2)
 	}
 
-	const renderMouse = () => {
-		// requestAnimationFrame(renderMouse)
+	const renderMouse = () => { // called in the 'beforeTick' Engine event
 		mouse_point.position.x = reticlePos.x + calcMovingReticlePosition()
 		mouse_point.position.y = reticlePos.y
 		if (mouse_point.position.x > player.bodies[1].position.x) { lastDirection = 'left' }
@@ -175,8 +172,6 @@ window.start = () => {
 			x: player.bodies[0].position.x,
 			y: player.bodies[0].position.y
 		}
-		// if (player.bodies[0].position.y < (enemy.bodies[0].position.y + 5)) {
-		// }
 		if (player.bodies[0].position.x < enemy.bodies[1].position.x && player.bodies[0].position.x > enemy.bodies[1].position.x - defaultDistance) {
 			armAngle = defaultRadians.left
 		} else if (player.bodies[0].position.x > enemy.bodies[1].position.x && player.bodies[0].position.x < enemy.bodies[1].position.x + defaultDistance) {

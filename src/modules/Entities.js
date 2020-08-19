@@ -6,15 +6,15 @@ import {
 	PLAYER_HEAD, PLAYER_BODY,
 	ENEMY_HEAD, ENEMY_BODY,
 } from './CollisionFilterConstants'
-import { getAngleBetweenTwoPoints } from './Utilities'
+// import { getAngleBetweenTwoPoints } from './Utilities'
 
-const calculateEnemyBulletAngle = (p1, p2, force) => {
-	let targetAngle = Vector.angle(p1, p2)
-	return {
-		x: Math.cos(targetAngle) * force,
-		y: Math.sin(targetAngle) * force/2
-	}
-}
+// const calculateEnemyBulletAngle = (p1, p2, force) => {
+// 	let targetAngle = Vector.angle(p1, p2)
+// 	return {
+// 		x: Math.cos(targetAngle) * force,
+// 		y: Math.sin(targetAngle) * force
+// 	}
+// }
 
 export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_point, position) => {
 	// 'player' is the main player to pass here so we can track his movements
@@ -65,27 +65,17 @@ export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_poi
 				}
 			}
 			let enBulletPos = {
-				// x: arm.position.x + (
-				// 	playerPos.x < arm.position.x
-				// 	? -(armWidth/2)
-				// 	: (armWidth/2)
-				// ),
 				x: enemy.bodies[1].position.x - enemy.constraints[2].pointA.x,
-				y: arm.position.y
+				y: arm.position.y + ((arm.bounds.max.y - arm.bounds.min.y)/2)
 			}
 			let enemyBullet = Bodies.circle(enBulletPos.x, enBulletPos.y, 6, bulletOptions)
 			enemyBullet.label = 'bullet'
 			World.add(world, enemyBullet)
 			bulletsArray.push(enemyBullet)
-			let bulletTrajectory = calculateEnemyBulletAngle(
-				enemyBullet.position,
-				player.bodies[0].position,
-				enemyBulletForce
-			)
-			Body.applyForce(enemyBullet, enBulletPos, bulletTrajectory)
-
-			console.log(bulletTrajectory,
-			'maybe... add check against angle before allowing a shot or just correct angle to bullet')
+			Body.applyForce(enemyBullet, enBulletPos, {
+				x: Math.cos(enemy.bodies[2].angle) * enemyBulletForce,
+				y: Math.sin(enemy.bodies[2].angle) * enemyBulletForce
+			})
 		}
 	}, 3000)
 

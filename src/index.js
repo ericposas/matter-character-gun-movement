@@ -21,7 +21,7 @@ import {
 	bulletGroundHittest,
 	removeOutOfBoundsBullets, positionEnemyLifebar
 } from './modules/CollisionMethods'
-import { getAngleBetweenTwoPoints } from './modules/Utilities'
+// import { getAngleBetweenTwoPoints } from './modules/Utilities'
 
 
 window.start = () => {
@@ -148,7 +148,7 @@ window.start = () => {
 			x: player.bodies[0].position.x,
 			y: player.bodies[0].position.y - (plHeadHeight * 2)
 		}
-		let armAngle = getAngleBetweenTwoPoints(arm.position, playerPos)
+		let armAngle = Vector.angle(arm.position, playerPos)
 		Body.setAngle(arm, armAngle)
 	}
 

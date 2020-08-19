@@ -57,18 +57,20 @@ window.start = () => {
 	])
 
 	const toggleCrouch = () => {
-		crouched = !crouched
-		let swapped
-		let x = player.bodies[0].position.x, y = player.bodies[0].position.y
-		if (crouched) {
-			// console.log(swapped)
-			swapped = addSwappedBody(playerSwapBod('short', player, x, y))
-		} else {
-			swapped = addSwappedBody(playerSwapBod('normal', player, x, y))
+		if (player.ground) {
+			crouched = !crouched
+			let swapped
+			let x = player.bodies[0].position.x, y = player.bodies[0].position.y
+			if (crouched) {
+				// console.log(swapped)
+				swapped = addSwappedBody(playerSwapBod('short', player, x, y))
+			} else {
+				swapped = addSwappedBody(playerSwapBod('normal', player, x, y))
+			}
+			player = swapped.player // reassign player variable to the new swapped player
+			// console.log(player)
+			mouse_point = swapped.mouse_point
 		}
-		player = swapped.player // reassign player variable to the new swapped player
-		// console.log(player)
-		mouse_point = swapped.mouse_point
 	}
 
 	const registerDOMEventListeners = () => {

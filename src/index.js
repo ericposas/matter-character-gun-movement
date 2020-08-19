@@ -15,7 +15,12 @@ import {
 import {
 	HEAD_DAMAGE, BODY_DAMAGE
 } from './modules/DamageConstants'
-import { renderPlayerMovementViaKeyInput, toggleCrouch } from './modules/PlayerControls'
+import {
+	renderMouse,
+	toggleCrouch,
+	renderPlayerMovementViaKeyInput,
+	calcMovingReticlePosition,
+} from './modules/PlayerControls'
 import {
 	checkPlayerIsOnGroundBegin, checkPlayerIsOnGroundEnd,
 	enemyBulletHittestBegin, enemyBulletHittestEnd,
@@ -89,22 +94,11 @@ window.start = () => {
 	}
 
 	registerDOMEventListeners()
-
-	const calcMovingReticlePosition = () => {
-		return player.bodies[0].position.x + ((render.bounds.min.x - render.bounds.max.x)/2)
-	}
-
-	const renderMouse = () => { // called in the 'beforeTick' Engine event
-		mouse_point.position.x = reticlePos.x + calcMovingReticlePosition()
-		mouse_point.position.y = reticlePos.y
-		if (mouse_point.position.x > player.bodies[1].position.x) { lastDirection = 'left' }
-		else { lastDirection = 'right' }
-	}
-
+	
 	const calculateBulletAngle = () => {
 		let playerPos = player.bodies[0].position
 		let targetAngle = Vector.angle(playerPos, {
-			x: reticlePos.x + calcMovingReticlePosition(),
+			x: reticlePos.x + calcMovingReticlePosition(player, render),
 			y: reticlePos.y
 		})
 		bulletForceAngle = {
@@ -187,7 +181,7 @@ window.start = () => {
 	Events.on(engine, 'collisionEnd', e => checkCollisionsEnd(e))
 	Events.on(engine, 'beforeTick', e => {
 
-		renderMouse() // renderMouse() will draw the white line if it is in the requestAnimationFrame() loop
+		renderMouse(player, lastDirection, render, mouse_point, reticlePos) // renderMouse() will draw the white line if it is in the requestAnimationFrame() loop
 
 		renderEntities()
 

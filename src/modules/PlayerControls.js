@@ -3,6 +3,18 @@ import {
 } from 'matter-js'
 import { width, height } from '../config'
 
+
+export const renderMouse = (player, lastDirection, render, mouse_point, reticlePos) => { // called in the 'beforeTick' Engine event
+	mouse_point.position.x = reticlePos.x + calcMovingReticlePosition(player, render)
+	mouse_point.position.y = reticlePos.y
+	if (mouse_point.position.x > player.bodies[1].position.x) { lastDirection = 'left' }
+	else { lastDirection = 'right' }
+}
+
+export const calcMovingReticlePosition = (player, render) => {
+	return player.bodies[0].position.x + ((render.bounds.min.x - render.bounds.max.x)/2)
+}
+
 export const toggleCrouch = (crouched, setCrouched, player, addSwappedBody, playerSwapBod) => {
 	if (player.ground) {
 		// crouched = !crouched

@@ -6,6 +6,7 @@ import {
 } from 'matter-js'
 import { matterBoilerplate as boilerplate } from 'matterjs-boilerplate'
 import { createPlayer, createEnemy } from './modules/Entities'
+import { createGround } from './modules/Platforms'
 import {
 	GROUND, BULLET, BOX,
 	PLAYER_HEAD, PLAYER_BODY,
@@ -26,6 +27,7 @@ import {
 window.start = () => {
 
 	let keys = []
+	let crouched = false
 	let lastDirection = ''
 	let reticlePos = { x: 0, y: 0 }
 	let bullets = []
@@ -33,28 +35,19 @@ window.start = () => {
 	let bulletForceAngle = { x: 0, y: 0 }
 	let bulletForceMultiplier = 6 // TIMES SIX!!
 	let enemies = []
+
 	let { world, render, engine } = boilerplate(width, height)
 	world.bounds = {
 		min: { x: 0, y: 0 },
 		max: { x: width * 2, y: height * 1.5 },
 	}
-	let crouched = false
+	
 	let { player, playerProps, mouse_point, mouse_control, swapBod: playerSwapBod, addSwappedBody } = createPlayer(world, 'player', null, {x:50,y:0})
-	let ground = Bodies.rectangle(width, height, width * 2, 100, {
-		label: 'ground',
-		isStatic: true,
-		collisionFilter: {
-			category: GROUND
-		}
-	})
+	let ground = createGround(world, width, height)
 	// enemies are auto-added to the world in the createEnemy() method
 	let enemy1 = createEnemy(enemies, bullets, player, world, null, { x: 250, y: 0 })
 	let enemy2 = createEnemy(enemies, bullets, player, world, null, { x: 450, y: 0 })
 	let enemy3 = createEnemy(enemies, bullets, player, world, null, { x: 1000, y: 0 })
-
-	World.add(world, [
-		ground
-	])
 
 	const toggleCrouch = () => {
 		if (player.ground) {

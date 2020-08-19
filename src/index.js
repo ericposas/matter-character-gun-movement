@@ -4,7 +4,8 @@ import {
 	Bodies, Body, World, Constraint,
 	Composite, Composites, Events, Vector, Render
 } from 'matter-js'
-import { matterBoilerplate as boilerplate } from 'matterjs-boilerplate'
+// import { matterBoilerplate as boilerplate } from 'matterjs-boilerplate'
+import { matterBoilerplate as boilerplate } from './modules/MatterBoilerplate'
 import { createPlayer, createEnemy } from './modules/Entities'
 import { createGround } from './modules/Platforms'
 import {
@@ -43,11 +44,6 @@ window.start = () => {
 	let enemies = []
 
 	let { world, render, engine } = boilerplate(width, height)
-	world.bounds = {
-		min: { x: 0, y: 0 },
-		max: { x: width * 2, y: height * 1.5 },
-	}
-
 	let { player, playerProps, mouse_point, mouse_control, swapBod: playerSwapBod, addSwappedBody } = createPlayer(world, 'player', null, {x:50,y:0})
 	let ground = createGround(world, width, height)
 	// enemies are auto-added to the world in the createEnemy() method
@@ -146,7 +142,7 @@ window.start = () => {
 		enemies.forEach((enemy, i) => {
 			positionEnemyLifebar(enemy, render)
 			positionEnemyAim(enemy, player)
-			
+
 
 		})
 

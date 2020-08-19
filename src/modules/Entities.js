@@ -74,11 +74,10 @@ export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_poi
 
 }
 
-export const createPlayer = (world, type, mouse_point, position) => {
-	type = type || 'player'
-	position = position || { x: 0, y: 0 }
-	let { x, y } = position
-
+const getShortBody = (type, mouse_point, x, y) => {
+	let player = Composite.create({
+		ground: false
+	})
 	let head = Bodies.rectangle(x, 400, 25, 30, {
 		collisionFilter: {
 			category: PLAYER_BODY,
@@ -86,7 +85,111 @@ export const createPlayer = (world, type, mouse_point, position) => {
 		}
 	})
 	head.label = type == 'player' ? 'player head' : 'enemy head'
+	let playerProps = {
+		radius: 25,
+		jumpForce: -5,
+		defaultVelocity: .2,
+		velocity: .2,
+		inAirMovementSpeed: 3,
+		movementSpeed: 6,
+		acceleration: 0
+	}
+	let bod = Bodies.rectangle(x, 450, 60, 50, {
+		inertia: Infinity,
+		density: .25,
+		friction: 1,
+		frictionStatic: 1,
+		restitution: 0,
+		collisionFilter: {
+			category: PLAYER_BODY,
+			mask: GROUND
+		}
+	})
+	bod.label = type == 'player' ? 'player body' : 'enemy body'
+	let head_to_bod1 = Constraint.create({
+		bodyA: head,
+		bodyB: bod,
+		pointA: { x: -10, y: 10 },
+		pointB: { x: -10, y: -50 },
+		length: 0
+	})
+	let head_to_bod2 = Constraint.create({
+		bodyA: head,
+		bodyB: bod,
+		pointA: { x: 10, y: 10 },
+		pointB: { x: 10, y: -50 },
+		length: 0
+	})
+	let upperarm = Bodies.rectangle(x, 400, type == 'player' ? 20 : 40, 15, {
+		collisionFilter: {
+			category: PLAYER_BODY,
+			mask: GROUND
+		}
+	})
+	upperarm.label = type == 'player' ? 'player arm' : 'enemy arm'
+	let lowerarm = Bodies.rectangle(x, 400, 20, 12, {
+		collisionFilter: {
+			category: PLAYER_BODY,
+			mask: GROUND
+		}
+	})
+	lowerarm.label = type == 'player' ? 'player arm' : 'enemy arm'
+	let upperarm_to_lowerarm = Constraint.create({
+		bodyA: upperarm,
+		bodyB: lowerarm,
+		pointA: { x: 10, y: 0 },
+		pointB: { x: 10, y: 0 },
+		length: 0,
+		stiffness: 1.0
+	})
+	let bod_to_upperarm = Constraint.create({
+		bodyA: bod,
+		bodyB: upperarm,
+		pointA: { x: 0, y: -35 },
+		pointB: { x: type == 'player' ? -10 : -15, y: 0 },
+		length: 0,
+		stiffness: 1.0
+	})
+	mouse_point = mouse_point || Bodies.circle(120, 20, 1)
+	let mouse_control = Constraint.create({
+		bodyA: lowerarm,
+		bodyB: mouse_point,
+		pointA: { x: -15, y: 0 },
+		stiffness: 1.0,
+		length: 1,
+		render: {
+			visible: true
+		}
+	})
+	Composite.add(player, [
+		head, bod,
+		head_to_bod1, head_to_bod2,
+		upperarm, bod_to_upperarm,
+		lowerarm, upperarm_to_lowerarm,
+		// mouse_point,
+		mouse_control,
+	])
 
+	return {
+		player,
+		playerProps,
+		mouse_point,
+		mouse_control
+	}
+
+}
+
+const getNormalBody = (type, mouse_point, x, y) => {
+	let player = Composite.create({
+		ground: false
+	})
+	let head = Bodies.rectangle(x, 400, 25, 30, {
+		collisionFilter: {
+			category: PLAYER_BODY,
+			mask: GROUND
+		}
+	})
+	head.label = type == 'player' ? 'player head' : 'enemy head'
 	let playerProps = {
 		radius: 25,
 		jumpForce: -5,
@@ -163,9 +266,6 @@ export const createPlayer = (world, type, mouse_point, position) => {
 			visible: true
 		}
 	})
-	let player = Composite.create({
-		ground: false
-	})
 	Composite.add(player, [
 		head, bod,
 		head_to_bod1, head_to_bod2,
@@ -174,17 +274,67 @@ export const createPlayer = (world, type, mouse_point, position) => {
 		// mouse_point,
 		mouse_control,
 	])
-	World.add(world, player)
-	// need ot keep a reference to the player/enemy object that we can remove
-	head._composite = player
-	bod._composite = player
-	upperarm._composite = player
-	lowerarm._composite = player
+	// console.log(mouse_point)
+
 	return {
 		player,
 		playerProps,
 		mouse_point,
 		mouse_control
+	}
+
+}
+
+export const createPlayer = (world, type, mouse_point, position) => {
+	type = type || 'player'
+	position = position || { x: 0, y: 0 }
+	let { x, y } = position
+	// let player
+
+	const swapBod = (btype, playerInstance) => {
+		// console.log(playerInstance)
+		if (playerInstance) {
+			Composite.remove(world, playerInstance)
+		}
+		if (btype == 'short') {
+			return getShortBody(type, mouse_point, x, y)
+		} else if (btype == 'normal') {
+			return getNormalBody(type, mouse_point, x, y)
+		}
+	}
+
+	const addSwappedBody = swappedBody => {
+		let { player, playerProps, mouse_control, mouse_point: mousePoint } = swappedBody
+		World.add(world, player)
+		return {
+			player,
+			playerProps,
+			mouse_point: mousePoint,
+			mouse_control,
+			swapBod, addSwappedBody
+		}
+	}
+
+	// let player = swapBod('normal')
+	// World.add(world, player.player)
+	// console.log(player)
+
+	// return player
+
+	let bodyType = swapBod('normal')
+	let { player, playerProps, mouse_control, mouse_point: mousePoint } = bodyType
+	// console.log(bodyType)
+
+	World.add(world, player)
+	// // need to keep a reference to the player/enemy object that we can remove
+	player.bodies.forEach(body => { body._composite = player })
+	//
+	return {
+		player,
+		playerProps,
+		mouse_point: mousePoint,
+		mouse_control,
+		swapBod, addSwappedBody
 	}
 }
 

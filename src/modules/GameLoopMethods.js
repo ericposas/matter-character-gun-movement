@@ -5,6 +5,7 @@ import { width, height } from '../config'
 
 export const renderPlayerMovementViaKeyInput = (render, keys, player, playerProps, ground, lastDirection) => {
 	let playerPos = player.bodies[0].position
+	let playerBod = player.bodies[1]
 	// try to keep render view in-step with player character
 	Render.lookAt(render, {
 		min: { x: playerPos.x + width/2, y: 0 },
@@ -12,7 +13,7 @@ export const renderPlayerMovementViaKeyInput = (render, keys, player, playerProp
 	})
 
 	// math calculating size / pos of elms
-	let playerHeight = (player.bodies[1].bounds.max.y - player.bodies[1].bounds.min.y)
+	let playerHeight = (playerBod.bounds.max.y - playerBod.bounds.min.y)
 	let groundHeight = (height - (ground.bounds.max.y - ground.bounds.min.y))
 	groundHeight -= (ground.position.y - groundHeight)
 

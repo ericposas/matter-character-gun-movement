@@ -38,7 +38,8 @@ window.start = () => {
 		min: { x: 0, y: 0 },
 		max: { x: width * 2, y: height * 1.5 },
 	}
-	let { player, playerProps, mouse_point, mouse_control } = createPlayer(world, 'player', null, {x:50,y:0})
+	let crouched = false
+	let { player, playerProps, mouse_point, mouse_control, swapBod: playerSwapBod, addSwappedBody } = createPlayer(world, 'player', null, {x:50,y:0})
 	let ground = Bodies.rectangle(width, height, width * 2, 100, {
 		label: 'ground',
 		isStatic: true,
@@ -54,6 +55,20 @@ window.start = () => {
 	World.add(world, [
 		ground
 	])
+
+	const toggleCrouch = () => {
+		crouched = !crouched
+		let swapped
+		if (crouched) {
+			// console.log(swapped)
+			swapped = addSwappedBody(playerSwapBod('short', player))
+		} else {
+			swapped = addSwappedBody(playerSwapBod('normal', player))
+		}
+		player = swapped.player // reassign player variable to the new swapped player
+		// console.log(player)
+		mouse_point = swapped.mouse_point
+	}
 
 	const registerDOMEventListeners = () => {
 		// EVENT LISTENERS
@@ -76,7 +91,12 @@ window.start = () => {
 			bullets.push(bullet)
 			Body.applyForce(bullet, bullet.position, calculateBulletAngle())
 		})
-		document.body.addEventListener("keydown", e => { keys[e.keyCode] = true })
+		document.body.addEventListener("keydown", e => {
+			keys[e.keyCode] = true
+			if (keys[83]) {
+				toggleCrouch()
+			}
+		})
 		document.body.addEventListener("keyup", e => { keys[e.keyCode] = false })
 
 	}

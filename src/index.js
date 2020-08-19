@@ -21,6 +21,7 @@ import {
 	toggleCrouch,
 	renderPlayerMovementViaKeyInput,
 	calcMovingReticlePosition,
+	calculateBulletAngle,
 	positionEnemyAim
 } from './modules/PlayerControls'
 import {
@@ -71,7 +72,7 @@ window.start = () => {
 			bullet.label = 'bullet'
 			World.add(world, bullet)
 			bullets.push(bullet)
-			Body.applyForce(bullet, bullet.position, calculateBulletAngle())
+			Body.applyForce(bullet, bullet.position, calculateBulletAngle(player, render, reticlePos, bulletForce, bulletForceAngle))
 		})
 		document.body.addEventListener("keydown", e => {
 			keys[e.keyCode] = true
@@ -91,20 +92,7 @@ window.start = () => {
 	}
 
 	registerDOMEventListeners()
-
-	const calculateBulletAngle = () => {
-		let playerPos = player.bodies[0].position
-		let targetAngle = Vector.angle(playerPos, {
-			x: reticlePos.x + calcMovingReticlePosition(player, render),
-			y: reticlePos.y
-		})
-		bulletForceAngle = {
-			x: Math.cos(targetAngle) * bulletForce,
-			y: Math.sin(targetAngle) * bulletForce
-		}
-		return bulletForceAngle
-	}
-
+	
 	const removeOutOfBoundsBullets = () => {
 		// remove out-of-bounds bullets
 		for (let i = 0; i < bullets.length; ++i) {

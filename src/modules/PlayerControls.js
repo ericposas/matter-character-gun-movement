@@ -1,8 +1,19 @@
-import {
-	Render, Body, Composite, Vector
-} from 'matter-js'
+import { Render, Body, Composite, Vector } from 'matter-js'
 import { width, height } from '../config'
 
+
+export const calculateBulletAngle = (player, render, reticlePos, bulletForce, bulletForceAngle) => {
+	let playerPos = player.bodies[0].position
+	let targetAngle = Vector.angle(playerPos, {
+		x: reticlePos.x + calcMovingReticlePosition(player, render),
+		y: reticlePos.y
+	})
+	bulletForceAngle = {
+		x: Math.cos(targetAngle) * bulletForce,
+		y: Math.sin(targetAngle) * bulletForce
+	}
+	return bulletForceAngle
+}
 
 export const positionEnemyAim = (enemy, player) => {
 	let defaultRadians = { left: -2.45, right: -0.75 }

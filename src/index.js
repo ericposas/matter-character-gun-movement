@@ -21,6 +21,7 @@ import {
 	bulletGroundHittest,
 	removeOutOfBoundsBullets, positionEnemyLifebar
 } from './modules/CollisionMethods'
+import { getAngleBetweenTwoPoints } from './modules/Utilities'
 
 
 window.start = () => {
@@ -47,9 +48,9 @@ window.start = () => {
 		}
 	})
 	// enemies are auto-added to the world in the createEnemy() method
-	let enemy1 = createEnemy(enemies, world, null, { x: 250, y: 0 })
-	let enemy2 = createEnemy(enemies, world, null, { x: 450, y: 0 })
-	let enemy3 = createEnemy(enemies, world, null, { x: 1000, y: 0 })
+	let enemy1 = createEnemy(enemies, bullets, player, world, null, { x: 250, y: 0 })
+	let enemy2 = createEnemy(enemies, bullets, player, world, null, { x: 450, y: 0 })
+	let enemy3 = createEnemy(enemies, bullets, player, world, null, { x: 1000, y: 0 })
 
 	World.add(world, [
 		ground
@@ -136,15 +137,8 @@ window.start = () => {
 			// SET PLAYER IS ON GROUND
 			checkPlayerIsOnGroundEnd(e, i, player)
 			// BULLET ENEMY HITTEST END
-			enemyBulletHittestEnd(e, i, world, bulletForceAngle, bulletForceMultiplier)
+			enemyBulletHittestEnd(e, i, enemies, world, bulletForceAngle, bulletForceMultiplier)
 		}
-	}
-
-	// move to utilities file
-	const getAngleBetweenTwoPoints = (p1, p2) => {
-		// angle in radians
-		let angleRadians = Math.atan2(p2.y - p1.y, p2.x - p1.x)
-		return angleRadians
 	}
 
 	const positionEnemyAim = enemy => {

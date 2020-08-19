@@ -1,22 +1,25 @@
 import {
-	Composite, Composites, Constraint, Bodies, World, Body
+	Composite, Composites, Constraint, Bodies, World, Body, Vector
 } from 'matter-js'
 import {
 	GROUND, BULLET, BOX,
 	PLAYER_HEAD, PLAYER_BODY,
 	ENEMY_HEAD, ENEMY_BODY,
 } from './CollisionFilterConstants'
+import { getAngleBetweenTwoPoints } from './Utilities'
 
-// move to a utilities file
-const getAngleBetweenTwoPoints = (p1, p2) => {
-	// angle in radians
-	let angleRadians = Math.atan2(p2.y - p1.y, p2.x - p1.x)
-	return angleRadians
+const calculateEnemyBulletAngle = (p1, p2, force) => {
+	let targetAngle = Vector.angle(p1, p2)
+	return {
+		x: Math.cos(targetAngle) * force,
+		y: Math.sin(targetAngle) * force/2
+	}
 }
 
-export const createEnemy = (enemiesArray, world, mouse_point, position) => {
+export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_point, position) => {
 	// 'player' is the main player to pass here so we can track his movements
 	let { player: enemy } = createPlayer(world, 'enemy', mouse_point, position)
+	let enemyBulletForce = .025
 
 	const createEnemyLifeBar = () => {
 		let barWd = 60, barHt = 10
@@ -49,14 +52,41 @@ export const createEnemy = (enemiesArray, world, mouse_point, position) => {
 		enemy.constraints[3],
 		enemy.constraints[4]
 	])
-	// Body.setWidth(enemy.bodies[2], 200)
-	// enemy.bodies[2].width = 100
 	// test enemy shooting code
 	setInterval(() => {
-		let enemyBullet = Bodies.circle(enemy.bodies[2].position.x, enemy.bodies[2].position.y, 6, {
-		})
-		World.add(world, enemyBullet)
+		if (enemiesArray.indexOf(enemy) > -1) {
+			let playerPos = player.bodies[0].position
+			let arm = enemy.bodies[2]
+			let armWidth = arm.bounds.max.x - arm.bounds.min.x
+			let armHeight = arm.bounds.max.y - arm.bounds.min.y
+			let bulletOptions = {
+				collisionFilter: {
+					category: BULLET
+				}
+			}
+			let enBulletPos = {
+				// x: arm.position.x + (
+				// 	playerPos.x < arm.position.x
+				// 	? -(armWidth/2)
+				// 	: (armWidth/2)
+				// ),
+				x: enemy.bodies[1].position.x - enemy.constraints[2].pointA.x,
+				y: arm.position.y
+			}
+			let enemyBullet = Bodies.circle(enBulletPos.x, enBulletPos.y, 6, bulletOptions)
+			enemyBullet.label = 'bullet'
+			World.add(world, enemyBullet)
+			bulletsArray.push(enemyBullet)
+			let bulletTrajectory = calculateEnemyBulletAngle(
+				enemyBullet.position,
+				player.bodies[0].position,
+				enemyBulletForce
+			)
+			Body.applyForce(enemyBullet, enBulletPos, bulletTrajectory)
 
+			console.log(bulletTrajectory,
+			'maybe... add check against angle before allowing a shot or just correct angle to bullet')
+		}
 	}, 3000)
 
 	return enemy
@@ -168,6 +198,8 @@ export const createPlayer = (world, type, mouse_point, position) => {
 	// need ot keep a reference to the player/enemy object that we can remove
 	head._composite = player
 	bod._composite = player
+	upperarm._composite = player
+	lowerarm._composite = player
 	return {
 		player,
 		playerProps,

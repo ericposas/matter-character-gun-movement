@@ -22,13 +22,14 @@ import {
 	renderPlayerMovementViaKeyInput,
 	calcMovingReticlePosition,
 	calculateBulletAngle,
-	positionEnemyAim
+	positionEnemyAim,
+	removeOutOfBoundsBullets,
 } from './modules/PlayerControls'
 import {
 	checkPlayerIsOnGroundBegin, checkPlayerIsOnGroundEnd,
 	enemyBulletHittestBegin, enemyBulletHittestEnd,
 	bulletGroundHittest,
-	removeOutOfBoundsBullets, positionEnemyLifebar
+	positionEnemyLifebar
 } from './modules/CollisionMethods'
 
 
@@ -92,17 +93,7 @@ window.start = () => {
 	}
 
 	registerDOMEventListeners()
-	
-	const removeOutOfBoundsBullets = () => {
-		// remove out-of-bounds bullets
-		for (let i = 0; i < bullets.length; ++i) {
-			let bullet = bullets[i]
-			if (bullet.position.x > world.bounds.max.x || bullet.position.x < 0 || bullet.position.y < 0 ) {
-					World.remove(world, bullet)
-					bullets = bullets.filter(b => b != bullet)
-			}
-		}
-	}
+
 
 	const checkCollisions = e => {
 		// LOOP THROUGH ALL COLLISION TYPES
@@ -131,11 +122,9 @@ window.start = () => {
 			positionEnemyLifebar(enemy, render)
 			positionEnemyAim(enemy, player)
 
-
 		})
-
 	}
-
+	
 	Events.on(engine, 'collisionStart', e => checkCollisions(e))
 	// Events.on(engine, 'collisionActive', e => checkCollisions(e))
 	Events.on(engine, 'collisionEnd', e => checkCollisionsEnd(e))
@@ -145,7 +134,7 @@ window.start = () => {
 
 		renderEntities()
 
-		removeOutOfBoundsBullets()
+		removeOutOfBoundsBullets(world, bullets)
 
 		renderPlayerMovementViaKeyInput(render, keys, player, playerProps, ground, lastDirection)
 

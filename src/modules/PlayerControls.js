@@ -1,6 +1,17 @@
-import { Render, Body, Composite, Vector } from 'matter-js'
+import { Render, Body, Composite, Vector, World } from 'matter-js'
 import { width, height } from '../config'
 
+
+export const removeOutOfBoundsBullets = (world, bullets) => {
+	// remove out-of-bounds bullets
+	for (let i = 0; i < bullets.length; ++i) {
+		let bullet = bullets[i]
+		if (bullet.position.x > world.bounds.max.x || bullet.position.x < 0 || bullet.position.y < 0 ) {
+				World.remove(world, bullet)
+				bullets = bullets.filter(b => b != bullet)
+		}
+	}
+}
 
 export const calculateBulletAngle = (player, render, reticlePos, bulletForce, bulletForceAngle) => {
 	let playerPos = player.bodies[0].position

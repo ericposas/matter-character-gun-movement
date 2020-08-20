@@ -48,6 +48,11 @@ const removeEnemyFromWorld = (player, enemies, enemy, world, bulletImpact) => {
 			x: _x,
 			y: bulletImpact/2
 		})
+		// set time limit for ragdoll body to be removed from scene
+		setTimeout(() => {
+			World.remove(world, ragdoll)
+		}, 10000) // 10 seconds
+
 	}
 }
 

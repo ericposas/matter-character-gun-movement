@@ -6,6 +6,7 @@ import {
 	PLAYER_HEAD, PLAYER_BODY,
 	ENEMY_HEAD, ENEMY_BODY,
 } from './CollisionFilterConstants'
+import { BULLET_REMOVAL_TIMEOUT } from './GameConstants'
 import random from 'random'
 
 
@@ -66,6 +67,14 @@ export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_poi
 				x: Math.cos(arm.angle) * enemyBulletForce,
 				y: Math.sin(arm.angle) * enemyBulletForce
 			})
+			// set time to remove bullet automatically
+			setTimeout(() => {
+				let idx = bulletsArray.indexOf(enemyBullet)
+				if (idx) {
+					World.remove(world, enemyBullet)
+					bulletsArray.splice(idx, 1)
+				}
+			}, BULLET_REMOVAL_TIMEOUT)
 			setTimeout(bulletHandler, random.int(500, 3000))
 		}
 	}

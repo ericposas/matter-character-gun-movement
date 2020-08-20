@@ -12,9 +12,7 @@ import {
 	PLAYER_HEAD, PLAYER_BODY,
 	ENEMY_HEAD, ENEMY_BODY,
 } from './modules/CollisionFilterConstants'
-import {
-	HEAD_DAMAGE, BODY_DAMAGE
-} from './modules/DamageConstants'
+import { BULLET_REMOVAL_TIMEOUT } from './modules/GameConstants'
 import {
 	renderMouse,
 	toggleCrouch,
@@ -110,6 +108,14 @@ window.start = () => {
 			World.add(world, bullet)
 			bullets.push(bullet)
 			Body.applyForce(bullet, bullet.position, calculateBulletAngle(player, render, reticlePos, bulletForce))
+			// set time to remove bullet automatically
+			setTimeout(() => {
+				let idx = bullets.indexOf(bullet)
+				if (idx) {
+					World.remove(world, bullet)
+					bullets.splice(idx, 1)
+				}
+			}, BULLET_REMOVAL_TIMEOUT)
 		})
 		document.body.addEventListener('keydown', e => {
 			keys[e.keyCode] = true

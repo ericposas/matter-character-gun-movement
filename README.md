@@ -7,20 +7,14 @@
 ## BUGS
 - shooting enemy arm still not damaging correctly
 - player 'drifts' when he's idle
-- not all bullets are getting removed when out-of-bounds
 
 ## TODO
 
 ### general
-- be sure to go through and remove unused bodies on each level breakdown/setup
-- add time limit until bullet objects automatically are removed from the world (to reduce performance issues)
 - experiment with level layout, ground width, etc.
-- refactor/abstract away all functions except main engine functions
 
 ### enemies
 - add enemy random movement
-- decide on when enemies will shoot (use a random number probably)
-- need to remove all enemy bullet references from world
 
 ### player
 - smooth out player platforming / controls

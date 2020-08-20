@@ -77,7 +77,7 @@ window.start = () => {
 		else { currentLevel = lvl }
 	}
 
-	function createPlayerObjects() {
+	function createGameObjects() {
 		playerObjects = createPlayer(world, 'player', null, { x:50, y:0 })
 		player = playerObjects.player
 		playerProps = playerObjects.playerProps
@@ -87,7 +87,7 @@ window.start = () => {
 		playerSwapBod = playerObjects.swapBod
 	}
 
-	function destroyPlayerObjects() {
+	function destroyGameObjects() {
 		World.remove(world, [player, ground])
 		let en = []
 		enemies.forEach(enemy => {
@@ -107,23 +107,23 @@ window.start = () => {
 
 	const buildLevel = () => {
 		if (currentLevel == 1) {
-			createPlayerObjects()
+			createGameObjects()
 			ground = createGround(world, width, height)
-			let enemy1 = createEnemy(enemies, bullets, player, world, null, { x: 250, y: 0 })
-			let enemy2 = createEnemy(enemies, bullets, player, world, null, { x: 450, y: 0 })
-			let enemy3 = createEnemy(enemies, bullets, player, world, null, { x: 1000, y: 0 })
-			destroyPlayerObjects()
-			changeLevel(2)
+			createEnemy(enemies, bullets, player, world, null, { x: 250, y: 0 })
+			createEnemy(enemies, bullets, player, world, null, { x: 450, y: 0 })
+			createEnemy(enemies, bullets, player, world, null, { x: 1000, y: 0 })
+			// destroyGameObjects()
+			// changeLevel(2)
 			// buildLevel()
 		}
 		if (currentLevel == 2) {
-			createPlayerObjects()
+			createGameObjects()
 			ground = createGround(world, width, height)
-			let enemy1 = createEnemy(enemies, bullets, player, world, null, { x: 150, y: 0 })
-			let enemy2 = createEnemy(enemies, bullets, player, world, null, { x: 250, y: 0 })
-			let enemy3 = createEnemy(enemies, bullets, player, world, null, { x: 350, y: 0 })
-			let enemy4 = createEnemy(enemies, bullets, player, world, null, { x: 450, y: 0 })
-
+			for (let i = 0; i < 10; ++i) {
+				createEnemy(enemies, bullets, player, world, null, { x: 150 * i, y: 0 })
+			}
+			// destroyGameObjects()
+			// changeLevel(1)
 		}
 	}
 

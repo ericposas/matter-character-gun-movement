@@ -11,6 +11,7 @@
 ## TODO
 
 ### general
+- create total enemy count for the level, you win when all enemies are cleared
 - experiment with level layout, ground width, etc.
 
 ### enemies

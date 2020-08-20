@@ -136,8 +136,8 @@ window.start = () => {
 			// LOOP THROUGH ALL COLLISION TYPES
 			for (let i = 0; i < e.pairs.length; ++i) {
 				checkPlayerIsOnGroundBegin(e, i, player)
-				enemyBulletHittestBegin(e, i, world, bulletForceAngle, bulletForceMultiplier)
-				bulletGroundHittest(e, i, world)
+				enemyBulletHittestBegin(e, i, world, bulletForceAngle, bulletForceMultiplier, bullets)
+				bulletGroundHittest(e, i, world, bullets)
 			}
 		}
 	}
@@ -147,7 +147,7 @@ window.start = () => {
 			for (let i = 0; i < e.pairs.length; ++i) {
 				// LOOP THROUGH ALL COLLISION TYPES
 				checkPlayerIsOnGroundEnd(e, i, player)
-				enemyBulletHittestEnd(e, i, player, enemies, world, bulletImpact)
+				enemyBulletHittestEnd(e, i, player, enemies, world, bulletImpact, bullets)
 			}
 		}
 	}

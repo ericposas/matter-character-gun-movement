@@ -7,8 +7,12 @@ export const removeOutOfBoundsBullets = (world, bullets) => {
 	for (let i = 0; i < bullets.length; ++i) {
 		let bullet = bullets[i]
 		if (bullet.position.x > world.bounds.max.x || bullet.position.x < 0 || bullet.position.y < 0 ) {
+				let idx = bullets.indexOf(bullet)
 				World.remove(world, bullet)
-				bullets = bullets.filter(b => b != bullet)
+				if (idx > -1) { bullets.splice(idx, 1) }
+				// bullets = bullets.filter(b => b != bullet)
+				// splice() method is mutating so it works better in this case
+				// ..to use filter() method, we would need to use a closure
 		}
 	}
 }

@@ -68,27 +68,54 @@ const processDamageType = enemy => {
 		: damageEnemy(enemy, LIMB_DAMAGE)
 }
 
-export const enemyBulletHittestBegin = (e, i, world, bulletForceAngle, bulletForceMultiplier) => {
+export const enemyBulletHittestBegin = (e, i, world, bulletForceAngle, bulletForceMultiplier, bullets) => {
 	if (e.pairs[i].bodyA.label.indexOf('enemy') > -1 && e.pairs[i].bodyB.label == 'bullet') {
 		let enemy = e.pairs[i].bodyA
+		let bullet = e.pairs[i].bodyB
+		let idx = bullets.indexOf(bullet)
 		processDamageType(enemy)
 		Body.applyForce(enemy, enemy.position, { x: bulletForceAngle.x * bulletForceMultiplier })
-		let bullet = e.pairs[i].bodyB
 		World.remove(world, bullet)
+		if (idx > -1) { bullets.splice(idx, 1) }
 	} else if (e.pairs[i].bodyB.label.indexOf('enemy') > -1 && e.pairs[i].bodyA.label == 'bullet') {
 		let enemy = e.pairs[i].bodyB
+		let bullet = e.pairs[i].bodyA
+		let idx = bullets.indexOf(bullet)
 		processDamageType(enemy)
 		Body.applyForce(enemy, enemy.position, { x: bulletForceAngle.x * bulletForceMultiplier })
-		let bullet = e.pairs[i].bodyA
 		World.remove(world, bullet)
+		if (idx > -1) { bullets.splice(idx, 1) }
+	}
+	// if enemies shoot each other, remove the bullet
+	if (e.pairs[i].bodyA.label.indexOf('enemy') > -1 && e.pairs[i].bodyB.label.indexOf('enemy bullet') > -1) {
+		let bullet = e.pairs[i].bodyB
+		let idx = bullets.indexOf(bullet)
+		World.remove(world, bullet)
+		if (idx > -1) { bullets.splice(idx, 1) }
+	} else if (e.pairs[i].bodyB.label.indexOf('enemy') > -1 && e.pairs[i].bodyA.label.indexOf('enemy bullet') > -1) {
+		let bullet = e.pairs[i].bodyA
+		let idx = bullets.indexOf(bullet)
+		World.remove(world, bullet)
+		if (idx > -1) { bullets.splice(idx, 1) }
 	}
 }
 
-export const bulletGroundHittest = (e, i, world) => {
-	if (e.pairs[i].bodyA.label === 'bullet' && e.pairs[i].bodyB.label === 'ground') {
-		World.remove(world, e.pairs[i].bodyA)
-	} else if (e.pairs[i].bodyB.label === 'bullet' && e.pairs[i].bodyA.label === 'ground') {
-		World.remove(world, e.pairs[i].bodyB)
+export const bulletGroundHittest = (e, i, world, bullets) => {
+	if (e.pairs[i].bodyA.label.indexOf('bullet') > -1  && e.pairs[i].bodyB.label === 'ground') {
+		let bullet = e.pairs[i].bodyA
+		let idx = bullets.indexOf(bullet)
+		World.remove(world, bullet)
+		console.log(bullets)
+		if (idx > -1) { bullets.splice(idx, 1) }
+		console.log(bullets)
+
+	} else if (e.pairs[i].bodyB.label.indexOf('bullet') > -1  && e.pairs[i].bodyA.label === 'ground') {
+		let bullet = e.pairs[i].bodyB
+		let idx = bullets.indexOf(bullet)
+		World.remove(world, bullet)
+		console.log(bullets)
+		if (idx > -1) { bullets.splice(idx, 1) }
+		console.log(bullets)
 	}
 }
 

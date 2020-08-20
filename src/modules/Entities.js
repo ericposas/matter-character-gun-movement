@@ -6,6 +6,7 @@ import {
 	PLAYER_HEAD, PLAYER_BODY,
 	ENEMY_HEAD, ENEMY_BODY,
 } from './CollisionFilterConstants'
+import random from 'random'
 
 
 export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_point, position) => {
@@ -43,32 +44,34 @@ export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_poi
 		enemy.constraints[3],
 		enemy.constraints[4]
 	])
-	// test enemy shooting code
-	setInterval(() => {
+	// let randomFreq = random.int(500, 3000)
+	const bulletHandler = () => {
 		if (enemiesArray.indexOf(enemy) > -1) {
 			let playerPos = player.bodies[0].position
 			let arm = enemy.bodies[2]
 			let armWidth = arm.bounds.max.x - arm.bounds.min.x
 			let armHeight = arm.bounds.max.y - arm.bounds.min.y
 			let bulletOptions = {
-				collisionFilter: {
-					category: BULLET
-				}
+				collisionFilter: { category: BULLET | ENEMY_BODY | ENEMY_HEAD, filter: PLAYER_BODY | PLAYER_HEAD }
 			}
 			let enBulletPos = {
 				x: enemy.bodies[1].position.x - enemy.constraints[2].pointA.x,
 				y: arm.position.y + ((arm.bounds.max.y - arm.bounds.min.y)/2)
 			}
 			let enemyBullet = Bodies.circle(enBulletPos.x, enBulletPos.y, 6, bulletOptions)
-			enemyBullet.label = 'bullet'
+			enemyBullet.label = 'enemy bullet'
 			World.add(world, enemyBullet)
 			bulletsArray.push(enemyBullet)
 			Body.applyForce(enemyBullet, enBulletPos, {
 				x: Math.cos(arm.angle) * enemyBulletForce,
 				y: Math.sin(arm.angle) * enemyBulletForce
 			})
+			setTimeout(bulletHandler, random.int(500, 3000))
 		}
-	}, 3000)
+	}
+	// test enemy shooting code
+	// using setTimeout instead of setInterval to get a new random number each time
+	setTimeout(bulletHandler, random.int(500, 3000)) // shoot a bullet randomly between .5 to 3.0 seconds
 
 	return enemy
 
@@ -322,6 +325,7 @@ export const createPlayer = (world, type, mouse_point, position) => {
 	// World.add(world, player)
 	// need to keep a reference to the player/enemy object that we can remove
 	player.bodies.forEach(body => { body._composite = player })
+	// World.add(world, player)
 
 	return {
 		player,

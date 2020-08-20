@@ -1,5 +1,9 @@
 # Game: Powered by Matter.js javascript physics engine
 
+## NOTES
+- game_state git branch is the latest feature branch
+- could make the menu using standard html or pixi.js graphics
+
 ## BUGS
 - shooting enemy arm still not damaging correctly
 - player 'drifts' when he's idle

@@ -33,8 +33,8 @@ import {
 
 
 window.start = () => {
-
-	let gameState = ''
+	// Game world variables
+	let gameState = 'menu'
 	let keys = []
 	let crouched = false
 	let lastDirection = ''
@@ -64,12 +64,12 @@ window.start = () => {
 	const buildLevel = lvl => {
 		if (lvl == 1) {
 			ground = createGround(world, width, height)
-			// enemies are auto-added to the world in the createEnemy() method
 			let enemy1 = createEnemy(enemies, bullets, player, world, null, { x: 250, y: 0 })
 			let enemy2 = createEnemy(enemies, bullets, player, world, null, { x: 450, y: 0 })
 			let enemy3 = createEnemy(enemies, bullets, player, world, null, { x: 1000, y: 0 })
-
+			// we are adding entities to the world explicitly here instead of in the create methods above
 			World.add(world, [
+				ground,
 				player,
 				enemy1,
 				enemy2,
@@ -155,7 +155,6 @@ window.start = () => {
 
 	const gameTick = e => {
 		if (gameState == 'gameplay') {
-			// renderMouse() will draw the white line if it is in the requestAnimationFrame() loop
 			renderMouse(player, lastDirection, render, mouse_point, reticlePos)
 			renderEntities()
 			removeOutOfBoundsBullets(world, bullets)

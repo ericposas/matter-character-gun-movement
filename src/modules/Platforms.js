@@ -11,6 +11,6 @@ export const createGround = (world, width, height) => {
 			category: GROUND
 		}
 	})
-	World.add(world, ground)
+	// World.add(world, ground)
 	return ground
 }

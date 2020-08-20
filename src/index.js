@@ -1,4 +1,5 @@
 import './index.scss'
+import random from 'random'
 import { width, height } from './config'
 import {
 	Bodies, Body, World, Constraint,
@@ -43,7 +44,7 @@ window.start = () => {
 	let bulletForceAngle = { x: 0, y: 0 }
 	let ground
 	// generate Matter world
-	let { world, render, engine } = boilerplate(width, height)
+	let { world, render, engine } = boilerplate()
 	let playerObjects
 	let player, playerProps, mouse_point, mouse_control, playerSwapBod, addSwappedBody
 
@@ -78,6 +79,7 @@ window.start = () => {
 	}
 
 	function createGameObjects() {
+		ground = createGround(world, width, height)
 		playerObjects = createPlayer(world, 'player', null, { x:50, y:0 })
 		player = playerObjects.player
 		playerProps = playerObjects.playerProps
@@ -105,23 +107,29 @@ window.start = () => {
 		playerSwapBod = null
 	}
 
+	const spawnEnemies = (n, rate) => {
+		for (let i = 0; i < n; ++i) {
+			setTimeout(() => {
+				createEnemy(enemies, bullets, player, world, null, { x: random.int(50, ground.bounds.max.x - 50), y: 0 })
+			}, rate * i)
+		}
+	}
+
 	const buildLevel = () => {
 		if (currentLevel == 1) {
 			createGameObjects()
-			ground = createGround(world, width, height)
-			createEnemy(enemies, bullets, player, world, null, { x: 250, y: 0 })
-			createEnemy(enemies, bullets, player, world, null, { x: 450, y: 0 })
-			createEnemy(enemies, bullets, player, world, null, { x: 1000, y: 0 })
+			spawnEnemies(5, 2000)
+
 			// destroyGameObjects()
 			// changeLevel(2)
 			// buildLevel()
 		}
 		if (currentLevel == 2) {
 			createGameObjects()
-			ground = createGround(world, width, height)
-			for (let i = 0; i < 10; ++i) {
-				createEnemy(enemies, bullets, player, world, null, { x: 150 * i, y: 0 })
-			}
+
+			// for (let i = 0; i < 10; ++i) {
+			// 	createEnemy(enemies, bullets, player, world, null, { x: 150 * i, y: 0 })
+			// }
 			// destroyGameObjects()
 			// changeLevel(1)
 		}

@@ -5,10 +5,14 @@ import {
 import { width, height } from '../config'
 
 
-export function matterBoilerplate() {
+export function matterBoilerplate(mouseConstraintBool) {
 	// create engine
 	let engine = Engine.create()
 	let world = engine.world
+	world.bounds = {
+		min: { x: 0, y: 0 },
+		max: { x: width * 4, y: height * 1.5 }
+	}
 
 	// create renderer
 	let render = Render.create({
@@ -28,33 +32,29 @@ export function matterBoilerplate() {
 	var runner = Runner.create()
 	Runner.run(runner, engine)
 
-	let mouse = Mouse.create(render.canvas)
-	let	mouseConstraint = MouseConstraint.create(engine, {
-		mouse: mouse,
-		constraint: {
-			stiffness: 0.2,
-			render: {
-				visible: false
+	if (mouseConstraintBool) {
+		let mouse = Mouse.create(render.canvas)
+		let	mouseConstraint = MouseConstraint.create(engine, {
+			mouse: mouse,
+			constraint: {
+				stiffness: 0.2,
+				render: {
+					visible: false
+				}
 			}
-		}
-	})
-
-	world.bounds = {
-		min: { x: 0, y: 0 },
-		max: { x: width * 4, y: height * 1.5 }
+		})
+		World.add(world, mouseConstraint)
+		// keep the mouse in sync with rendering
+		render.mouse = mouse
 	}
-	World.add(world, mouseConstraint)
-
-	// keep the mouse in sync with rendering
-	render.mouse = mouse
 
 	return {
 		engine,
 		render,
 		runner,
 		world,
-		mouse,
-		mouseConstraint
+		// mouse,
+		// mouseConstraint
 	}
 
 }

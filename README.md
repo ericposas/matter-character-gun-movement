@@ -8,6 +8,7 @@
 ## TODO
 
 ### general
+- experiment with level layout, ground width, etc.
 - refactor/abstract away all functions except main engine functions
 
 ### enemies

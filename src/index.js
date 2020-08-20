@@ -45,15 +45,19 @@ window.start = () => {
 	let bulletImpact = 0.05 // force on ragdoll death
 	let bulletForceMultiplier = 6 // TIMES SIX!!
 	let enemies = []
+	let ground
 
+	// generate Matter world and player entity
 	let { world, render, engine } = boilerplate(width, height)
 	let { player, playerProps, mouse_point, mouse_control, swapBod: playerSwapBod, addSwappedBody } = createPlayer(world, 'player', null, {x:50,y:0})
-	let ground = createGround(world, width, height)
-	// enemies are auto-added to the world in the createEnemy() method
-	let enemy1 = createEnemy(enemies, bullets, player, world, null, { x: 250, y: 0 })
-	let enemy2 = createEnemy(enemies, bullets, player, world, null, { x: 450, y: 0 })
-	let enemy3 = createEnemy(enemies, bullets, player, world, null, { x: 1000, y: 0 })
 
+	const buildWorld = () => {
+		ground = createGround(world, width, height)
+		// enemies are auto-added to the world in the createEnemy() method
+		let enemy1 = createEnemy(enemies, bullets, player, world, null, { x: 250, y: 0 })
+		let enemy2 = createEnemy(enemies, bullets, player, world, null, { x: 450, y: 0 })
+		let enemy3 = createEnemy(enemies, bullets, player, world, null, { x: 1000, y: 0 })
+	}
 
 	const registerDOMEventListeners = () => {
 		// EVENT LISTENERS
@@ -76,7 +80,7 @@ window.start = () => {
 			bullets.push(bullet)
 			Body.applyForce(bullet, bullet.position, calculateBulletAngle(player, render, reticlePos, bulletForce))
 		})
-		document.body.addEventListener("keydown", e => {
+		document.body.addEventListener('keydown', e => {
 			keys[e.keyCode] = true
 			// clever use of javascript closure to pass these variables to another function for setting
 			const setCrouched = (swapped) => {
@@ -93,12 +97,9 @@ window.start = () => {
 				toggleCrouch(crouched, setCrouched, player, addSwappedBody, playerSwapBod)
 			}
 		})
-		document.body.addEventListener("keyup", e => { keys[e.keyCode] = false })
+		document.body.addEventListener('keyup', e => { keys[e.keyCode] = false })
 
 	}
-
-	registerDOMEventListeners()
-
 
 	const checkCollisions = e => {
 		// LOOP THROUGH ALL COLLISION TYPES
@@ -137,5 +138,8 @@ window.start = () => {
 	Events.on(engine, 'collisionStart', checkCollisions)
 	Events.on(engine, 'collisionEnd', checkCollisionsEnd)
 	Events.on(engine, 'beforeTick', gameTick)
+
+	buildWorld()
+	registerDOMEventListeners()
 
 }

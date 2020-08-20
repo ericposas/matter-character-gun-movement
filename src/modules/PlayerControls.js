@@ -23,11 +23,6 @@ export const calculateBulletAngle = (player, render, reticlePos, bulletForce) =>
 		x: Math.cos(targetAngle) * bulletForce,
 		y: Math.sin(targetAngle) * bulletForce
 	}
-	// bulletForceAngle = {
-	// 	x: Math.cos(targetAngle) * bulletForce,
-	// 	y: Math.sin(targetAngle) * bulletForce
-	// }
-	// return bulletForceAngle
 }
 
 export const positionEnemyAim = (enemy, player) => {

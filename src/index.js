@@ -34,7 +34,7 @@ import {
 
 window.start = () => {
 	// Game world variables
-	let gameState = 'menu'
+	let gameState = ''
 	let keys = []
 	let crouched = false
 	let lastDirection = ''
@@ -50,14 +50,26 @@ window.start = () => {
 	let { world, render, engine } = boilerplate(width, height)
 	let { player, playerProps, mouse_point, mouse_control, swapBod: playerSwapBod, addSwappedBody } = createPlayer(world, 'player', null, {x:50,y:0})
 
-	const changeGameState = state => {
-		switch (state) {
-			case 'gameplay':
-				gameState = state
-				registerEventListeners()
-				break;
-			default:
-				gameState = state
+	changeGameState('menu')
+
+	function changeGameState (state) {
+		gameState = state
+		if (gameState == 'menu') {
+			// build a temporary game menu, or just show/hide an html block
+			let startBtn = document.getElementById('menu-button')
+			document.getElementById('menu').style.display = 'block'
+			startBtn.style.left = (width/2) - (parseInt(getComputedStyle(startBtn).getPropertyValue('width'))/2) + 'px'
+			startBtn.style.top = (height/2) - (parseInt(getComputedStyle(startBtn).getPropertyValue('height'))/2) + 'px'
+			startBtn.addEventListener('click', startGame)
+			function startGame(e) {
+				changeGameState('gameplay')
+				startBtn.style.display = 'none'
+				startBtn.removeEventListener('click', startGame)
+			}
+		}
+		if (gameState == 'gameplay') {
+			buildLevel(1)
+			registerEventListeners()
 		}
 	}
 
@@ -75,8 +87,6 @@ window.start = () => {
 				enemy2,
 				enemy3
 			])
-
-			changeGameState('gameplay')
 		}
 	}
 
@@ -166,7 +176,7 @@ window.start = () => {
 	Events.on(engine, 'collisionEnd', checkCollisionsEnd)
 	Events.on(engine, 'beforeTick', gameTick)
 
-	buildLevel(1)
+	// buildLevel(1)
 	// registerEventListeners()
 
 }

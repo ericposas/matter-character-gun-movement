@@ -17,8 +17,8 @@ export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_poi
 		let barWd = 60, barHt = 10
 		let outerbar = document.createElement('div')
 		let bar = document.createElement('div')
-		let outerbarStyle = `position:absolute;border:1px solid black;width:${barWd}px;height:${barHt}px;`
-		let barStyle = `position:absolute;background-color:red;width:${barWd}px;height:${barHt}px;`;
+		let outerbarStyle = `position:absolute;border:1px solid black;width:${barWd}px;height:${barHt}px;pointer-events:none;`
+		let barStyle = `position:absolute;background-color:red;width:${barWd}px;height:${barHt}px;pointer-events:none;`;
 		outerbar.style = outerbarStyle
 		bar.style = barStyle
 		document.body.appendChild(outerbar)

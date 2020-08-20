@@ -8,6 +8,15 @@ canvas {
 	overflow: hidden;
 }
 
-div {
-	pointer-events: none;
+#menu {
+	position: absolute;
+	text-align: center;
+}
+
+#menu-button {
+	position: relative;
+	font-family: Arial;
+	font-size: 40px;
+	background-color: #333;
+	padding: 20px;
 }

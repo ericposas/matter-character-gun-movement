@@ -28,6 +28,7 @@ const killEnemy = (player, enemies, enemy, world) => {
 	if (enemy._lifebar) {
 		let lifeAmt = parseInt(enemy._lifebar.style.width, 10)
 		if (lifeAmt <= 0) {
+			enemy._composite.stopShooting()
 			removeEnemyFromWorld(player, enemies, enemy, world)
 		}
 	}

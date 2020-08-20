@@ -44,6 +44,7 @@ window.start = () => {
 	let ground
 	// generate Matter world
 	let { world, render, engine } = boilerplate(width, height)
+	let playerObjects
 	let player, playerProps, mouse_point, mouse_control, playerSwapBod, addSwappedBody
 
 	registerEventListeners()
@@ -60,14 +61,14 @@ window.start = () => {
 			startBtn.style.top = (height/2) - (parseInt(getComputedStyle(startBtn).getPropertyValue('height'))/2) + 'px'
 			startBtn.addEventListener('click', startGame)
 			function startGame(e) {
-				changeLevel(1)
+				changeLevel()
 				changeGameState('gameplay')
 				startBtn.style.display = 'none'
 				startBtn.removeEventListener('click', startGame)
 			}
 		}
 		if (gameState == 'gameplay') {
-			buildLevel(currentLevel)
+			buildLevel()
 		}
 	}
 
@@ -76,19 +77,53 @@ window.start = () => {
 		else { currentLevel = lvl }
 	}
 
-	const buildLevel = lvl => {
-		if (lvl == 1) {
-			let playerObj = createPlayer(world, 'player', null, { x:50, y:0 })
-			player = playerObj.player
-			playerProps = playerObj.playerProps
-			mouse_point = playerObj.mouse_point
-			mouse_control = playerObj.mouse_control
-			addSwappedBody = playerObj.addSwappedBody
-			playerSwapBod = playerObj.swapBod
+	function createPlayerObjects() {
+		playerObjects = createPlayer(world, 'player', null, { x:50, y:0 })
+		player = playerObjects.player
+		playerProps = playerObjects.playerProps
+		mouse_point = playerObjects.mouse_point
+		mouse_control = playerObjects.mouse_control
+		addSwappedBody = playerObjects.addSwappedBody
+		playerSwapBod = playerObjects.swapBod
+	}
+
+	function destroyPlayerObjects() {
+		World.remove(world, [player, ground])
+		let en = []
+		enemies.forEach(enemy => {
+			enemy.stopShooting(enemies)
+			enemy.removeLifebar()
+			World.remove(world, enemy)
+		})
+		enemies = []
+		ground = null
+		player = null
+		playerProps = null
+		mouse_point = null
+		mouse_control = null
+		addSwappedBody = null
+		playerSwapBod = null
+	}
+
+	const buildLevel = () => {
+		if (currentLevel == 1) {
+			createPlayerObjects()
 			ground = createGround(world, width, height)
 			let enemy1 = createEnemy(enemies, bullets, player, world, null, { x: 250, y: 0 })
 			let enemy2 = createEnemy(enemies, bullets, player, world, null, { x: 450, y: 0 })
 			let enemy3 = createEnemy(enemies, bullets, player, world, null, { x: 1000, y: 0 })
+			destroyPlayerObjects()
+			changeLevel(2)
+			// buildLevel()
+		}
+		if (currentLevel == 2) {
+			createPlayerObjects()
+			ground = createGround(world, width, height)
+			let enemy1 = createEnemy(enemies, bullets, player, world, null, { x: 150, y: 0 })
+			let enemy2 = createEnemy(enemies, bullets, player, world, null, { x: 250, y: 0 })
+			let enemy3 = createEnemy(enemies, bullets, player, world, null, { x: 350, y: 0 })
+			let enemy4 = createEnemy(enemies, bullets, player, world, null, { x: 450, y: 0 })
+
 		}
 	}
 

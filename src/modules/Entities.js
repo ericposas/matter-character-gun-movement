@@ -14,7 +14,6 @@ export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_poi
 	// 'player' is the main player to pass here so we can track his movements
 	let { player: enemy } = createPlayer(world, 'enemy', mouse_point, position)
 	// let enemyBulletForce = .025
-
 	const createEnemyLifeBar = () => {
 		let barWd = 60, barHt = 10
 		let outerbar = document.createElement('div')
@@ -45,9 +44,18 @@ export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_poi
 		enemy.constraints[4]
 	])
 	enemiesArray.push(enemy)
-	// let randomFreq = random.int(500, 3000)
+	enemy.stopShooting = () => {
+		shouldShoot = false
+	}
+	enemy.removeLifebar = () => {
+		if (outerbar.parentNode == document.body) {
+			document.body.removeChild(outerbar)
+		}
+	}
+	let shouldShoot = true
 	const bulletHandler = () => {
-		if (enemiesArray.indexOf(enemy) > -1) {
+		// console.log(shouldShoot)
+		if (shouldShoot && player) {
 			let playerPos = player.bodies[0].position
 			let arm = enemy.bodies[2]
 			let armWidth = arm.bounds.max.x - arm.bounds.min.x
@@ -334,6 +342,7 @@ export const createPlayer = (world, type, mouse_point, position) => {
 	// World.add(world, player)
 	// need to keep a reference to the player/enemy object that we can remove
 	player.bodies.forEach(body => { body._composite = player })
+	// if (type == 'enemy') { enemiesArray.push(enemy) }
 	World.add(world, player)
 
 	return {

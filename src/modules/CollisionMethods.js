@@ -4,13 +4,6 @@ import { BULLET_FORCE_MULTIPLIER, BULLET_IMPACT } from './GameConstants'
 import { createRagdoll } from './Ragdoll'
 
 
-export const positionEnemyLifebar = (enemy, render) => {
-	let lifebar = enemy.bodies[0]._outerLifebar
-	let headHt = enemy.bodies[0].bounds.max.y - enemy.bodies[0].bounds.min.y
-	lifebar.style.left = enemy.bodies[0].position.x - (enemy.bodies[0]._barsize.w/2) - render.bounds.min.x + 'px'
-	lifebar.style.top = enemy.bodies[0].position.y - headHt - enemy.bodies[0]._barsize.h - render.bounds.min.y + 'px'
-}
-
 const damageEnemy = (enemy, dmg) => {
 	if (enemy._lifebar) {
 		let lifeAmt = parseInt(enemy._lifebar.style.width, 10)
@@ -112,17 +105,13 @@ export const bulletGroundHittest = (e, i, world, bullets) => {
 		let bullet = e.pairs[i].bodyA
 		let idx = bullets.indexOf(bullet)
 		World.remove(world, bullet)
-		console.log(bullets)
 		if (idx > -1) { bullets.splice(idx, 1) }
-		console.log(bullets)
 
 	} else if (e.pairs[i].bodyB.label.indexOf('bullet') > -1  && e.pairs[i].bodyA.label === 'ground') {
 		let bullet = e.pairs[i].bodyB
 		let idx = bullets.indexOf(bullet)
 		World.remove(world, bullet)
-		console.log(bullets)
 		if (idx > -1) { bullets.splice(idx, 1) }
-		console.log(bullets)
 	}
 }
 

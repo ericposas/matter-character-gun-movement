@@ -2,10 +2,8 @@ import { width, height } from '../config'
 
 
 function changeGameState (fn, gameState, state) {
-	// gameState = state
 	// using closure function
 	let gs = fn(state)
-	console.log(gs)
 	if (gs == 'menu') {
 		// build a temporary game menu, or just show/hide an html block
 		let startBtn = document.getElementById('menu-button')

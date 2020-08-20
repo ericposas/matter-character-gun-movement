@@ -19,6 +19,7 @@
 		"webpack-dev-server": "^3.11.0"
 	},
 	"dependencies": {
+		"gsap": "^3.5.0",
 		"matter-js": "^0.14.2",
 		"matterjs-boilerplate": "^1.0.4",
 		"random": "^2.2.0"

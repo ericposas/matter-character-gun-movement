@@ -43,9 +43,7 @@ export function matterBoilerplate(width, height) {
 					}
 			});
 
-	World.add(world, mouseConstraint);
-
-	console.log(mouse, mouseConstraint)
+	World.add(world, mouseConstraint)
 
 	// keep the mouse in sync with rendering
 	render.mouse = mouse;

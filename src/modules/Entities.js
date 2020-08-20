@@ -8,6 +8,7 @@ import {
 } from './CollisionFilterConstants'
 import { BULLET_REMOVAL_TIMEOUT, ENEMY_BULLET_FORCE } from './GameConstants'
 import random from 'random'
+import { TweenLite } from 'gsap'
 
 
 export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_point, position) => {
@@ -54,7 +55,6 @@ export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_poi
 	}
 	let shouldShoot = true
 	const bulletHandler = () => {
-		// console.log(shouldShoot)
 		if (shouldShoot && player) {
 			let playerPos = player.bodies[0].position
 			let arm = enemy.bodies[2]
@@ -89,6 +89,33 @@ export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_poi
 	// test enemy shooting code
 	// using setTimeout instead of setInterval to get a new random number each time
 	setTimeout(bulletHandler, random.int(500, 3000)) // shoot a bullet randomly between .5 to 3.0 seconds
+
+	// create random enemy movement
+	setInterval(() => {
+		if (enemy._direction == undefined || enemy._direction == 'undefined' || enemy._direction == 'right') {
+			enemy._direction = 'left'
+		} else {
+			enemy._direction = 'right'
+		}
+	}, random.int(3000, 6000)) // change up directional flag every 3 to 6 seconds
+	// create a translation object
+	// using gsap, update the position of the enemy onUpdate() and change x value dep. on direction
+	const moveEnemy = () => {
+		let tween
+		if (shouldShoot && tween != 'undefined') {
+			let translation = { x: 0, y: 0 }
+			tween = TweenLite.to(translation, random.int(2, 5), {
+				x: enemy._direction == 'left' ? -1 : 1,
+				onUpdate: () => {
+					Composite.translate(enemy, translation)
+				},
+				onComplete: () => { if (shouldShoot) { moveEnemy() } }
+			})
+		} else {
+			if (tween) { tween.kill() }
+		}
+	}
+	moveEnemy()
 
 	return enemy
 

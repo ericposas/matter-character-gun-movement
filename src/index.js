@@ -20,14 +20,16 @@ import {
 	renderPlayerMovementViaKeyInput,
 	calcMovingReticlePosition,
 	calculateBulletAngle,
-	positionEnemyAim,
 	removeOutOfBoundsBullets,
 } from './modules/PlayerControls'
+import {
+	positionEnemyLifebar,
+	positionEnemyAim
+} from './modules/EnemyControls'
 import {
 	checkPlayerIsOnGroundBegin, checkPlayerIsOnGroundEnd,
 	enemyBulletHittestBegin, enemyBulletHittestEnd,
 	bulletGroundHittest,
-	positionEnemyLifebar
 } from './modules/CollisionMethods'
 import { GAMEPLAY, MENU } from './modules/GameStates'
 
@@ -118,8 +120,8 @@ window.start = () => {
 	const buildLevel = () => {
 		if (currentLevel == 1) {
 			createGameObjects()
-			spawnEnemies(5, 2000)
-
+			spawnEnemies(30, 3000)
+			
 			// destroyGameObjects()
 			// changeLevel(2)
 			// buildLevel()

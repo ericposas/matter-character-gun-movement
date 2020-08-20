@@ -319,7 +319,7 @@ export const createPlayer = (world, type, mouse_point, position) => {
 
 	let bodyType = swapBod('normal', null, x, y)
 	let { player, playerProps, mouse_control, mouse_point: mousePoint } = bodyType
-	World.add(world, player)
+	// World.add(world, player)
 	// need to keep a reference to the player/enemy object that we can remove
 	player.bodies.forEach(body => { body._composite = player })
 

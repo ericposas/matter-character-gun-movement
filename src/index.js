@@ -4,7 +4,6 @@ import {
 	Bodies, Body, World, Constraint,
 	Composite, Composites, Events, Vector, Render
 } from 'matter-js'
-// import { matterBoilerplate as boilerplate } from 'matterjs-boilerplate'
 import { matterBoilerplate as boilerplate } from './modules/MatterBoilerplate'
 import { createPlayer, createEnemy } from './modules/Entities'
 import { createGround } from './modules/Platforms'
@@ -35,6 +34,7 @@ import {
 
 window.start = () => {
 
+	let gameState = ''
 	let keys = []
 	let crouched = false
 	let lastDirection = ''
@@ -46,20 +46,41 @@ window.start = () => {
 	let bulletForceMultiplier = 6 // TIMES SIX!!
 	let enemies = []
 	let ground
-
 	// generate Matter world and player entity
 	let { world, render, engine } = boilerplate(width, height)
 	let { player, playerProps, mouse_point, mouse_control, swapBod: playerSwapBod, addSwappedBody } = createPlayer(world, 'player', null, {x:50,y:0})
 
-	const buildWorld = () => {
-		ground = createGround(world, width, height)
-		// enemies are auto-added to the world in the createEnemy() method
-		let enemy1 = createEnemy(enemies, bullets, player, world, null, { x: 250, y: 0 })
-		let enemy2 = createEnemy(enemies, bullets, player, world, null, { x: 450, y: 0 })
-		let enemy3 = createEnemy(enemies, bullets, player, world, null, { x: 1000, y: 0 })
+	const changeGameState = state => {
+		switch (state) {
+			case 'gameplay':
+				gameState = state
+				registerEventListeners()
+				break;
+			default:
+				gameState = state
+		}
 	}
 
-	const registerDOMEventListeners = () => {
+	const buildLevel = lvl => {
+		if (lvl == 1) {
+			ground = createGround(world, width, height)
+			// enemies are auto-added to the world in the createEnemy() method
+			let enemy1 = createEnemy(enemies, bullets, player, world, null, { x: 250, y: 0 })
+			let enemy2 = createEnemy(enemies, bullets, player, world, null, { x: 450, y: 0 })
+			let enemy3 = createEnemy(enemies, bullets, player, world, null, { x: 1000, y: 0 })
+
+			World.add(world, [
+				player,
+				enemy1,
+				enemy2,
+				enemy3
+			])
+
+			changeGameState('gameplay')
+		}
+	}
+
+	const registerEventListeners = () => {
 		// EVENT LISTENERS
 		render.canvas.addEventListener('mousemove', e => {
 			reticlePos = {
@@ -98,48 +119,55 @@ window.start = () => {
 			}
 		})
 		document.body.addEventListener('keyup', e => { keys[e.keyCode] = false })
-
 	}
 
 	const checkCollisions = e => {
-		// LOOP THROUGH ALL COLLISION TYPES
-		for (let i = 0; i < e.pairs.length; ++i) {
-			checkPlayerIsOnGroundBegin(e, i, player)
-			enemyBulletHittestBegin(e, i, world, bulletForceAngle, bulletForceMultiplier)
-			bulletGroundHittest(e, i, world)
+		if (gameState == 'gameplay') {
+			// LOOP THROUGH ALL COLLISION TYPES
+			for (let i = 0; i < e.pairs.length; ++i) {
+				checkPlayerIsOnGroundBegin(e, i, player)
+				enemyBulletHittestBegin(e, i, world, bulletForceAngle, bulletForceMultiplier)
+				bulletGroundHittest(e, i, world)
+			}
 		}
 	}
 
 	const checkCollisionsEnd = e => {
-		for (let i = 0; i < e.pairs.length; ++i) {
-			// LOOP THROUGH ALL COLLISION TYPES
-			checkPlayerIsOnGroundEnd(e, i, player)
-			enemyBulletHittestEnd(e, i, player, enemies, world, bulletImpact)
+		if (gameState == 'gameplay') {
+			for (let i = 0; i < e.pairs.length; ++i) {
+				// LOOP THROUGH ALL COLLISION TYPES
+				checkPlayerIsOnGroundEnd(e, i, player)
+				enemyBulletHittestEnd(e, i, player, enemies, world, bulletImpact)
+			}
 		}
 	}
 
 	const renderEntities = () => {
-		// keep enemy lifebar positions in-sync with enemies
-		enemies.forEach((enemy, i) => {
-			positionEnemyLifebar(enemy, render)
-			positionEnemyAim(enemy, player)
+		if (gameState == 'gameplay') {
+			// keep enemy lifebar positions in-sync with enemies
+			enemies.forEach((enemy, i) => {
+				positionEnemyLifebar(enemy, render)
+				positionEnemyAim(enemy, player)
 
-		})
+			})
+		}
 	}
 
 	const gameTick = e => {
-		// renderMouse() will draw the white line if it is in the requestAnimationFrame() loop
-		renderMouse(player, lastDirection, render, mouse_point, reticlePos)
-		renderEntities()
-		removeOutOfBoundsBullets(world, bullets)
-		renderPlayerMovementViaKeyInput(render, keys, player, playerProps, ground, lastDirection)
+		if (gameState == 'gameplay') {
+			// renderMouse() will draw the white line if it is in the requestAnimationFrame() loop
+			renderMouse(player, lastDirection, render, mouse_point, reticlePos)
+			renderEntities()
+			removeOutOfBoundsBullets(world, bullets)
+			renderPlayerMovementViaKeyInput(render, keys, player, playerProps, ground, lastDirection)
+		}
 	}
 
 	Events.on(engine, 'collisionStart', checkCollisions)
 	Events.on(engine, 'collisionEnd', checkCollisionsEnd)
 	Events.on(engine, 'beforeTick', gameTick)
 
-	buildWorld()
-	registerDOMEventListeners()
+	buildLevel(1)
+	// registerEventListeners()
 
 }

@@ -130,18 +130,13 @@ window.start = () => {
 	}
 
 	Events.on(engine, 'collisionStart', e => checkCollisions(e))
-	// Events.on(engine, 'collisionActive', e => checkCollisions(e))
 	Events.on(engine, 'collisionEnd', e => checkCollisionsEnd(e))
 	Events.on(engine, 'beforeTick', e => {
-
-		renderMouse(player, lastDirection, render, mouse_point, reticlePos) // renderMouse() will draw the white line if it is in the requestAnimationFrame() loop
-
+		// renderMouse() will draw the white line if it is in the requestAnimationFrame() loop
+		renderMouse(player, lastDirection, render, mouse_point, reticlePos)
 		renderEntities()
-
 		removeOutOfBoundsBullets(world, bullets)
-
 		renderPlayerMovementViaKeyInput(render, keys, player, playerProps, ground, lastDirection)
-
 	})
 
 }

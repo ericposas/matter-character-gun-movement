@@ -28,11 +28,13 @@ import {
 	bulletGroundHittest,
 	positionEnemyLifebar
 } from './modules/CollisionMethods'
+import { GAMEPLAY, MENU } from './modules/GameStates'
 
 
 window.start = () => {
 	// Game world variables
 	let gameState = ''
+	let currentLevel = 0
 	let keys = []
 	let enemies = [], bullets = []
 	let crouched = false
@@ -40,15 +42,17 @@ window.start = () => {
 	let reticlePos = { x: 0, y: 0 }
 	let bulletForceAngle = { x: 0, y: 0 }
 	let ground
-	// generate Matter world and player entity
+	// generate Matter world
 	let { world, render, engine } = boilerplate(width, height)
 	let player, playerProps, mouse_point, mouse_control, playerSwapBod, addSwappedBody
 
+	registerEventListeners()
+
 	changeGameState('menu')
 
-	function changeGameState (state) {
+	function changeGameState(state) {
 		gameState = state
-		if (gameState == 'menu') {
+		if (gameState === MENU) {
 			// build a temporary game menu, or just show/hide an html block
 			let startBtn = document.getElementById('menu-button')
 			document.getElementById('menu').style.display = 'block'
@@ -56,15 +60,20 @@ window.start = () => {
 			startBtn.style.top = (height/2) - (parseInt(getComputedStyle(startBtn).getPropertyValue('height'))/2) + 'px'
 			startBtn.addEventListener('click', startGame)
 			function startGame(e) {
+				changeLevel(1)
 				changeGameState('gameplay')
 				startBtn.style.display = 'none'
 				startBtn.removeEventListener('click', startGame)
 			}
 		}
 		if (gameState == 'gameplay') {
-			buildLevel(1)
-			registerEventListeners()
+			buildLevel(currentLevel)
 		}
+	}
+
+	function changeLevel(lvl) {
+		if (currentLevel === 0) { currentLevel = 1 }
+		else { currentLevel = lvl }
 	}
 
 	const buildLevel = lvl => {
@@ -83,65 +92,72 @@ window.start = () => {
 		}
 	}
 
-	const registerEventListeners = () => {
+	function registerEventListeners() {
 		// EVENT LISTENERS
 		render.canvas.addEventListener('mousemove', e => {
-			reticlePos = {
-				x: e.clientX,
-				y: e.clientY
+			if (gameState === GAMEPLAY) {
+				reticlePos = {
+					x: e.clientX,
+					y: e.clientY
+				}
 			}
 		})
 		render.canvas.addEventListener('click', e => {
-			let playerArm = player.bodies[3]
-			let bullet = Bodies.circle(playerArm.position.x, playerArm.position.y, 6, {
-				restitution: .5,
-				collisionFilter: {
-					category: BULLET | BOX
-				}
-			})
-			bullet.label = 'bullet'
-			World.add(world, bullet)
-			bullets.push(bullet)
-			Body.applyForce(bullet, bullet.position, calculateBulletAngle(player, render, reticlePos))
-			// set time to remove bullet automatically
-			setTimeout(() => {
-				let idx = bullets.indexOf(bullet)
-				if (idx) {
-					World.remove(world, bullet)
-					bullets.splice(idx, 1)
-				}
-			}, BULLET_REMOVAL_TIMEOUT)
+			if (gameState === GAMEPLAY && checkGameEntitiesReady()) {
+				let playerArm = player.bodies[3]
+				let bullet = Bodies.circle(playerArm.position.x, playerArm.position.y, 6, {
+					restitution: .5,
+					collisionFilter: {
+						category: BULLET | BOX
+					}
+				})
+				bullet.label = 'bullet'
+				World.add(world, bullet)
+				bullets.push(bullet)
+				Body.applyForce(bullet, bullet.position, calculateBulletAngle(player, render, reticlePos))
+				// set time to remove bullet automatically
+				setTimeout(() => {
+					let idx = bullets.indexOf(bullet)
+					if (idx) {
+						World.remove(world, bullet)
+						bullets.splice(idx, 1)
+					}
+				}, BULLET_REMOVAL_TIMEOUT)
+			}
 		})
 		document.body.addEventListener('keydown', e => {
-			keys[e.keyCode] = true
-			// clever use of javascript closure to pass these variables to another function for setting
-			const setCrouched = (swapped) => {
-				crouched = !crouched;
-				player = swapped.player // reassign player variable to the new swapped player
-				playerProps = swapped.playerProps
-				let mx = mouse_point.position.x
-				let my = mouse_point.position.y
-				mouse_point = swapped.mouse_point
-				mouse_point.position.x = mx
-				mouse_point.position.y = my
-			}
-			if (keys[83]) {
-				toggleCrouch(crouched, setCrouched, player, addSwappedBody, playerSwapBod)
+			if (gameState === GAMEPLAY) {
+				keys[e.keyCode] = true
+				// clever use of javascript closure to pass these variables to another function for setting
+				const setCrouched = (swapped) => {
+					crouched = !crouched;
+					player = swapped.player // reassign player variable to the new swapped player
+					playerProps = swapped.playerProps
+					let mx = mouse_point.position.x
+					let my = mouse_point.position.y
+					mouse_point = swapped.mouse_point
+					mouse_point.position.x = mx
+					mouse_point.position.y = my
+				}
+				if (keys[83]) {
+					toggleCrouch(crouched, setCrouched, player, addSwappedBody, playerSwapBod)
+				}
 			}
 		})
-		document.body.addEventListener('keyup', e => { keys[e.keyCode] = false })
+		document.body.addEventListener('keyup', e => {
+			if (gameState === GAMEPLAY) {
+				keys[e.keyCode] = false
+			}
+		})
 	}
 
 	const checkGameEntitiesReady = () => {
-		if (player && playerProps && mouse_point && mouse_control && ground) {
-			return true
-		} else {
-			return false
-		}
+		if (player && playerProps && mouse_point && mouse_control && ground) { return true }
+		else { return false }
 	}
 
 	const checkCollisions = e => {
-		if (gameState == 'gameplay') {
+		if (gameState == GAMEPLAY && checkGameEntitiesReady()) {
 			// LOOP THROUGH ALL COLLISION TYPES
 			for (let i = 0; i < e.pairs.length; ++i) {
 				checkPlayerIsOnGroundBegin(e, i, player)
@@ -152,7 +168,7 @@ window.start = () => {
 	}
 
 	const checkCollisionsEnd = e => {
-		if (gameState == 'gameplay') {
+		if (gameState == GAMEPLAY && checkGameEntitiesReady()) {
 			for (let i = 0; i < e.pairs.length; ++i) {
 				// LOOP THROUGH ALL COLLISION TYPES
 				checkPlayerIsOnGroundEnd(e, i, player)
@@ -162,7 +178,7 @@ window.start = () => {
 	}
 
 	const renderEntities = () => {
-		if (gameState == 'gameplay') {
+		if (gameState == GAMEPLAY) {
 			// keep enemy lifebar positions in-sync with enemies
 			enemies.forEach((enemy, i) => {
 				positionEnemyLifebar(enemy, render)
@@ -173,13 +189,11 @@ window.start = () => {
 	}
 
 	const gameTick = e => {
-		if (gameState == 'gameplay') {
-			if (checkGameEntitiesReady() === true) {
-				renderMouse(player, lastDirection, render, mouse_point, reticlePos)
-				renderEntities()
-				removeOutOfBoundsBullets(world, bullets)
-				renderPlayerMovementViaKeyInput(render, keys, player, playerProps, ground, lastDirection)
-			}
+		if (gameState == GAMEPLAY && checkGameEntitiesReady()) {
+			renderMouse(player, lastDirection, render, mouse_point, reticlePos)
+			renderEntities()
+			removeOutOfBoundsBullets(world, bullets)
+			renderPlayerMovementViaKeyInput(render, keys, player, playerProps, ground, lastDirection)
 		}
 	}
 

@@ -1,5 +1,6 @@
 import { World, Body, Composite } from 'matter-js'
 import { BODY_DAMAGE, HEAD_DAMAGE, LIMB_DAMAGE } from './DamageConstants'
+import { BULLET_FORCE_MULTIPLIER } from './GameConstants'
 import { createRagdoll } from './Ragdoll'
 
 
@@ -73,13 +74,13 @@ const processDamageType = enemy => {
 		: damageEnemy(enemy, LIMB_DAMAGE)
 }
 
-export const enemyBulletHittestBegin = (e, i, world, bulletForceAngle, bulletForceMultiplier, bullets) => {
+export const enemyBulletHittestBegin = (e, i, world, bulletForceAngle, bullets) => {
 	if (e.pairs[i].bodyA.label.indexOf('enemy') > -1 && e.pairs[i].bodyB.label == 'bullet') {
 		let enemy = e.pairs[i].bodyA
 		let bullet = e.pairs[i].bodyB
 		let idx = bullets.indexOf(bullet)
 		processDamageType(enemy)
-		Body.applyForce(enemy, enemy.position, { x: bulletForceAngle.x * bulletForceMultiplier })
+		Body.applyForce(enemy, enemy.position, { x: bulletForceAngle.x * BULLET_FORCE_MULTIPLIER })
 		World.remove(world, bullet)
 		if (idx > -1) { bullets.splice(idx, 1) }
 	} else if (e.pairs[i].bodyB.label.indexOf('enemy') > -1 && e.pairs[i].bodyA.label == 'bullet') {
@@ -87,7 +88,7 @@ export const enemyBulletHittestBegin = (e, i, world, bulletForceAngle, bulletFor
 		let bullet = e.pairs[i].bodyA
 		let idx = bullets.indexOf(bullet)
 		processDamageType(enemy)
-		Body.applyForce(enemy, enemy.position, { x: bulletForceAngle.x * bulletForceMultiplier })
+		Body.applyForce(enemy, enemy.position, { x: bulletForceAngle.x * BULLET_FORCE_MULTIPLIER })
 		World.remove(world, bullet)
 		if (idx > -1) { bullets.splice(idx, 1) }
 	}

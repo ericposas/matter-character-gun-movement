@@ -23,7 +23,7 @@ const EngineMethods = (world, render, player, playerProps, getReticlePos, keys, 
 			// CHECK IF PLAYER IS ON GROUND
 			checkPlayerIsOnGroundBegin(e, i, player)
 			// BULLET ENEMY HITTEST BEGIN
-			enemyBulletHittestBegin(e, i, world, bulletForceAngle, bulletForceMultiplier)
+			enemyBulletHittestBegin(e, i, world, bulletForceAngle)
 			// BULLETS GROUND HITTEST -- REMOVE
 			bulletGroundHittest(e, i, world)
 		}
@@ -34,7 +34,7 @@ const EngineMethods = (world, render, player, playerProps, getReticlePos, keys, 
 			// SET PLAYER IS ON GROUND
 			checkPlayerIsOnGroundEnd(e, i, player)
 			// BULLET ENEMY HITTEST END
-			enemyBulletHittestEnd(e, i, enemies, world, bulletForceAngle, bulletForceMultiplier)
+			enemyBulletHittestEnd(e, i, enemies, world, bulletForceAngle)
 		}
 	}
 

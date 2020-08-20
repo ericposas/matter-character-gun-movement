@@ -6,14 +6,14 @@ import {
 	PLAYER_HEAD, PLAYER_BODY,
 	ENEMY_HEAD, ENEMY_BODY,
 } from './CollisionFilterConstants'
-import { BULLET_REMOVAL_TIMEOUT } from './GameConstants'
+import { BULLET_REMOVAL_TIMEOUT, ENEMY_BULLET_FORCE } from './GameConstants'
 import random from 'random'
 
 
 export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_point, position) => {
 	// 'player' is the main player to pass here so we can track his movements
 	let { player: enemy } = createPlayer(world, 'enemy', mouse_point, position)
-	let enemyBulletForce = .025
+	// let enemyBulletForce = .025
 
 	const createEnemyLifeBar = () => {
 		let barWd = 60, barHt = 10
@@ -64,8 +64,8 @@ export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_poi
 			World.add(world, enemyBullet)
 			bulletsArray.push(enemyBullet)
 			Body.applyForce(enemyBullet, enBulletPos, {
-				x: Math.cos(arm.angle) * enemyBulletForce,
-				y: Math.sin(arm.angle) * enemyBulletForce
+				x: Math.cos(arm.angle) * ENEMY_BULLET_FORCE,
+				y: Math.sin(arm.angle) * ENEMY_BULLET_FORCE
 			})
 			// set time to remove bullet automatically
 			setTimeout(() => {

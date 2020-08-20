@@ -1,4 +1,5 @@
 import { Render, Body, Composite, Vector, World } from 'matter-js'
+import { BULLET_FORCE } from './GameConstants'
 import { width, height } from '../config'
 
 
@@ -17,15 +18,15 @@ export const removeOutOfBoundsBullets = (world, bullets) => {
 	}
 }
 
-export const calculateBulletAngle = (player, render, reticlePos, bulletForce) => {
+export const calculateBulletAngle = (player, render, reticlePos) => {
 	let playerPos = player.bodies[0].position
 	let targetAngle = Vector.angle(playerPos, {
 		x: reticlePos.x + calcMovingReticlePosition(player, render),
 		y: reticlePos.y
 	})
 	return {
-		x: Math.cos(targetAngle) * bulletForce,
-		y: Math.sin(targetAngle) * bulletForce
+		x: Math.cos(targetAngle) * BULLET_FORCE,
+		y: Math.sin(targetAngle) * BULLET_FORCE
 	}
 }
 

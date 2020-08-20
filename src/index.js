@@ -34,15 +34,11 @@ window.start = () => {
 	// Game world variables
 	let gameState = ''
 	let keys = []
+	let enemies = [], bullets = []
 	let crouched = false
 	let lastDirection = ''
 	let reticlePos = { x: 0, y: 0 }
-	let bullets = []
-	let bulletForce = 0.015
 	let bulletForceAngle = { x: 0, y: 0 }
-	let bulletImpact = 0.05 // force on ragdoll death
-	let bulletForceMultiplier = 6 // TIMES SIX!!
-	let enemies = []
 	let ground
 	// generate Matter world and player entity
 	let { world, render, engine } = boilerplate(width, height)
@@ -107,7 +103,7 @@ window.start = () => {
 			bullet.label = 'bullet'
 			World.add(world, bullet)
 			bullets.push(bullet)
-			Body.applyForce(bullet, bullet.position, calculateBulletAngle(player, render, reticlePos, bulletForce))
+			Body.applyForce(bullet, bullet.position, calculateBulletAngle(player, render, reticlePos))
 			// set time to remove bullet automatically
 			setTimeout(() => {
 				let idx = bullets.indexOf(bullet)
@@ -142,7 +138,7 @@ window.start = () => {
 			// LOOP THROUGH ALL COLLISION TYPES
 			for (let i = 0; i < e.pairs.length; ++i) {
 				checkPlayerIsOnGroundBegin(e, i, player)
-				enemyBulletHittestBegin(e, i, world, bulletForceAngle, bulletForceMultiplier, bullets)
+				enemyBulletHittestBegin(e, i, world, bulletForceAngle, bullets)
 				bulletGroundHittest(e, i, world, bullets)
 			}
 		}
@@ -153,7 +149,7 @@ window.start = () => {
 			for (let i = 0; i < e.pairs.length; ++i) {
 				// LOOP THROUGH ALL COLLISION TYPES
 				checkPlayerIsOnGroundEnd(e, i, player)
-				enemyBulletHittestEnd(e, i, player, enemies, world, bulletImpact, bullets)
+				enemyBulletHittestEnd(e, i, player, enemies, world, bullets)
 			}
 		}
 	}

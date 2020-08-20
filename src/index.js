@@ -102,20 +102,16 @@ window.start = () => {
 	const checkCollisions = e => {
 		// LOOP THROUGH ALL COLLISION TYPES
 		for (let i = 0; i < e.pairs.length; ++i) {
-			// CHECK IF PLAYER IS ON GROUND
 			checkPlayerIsOnGroundBegin(e, i, player)
-			// BULLET ENEMY HITTEST BEGIN
 			enemyBulletHittestBegin(e, i, world, bulletForceAngle, bulletForceMultiplier)
-			// BULLETS GROUND HITTEST -- REMOVE
 			bulletGroundHittest(e, i, world)
 		}
 	}
 
 	const checkCollisionsEnd = e => {
 		for (let i = 0; i < e.pairs.length; ++i) {
-			// SET PLAYER IS ON GROUND
+			// LOOP THROUGH ALL COLLISION TYPES
 			checkPlayerIsOnGroundEnd(e, i, player)
-			// BULLET ENEMY HITTEST END
 			enemyBulletHittestEnd(e, i, enemies, world, bulletForceAngle, bulletForceMultiplier)
 		}
 	}
@@ -128,15 +124,17 @@ window.start = () => {
 
 		})
 	}
-
-	Events.on(engine, 'collisionStart', e => checkCollisions(e))
-	Events.on(engine, 'collisionEnd', e => checkCollisionsEnd(e))
-	Events.on(engine, 'beforeTick', e => {
+	
+	const gameTick = e => {
 		// renderMouse() will draw the white line if it is in the requestAnimationFrame() loop
 		renderMouse(player, lastDirection, render, mouse_point, reticlePos)
 		renderEntities()
 		removeOutOfBoundsBullets(world, bullets)
 		renderPlayerMovementViaKeyInput(render, keys, player, playerProps, ground, lastDirection)
-	})
+	}
+
+	Events.on(engine, 'collisionStart', checkCollisions)
+	Events.on(engine, 'collisionEnd', checkCollisionsEnd)
+	Events.on(engine, 'beforeTick', gameTick)
 
 }

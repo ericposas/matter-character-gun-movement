@@ -15,6 +15,8 @@
 
 ### enemies
 - add enemy random movement
+- create an enemy spawner object that can set rate of spawn, number of enemies, etc.
+- add variance to enemy lifebar and damage rates
 
 ### player
 - smooth out player platforming / controls

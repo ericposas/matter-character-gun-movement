@@ -87,6 +87,22 @@ window.start = () => {
 				x: e.clientX,
 				y: e.clientY
 			}
+			// create a DOM crosshair
+			// if (!document.getElementById('game-crosshair')) {
+			// 	let crosshair = document.createElement('div')
+			// 	crosshair.id = 'game-crosshair'
+			// 	let cvert = document.createElement('div')
+			// 	cvert.id = 'game-crosshair-vertical'
+			// 	let choriz = document.createElement('div')
+			// 	choriz.id = 'game-crosshair-horizontal'
+			// 	crosshair.appendChild(cvert)
+			// 	crosshair.appendChild(choriz)
+			// 	document.body.appendChild(crosshair)
+			// } else {
+			// 	let crosshair = document.getElementById('game-crosshair')
+			// 	crosshair.style.left = e.clientX + 'px'
+			// 	crosshair.style.top = e.clientY + 'px'
+			// }
 		})
 		render.canvas.addEventListener('click', e => {
 			let playerArm = player.bodies[3]

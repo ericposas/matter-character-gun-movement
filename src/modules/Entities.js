@@ -39,12 +39,12 @@ export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_poi
 	enemy.bodies[1]._outerLifebar = outerbar
 	enemy.bodies[0]._barsize = size
 	enemy.bodies[1]._barsize = size
-	enemiesArray.push(enemy)
 	Composite.remove(enemy, [
 		enemy.bodies[3],
 		enemy.constraints[3],
 		enemy.constraints[4]
 	])
+	enemiesArray.push(enemy)
 	// let randomFreq = random.int(500, 3000)
 	const bulletHandler = () => {
 		if (enemiesArray.indexOf(enemy) > -1) {
@@ -334,7 +334,7 @@ export const createPlayer = (world, type, mouse_point, position) => {
 	// World.add(world, player)
 	// need to keep a reference to the player/enemy object that we can remove
 	player.bodies.forEach(body => { body._composite = player })
-	// World.add(world, player)
+	World.add(world, player)
 
 	return {
 		player,

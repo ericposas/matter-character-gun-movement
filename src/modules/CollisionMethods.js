@@ -1,6 +1,6 @@
 import { World, Body, Composite } from 'matter-js'
 import { BODY_DAMAGE, HEAD_DAMAGE, LIMB_DAMAGE } from './DamageConstants'
-import { BULLET_FORCE_MULTIPLIER } from './GameConstants'
+import { BULLET_FORCE_MULTIPLIER, BULLET_IMPACT } from './GameConstants'
 import { createRagdoll } from './Ragdoll'
 
 
@@ -24,20 +24,20 @@ const damageEnemy = (enemy, dmg) => {
 	}
 }
 
-const killEnemy = (player, enemies, enemy, world, bulletImpact) => {
+const killEnemy = (player, enemies, enemy, world) => {
 	if (enemy._lifebar) {
 		let lifeAmt = parseInt(enemy._lifebar.style.width, 10)
 		if (lifeAmt <= 0) {
-			removeEnemyFromWorld(player, enemies, enemy, world, bulletImpact)
+			removeEnemyFromWorld(player, enemies, enemy, world)
 		}
 	}
 }
 
-const removeEnemyFromWorld = (player, enemies, enemy, world, bulletImpact) => {
+const removeEnemyFromWorld = (player, enemies, enemy, world) => {
 	if (enemy._outerLifebar.parentNode == document.body) {
 		let enIdx = enemies.indexOf(enemy._composite)
 		let _x = (
-			enemy.position.x < player.bodies[0].position.x ? -bulletImpact : bulletImpact
+			enemy.position.x < player.bodies[0].position.x ? -BULLET_IMPACT : BULLET_IMPACT
 		)
 		enemies.splice(enIdx, 1)
 		World.remove(world, enemy._composite)
@@ -47,7 +47,7 @@ const removeEnemyFromWorld = (player, enemies, enemy, world, bulletImpact) => {
 		Composite.translate(ragdoll, { x: enemy.position.x, y: enemy.position.y - 100 })
 		Body.applyForce(ragdoll.bodies[0], ragdoll.bodies[0].position, {
 			x: _x,
-			y: bulletImpact/2
+			y: BULLET_IMPACT/2
 		})
 		// set time limit for ragdoll body to be removed from scene
 		setTimeout(() => {
@@ -133,12 +133,12 @@ export const checkPlayerIsOnGroundEnd = (e, i, player) => {
 	}
 }
 
-export const enemyBulletHittestEnd = (e, i, player, enemies, world, bulletImpact) => {
+export const enemyBulletHittestEnd = (e, i, player, enemies, world) => {
 	if (e.pairs[i].bodyA.label.indexOf('enemy') > -1 && e.pairs[i].bodyB.label == 'bullet') {
 		let enemy = e.pairs[i].bodyA
-		killEnemy(player, enemies, enemy, world, bulletImpact)
+		killEnemy(player, enemies, enemy, world)
 	} else if (e.pairs[i].bodyB.label.indexOf('enemy') > -1 && e.pairs[i].bodyA.label == 'bullet') {
 		let enemy = e.pairs[i].bodyB
-		killEnemy(player, enemies, enemy, world, bulletImpact)
+		killEnemy(player, enemies, enemy, world)
 	}
 }

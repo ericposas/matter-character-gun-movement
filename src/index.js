@@ -42,7 +42,7 @@ window.start = () => {
 	let ground
 	// generate Matter world and player entity
 	let { world, render, engine } = boilerplate(width, height)
-	let { player, playerProps, mouse_point, mouse_control, swapBod: playerSwapBod, addSwappedBody } = createPlayer(world, 'player', null, {x:50,y:0})
+	let player, playerProps, mouse_point, mouse_control, playerSwapBod, addSwappedBody
 
 	changeGameState('menu')
 
@@ -69,18 +69,17 @@ window.start = () => {
 
 	const buildLevel = lvl => {
 		if (lvl == 1) {
+			let playerObj = createPlayer(world, 'player', null, { x:50, y:0 })
+			player = playerObj.player
+			playerProps = playerObj.playerProps
+			mouse_point = playerObj.mouse_point
+			mouse_control = playerObj.mouse_control
+			addSwappedBody = playerObj.addSwappedBody
+			playerSwapBod = playerObj.swapBod
 			ground = createGround(world, width, height)
 			let enemy1 = createEnemy(enemies, bullets, player, world, null, { x: 250, y: 0 })
 			let enemy2 = createEnemy(enemies, bullets, player, world, null, { x: 450, y: 0 })
 			let enemy3 = createEnemy(enemies, bullets, player, world, null, { x: 1000, y: 0 })
-			// we are adding entities to the world explicitly here instead of in the create methods above
-			World.add(world, [
-				ground,
-				player,
-				enemy1,
-				enemy2,
-				enemy3
-			])
 		}
 	}
 
@@ -133,6 +132,14 @@ window.start = () => {
 		document.body.addEventListener('keyup', e => { keys[e.keyCode] = false })
 	}
 
+	const checkGameEntitiesReady = () => {
+		if (player && playerProps && mouse_point && mouse_control && ground) {
+			return true
+		} else {
+			return false
+		}
+	}
+
 	const checkCollisions = e => {
 		if (gameState == 'gameplay') {
 			// LOOP THROUGH ALL COLLISION TYPES
@@ -167,10 +174,12 @@ window.start = () => {
 
 	const gameTick = e => {
 		if (gameState == 'gameplay') {
-			renderMouse(player, lastDirection, render, mouse_point, reticlePos)
-			renderEntities()
-			removeOutOfBoundsBullets(world, bullets)
-			renderPlayerMovementViaKeyInput(render, keys, player, playerProps, ground, lastDirection)
+			if (checkGameEntitiesReady() === true) {
+				renderMouse(player, lastDirection, render, mouse_point, reticlePos)
+				renderEntities()
+				removeOutOfBoundsBullets(world, bullets)
+				renderPlayerMovementViaKeyInput(render, keys, player, playerProps, ground, lastDirection)
+			}
 		}
 	}
 

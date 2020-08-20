@@ -275,7 +275,6 @@ const getNormalBody = (type, btype, mouse_point, x, y) => {
 		// mouse_point,
 		mouse_control,
 	])
-	// console.log(mouse_point)
 
 	return {
 		player,
@@ -291,12 +290,10 @@ export const createPlayer = (world, type, mouse_point, position) => {
 	type = type || 'player'
 	position = position || { x: 0, y: 0 }
 	let { x, y } = position
-	// let player
 
 	const swapBod = (btype, playerInstance, x, y) => {
 		x = x || 0
 		y = y || 0
-		// console.log(playerInstance)
 		if (playerInstance) {
 			Composite.remove(world, playerInstance)
 		}
@@ -310,7 +307,6 @@ export const createPlayer = (world, type, mouse_point, position) => {
 	const addSwappedBody = swappedBody => {
 		let { player, playerProps, mouse_control, mouse_point: mousePoint, bodyType } = swappedBody
 		World.add(world, player)
-		// console.log(playerProps)
 		return {
 			player,
 			playerProps,
@@ -321,20 +317,12 @@ export const createPlayer = (world, type, mouse_point, position) => {
 		}
 	}
 
-	// let player = swapBod('normal')
-	// World.add(world, player.player)
-	// console.log(player)
-
-	// return player
-
 	let bodyType = swapBod('normal', null, x, y)
 	let { player, playerProps, mouse_control, mouse_point: mousePoint } = bodyType
-	// console.log(bodyType)
-
 	World.add(world, player)
-	// // need to keep a reference to the player/enemy object that we can remove
+	// need to keep a reference to the player/enemy object that we can remove
 	player.bodies.forEach(body => { body._composite = player })
-	//
+
 	return {
 		player,
 		playerProps,

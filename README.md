@@ -2,6 +2,8 @@
 
 ## BUGS
 - shooting enemy arm still not damaging correctly
+- player 'drifts' when he's idle
+- not all bullets are getting removed when out-of-bounds
 
 ## TODO
 

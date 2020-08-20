@@ -60,7 +60,6 @@ export const calcMovingReticlePosition = (player, render) => {
 
 export const toggleCrouch = (crouched, setCrouched, player, addSwappedBody, playerSwapBod) => {
 	if (player.ground) {
-		// crouched = !crouched
 		let swapped
 		let x = player.bodies[0].position.x, y = player.bodies[0].position.y
 		if (!crouched) {
@@ -69,9 +68,6 @@ export const toggleCrouch = (crouched, setCrouched, player, addSwappedBody, play
 			swapped = addSwappedBody(playerSwapBod('normal', player, x, y))
 		}
 		setCrouched(swapped)
-		// player = swapped.player // reassign player variable to the new swapped player
-		// playerProps = swapped.playerProps
-		// mouse_point = swapped.mouse_point
 	}
 }
 

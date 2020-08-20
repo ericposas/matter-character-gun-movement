@@ -82,7 +82,11 @@ window.start = () => {
 				crouched = !crouched;
 				player = swapped.player // reassign player variable to the new swapped player
 				playerProps = swapped.playerProps
+				let mx = mouse_point.position.x
+				let my = mouse_point.position.y
 				mouse_point = swapped.mouse_point
+				mouse_point.position.x = mx
+				mouse_point.position.y = my
 			}
 			if (keys[83]) {
 				toggleCrouch(crouched, setCrouched, player, addSwappedBody, playerSwapBod)
@@ -124,7 +128,7 @@ window.start = () => {
 
 		})
 	}
-	
+
 	Events.on(engine, 'collisionStart', e => checkCollisions(e))
 	// Events.on(engine, 'collisionActive', e => checkCollisions(e))
 	Events.on(engine, 'collisionEnd', e => checkCollisionsEnd(e))

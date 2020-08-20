@@ -23,25 +23,31 @@ const damageEnemy = (enemy, dmg) => {
 	}
 }
 
-const killEnemy = (enemies, enemy, world, bulletForceAngle, bulletForceMultiplier) => {
+const killEnemy = (player, enemies, enemy, world, bulletImpact) => {
 	if (enemy._lifebar) {
 		let lifeAmt = parseInt(enemy._lifebar.style.width, 10)
 		if (lifeAmt <= 0) {
-			removeEnemyFromWorld(enemies, enemy, world, bulletForceAngle, bulletForceMultiplier)
+			removeEnemyFromWorld(player, enemies, enemy, world, bulletImpact)
 		}
 	}
 }
 
-const removeEnemyFromWorld = (enemies, enemy, world, bulletForceAngle, bulletForceMultiplier) => {
+const removeEnemyFromWorld = (player, enemies, enemy, world, bulletImpact) => {
 	if (enemy._outerLifebar.parentNode == document.body) {
 		let enIdx = enemies.indexOf(enemy._composite)
+		let _x = (
+			enemy.position.x < player.bodies[0].position.x ? -bulletImpact : bulletImpact
+		)
 		enemies.splice(enIdx, 1)
 		World.remove(world, enemy._composite)
 		document.body.removeChild(enemy._outerLifebar)
 		// add a ragdoll in place of enemy character!
 		let ragdoll = createRagdoll(world, 1)
 		Composite.translate(ragdoll, { x: enemy.position.x, y: enemy.position.y - 100 })
-		Body.applyForce(ragdoll.bodies[0], ragdoll.bodies[0].position, { x: bulletForceAngle.x * bulletForceMultiplier, y: bulletForceAngle.y * bulletForceMultiplier })
+		Body.applyForce(ragdoll.bodies[0], ragdoll.bodies[0].position, {
+			x: _x,
+			y: bulletImpact/2
+		})
 	}
 }
 
@@ -94,12 +100,12 @@ export const checkPlayerIsOnGroundEnd = (e, i, player) => {
 	}
 }
 
-export const enemyBulletHittestEnd = (e, i, enemies, world, bulletForceAngle, bulletForceMultiplier) => {
+export const enemyBulletHittestEnd = (e, i, player, enemies, world, bulletImpact) => {
 	if (e.pairs[i].bodyA.label.indexOf('enemy') > -1 && e.pairs[i].bodyB.label == 'bullet') {
 		let enemy = e.pairs[i].bodyA
-		killEnemy(enemies, enemy, world, bulletForceAngle, bulletForceMultiplier)
+		killEnemy(player, enemies, enemy, world, bulletImpact)
 	} else if (e.pairs[i].bodyB.label.indexOf('enemy') > -1 && e.pairs[i].bodyA.label == 'bullet') {
 		let enemy = e.pairs[i].bodyB
-		killEnemy(enemies, enemy, world, bulletForceAngle, bulletForceMultiplier)
+		killEnemy(player, enemies, enemy, world, bulletImpact)
 	}
 }

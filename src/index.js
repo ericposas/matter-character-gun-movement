@@ -42,6 +42,7 @@ window.start = () => {
 	let bullets = []
 	let bulletForce = 0.015
 	let bulletForceAngle = { x: 0, y: 0 }
+	let bulletImpact = 0.05 // force on ragdoll death
 	let bulletForceMultiplier = 6 // TIMES SIX!!
 	let enemies = []
 
@@ -73,7 +74,7 @@ window.start = () => {
 			bullet.label = 'bullet'
 			World.add(world, bullet)
 			bullets.push(bullet)
-			Body.applyForce(bullet, bullet.position, calculateBulletAngle(player, render, reticlePos, bulletForce, bulletForceAngle))
+			Body.applyForce(bullet, bullet.position, calculateBulletAngle(player, render, reticlePos, bulletForce))
 		})
 		document.body.addEventListener("keydown", e => {
 			keys[e.keyCode] = true
@@ -112,7 +113,7 @@ window.start = () => {
 		for (let i = 0; i < e.pairs.length; ++i) {
 			// LOOP THROUGH ALL COLLISION TYPES
 			checkPlayerIsOnGroundEnd(e, i, player)
-			enemyBulletHittestEnd(e, i, enemies, world, bulletForceAngle, bulletForceMultiplier)
+			enemyBulletHittestEnd(e, i, player, enemies, world, bulletImpact)
 		}
 	}
 
@@ -124,7 +125,7 @@ window.start = () => {
 
 		})
 	}
-	
+
 	const gameTick = e => {
 		// renderMouse() will draw the white line if it is in the requestAnimationFrame() loop
 		renderMouse(player, lastDirection, render, mouse_point, reticlePos)

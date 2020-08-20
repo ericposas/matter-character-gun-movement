@@ -13,17 +13,21 @@ export const removeOutOfBoundsBullets = (world, bullets) => {
 	}
 }
 
-export const calculateBulletAngle = (player, render, reticlePos, bulletForce, bulletForceAngle) => {
+export const calculateBulletAngle = (player, render, reticlePos, bulletForce) => {
 	let playerPos = player.bodies[0].position
 	let targetAngle = Vector.angle(playerPos, {
 		x: reticlePos.x + calcMovingReticlePosition(player, render),
 		y: reticlePos.y
 	})
-	bulletForceAngle = {
+	return {
 		x: Math.cos(targetAngle) * bulletForce,
 		y: Math.sin(targetAngle) * bulletForce
 	}
-	return bulletForceAngle
+	// bulletForceAngle = {
+	// 	x: Math.cos(targetAngle) * bulletForce,
+	// 	y: Math.sin(targetAngle) * bulletForce
+	// }
+	// return bulletForceAngle
 }
 
 export const positionEnemyAim = (enemy, player) => {

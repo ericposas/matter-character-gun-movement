@@ -1,6 +1,7 @@
 import { World, Body, Composite } from 'matter-js'
 import { BODY_DAMAGE, HEAD_DAMAGE, LIMB_DAMAGE } from './DamageConstants'
 import { BULLET_FORCE_MULTIPLIER, BULLET_IMPACT } from './GameConstants'
+import { RAGDOLL_REMOVAL_TIMEOUT } from './GameConstants'
 import { createRagdoll } from './Ragdoll'
 
 
@@ -46,7 +47,7 @@ const removeEnemyFromWorld = (player, enemies, enemy, world) => {
 		// set time limit for ragdoll body to be removed from scene
 		setTimeout(() => {
 			World.remove(world, ragdoll)
-		}, 10000) // 10 seconds
+		}, RAGDOLL_REMOVAL_TIMEOUT) // 10 seconds
 
 	}
 }

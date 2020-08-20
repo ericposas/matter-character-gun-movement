@@ -25,3 +25,5 @@
 
 ### gameplay
 - use boxes for cover from enemy bullets
+- possibly have the game be "arena-like" where mobs or waves of enemies spawn on each level
+- level layout could change up every 5 "levels" or so possibly

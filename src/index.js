@@ -122,6 +122,7 @@ window.start = () => {
 				World.remove(world, enemy)
 			}
 		})
+		keys = []
 		enemies = []
 		ground = null
 		player = null

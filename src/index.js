@@ -56,10 +56,6 @@ window.start = () => {
 	changeGameState(MENU)
 
 	function changeGameState(state) {
-		function displayPlayerLifeBar() {
-			document.getElementById('player-lifebar').style.display = 'block'
-			document.getElementById('player-lifebar-inner').style.cssText = "top:2px;left: 2px;width:756px;height:16px;position:relative;background-color:green;"
-		}
 		gameState = state
 		if (gameState === MENU) {
 			// build a temporary game menu, or just show/hide an html block
@@ -72,7 +68,6 @@ window.start = () => {
 				changeLevel()
 				changeGameState(GAMEPLAY)
 				document.getElementById('menu').style.display = 'none'
-				displayPlayerLifeBar()
 				startBtn.removeEventListener('click', startGame)
 			}
 		}
@@ -86,7 +81,6 @@ window.start = () => {
 			function playAgain(e) {
 				gameover.style.display = 'none'
 				changeGameState(GAMEPLAY)
-				displayPlayerLifeBar()
 				tryAgainBtn.removeEventListener('click', playAgain)
 			}
 			tryAgainBtn.addEventListener('click', playAgain)
@@ -98,39 +92,51 @@ window.start = () => {
 		else { currentLevel = lvl }
 	}
 
+	function displayPlayerLifeBar() {
+		document.getElementById('player-lifebar').style.display = 'block'
+		document.getElementById('player-lifebar-inner').style.cssText = "top:2px;left: 2px;width:756px;height:16px;position:relative;background-color:green;"
+	}
+
 	function createGameObjects() {
-		ground = createGround(world, width, height)
-		playerObjects = createPlayer(world, 'player', null, { x:50, y:0 })
-		player = playerObjects.player
-		playerProps = playerObjects.playerProps
-		mouse_point = playerObjects.mouse_point
-		mouse_control = playerObjects.mouse_control
-		addSwappedBody = playerObjects.addSwappedBody
-		playerSwapBod = playerObjects.swapBod
+		if (checkGameEntitiesReady() == false) {
+			console.log('createGameObjects')
+			ground = createGround(world, width, height)
+			playerObjects = createPlayer(world, 'player', null, { x:50, y:0 })
+			player = playerObjects.player
+			playerProps = playerObjects.playerProps
+			mouse_point = playerObjects.mouse_point
+			mouse_control = playerObjects.mouse_control
+			addSwappedBody = playerObjects.addSwappedBody
+			playerSwapBod = playerObjects.swapBod
+			displayPlayerLifeBar()
+		}
 	}
 
 	function destroyGameObjects() {
-		destroyEnemiesToBeSpawned()
-		if (player && ground) {
-			World.remove(world, [player, ground])
-		}
-		let en = []
-		enemies.forEach(enemy => {
-			enemy.stopShooting(enemies)
-			enemy.removeLifebar()
-			if (enemy) {
-				World.remove(world, enemy)
+		if (checkGameEntitiesReady()) {
+			console.log('destroyGameObjects')
+			destroyEnemiesToBeSpawned()
+			if (player && ground) {
+				World.remove(world, [player, ground])
 			}
-		})
-		keys = []
-		enemies = []
-		ground = null
-		player = null
-		playerProps = null
-		mouse_point = null
-		mouse_control = null
-		addSwappedBody = null
-		playerSwapBod = null
+			let en = []
+			enemies.forEach(enemy => {
+				enemy.stopShooting(enemies)
+				enemy.removeLifebar()
+				if (enemy) {
+					World.remove(world, enemy)
+				}
+			})
+			keys = []
+			enemies = []
+			ground = null
+			player = null
+			playerProps = null
+			mouse_point = null
+			mouse_control = null
+			addSwappedBody = null
+			playerSwapBod = null
+		}
 	}
 
 	// const spawnEnemies = (n, rate) => {
@@ -157,14 +163,14 @@ window.start = () => {
 		}
 	}
 	function destroyEnemiesToBeSpawned() {
-		// enemiesToBeSpawned = []
 		enemiesToBeSpawned.forEach(timeout => clearTimeout(timeout))
+		enemiesToBeSpawned = []
 	}
 
 	const buildLevel = () => {
 		if (currentLevel == 1) {
 			createGameObjects()
-			spawnEnemies(20, 3000)
+			spawnEnemies(20, 2000)
 
 			// destroyGameObjects()
 			// changeLevel(2)

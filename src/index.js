@@ -136,11 +136,13 @@ window.start = () => {
 			})
 			bullets.forEach(bullet => {
 				if (bullet) {
+					World.remove(world, bullet)
 					bullet = null
 				}
 			})
 			ragdolls.forEach(ragdoll => {
 				if (ragdoll) {
+					World.remove(world, ragdoll)
 					ragdoll = null
 				}
 			})

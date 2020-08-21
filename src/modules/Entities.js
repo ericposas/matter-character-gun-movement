@@ -10,7 +10,6 @@ import { BULLET_REMOVAL_TIMEOUT, ENEMY_BULLET_FORCE } from './GameConstants'
 import random from 'random'
 import { TweenLite } from 'gsap'
 
-
 export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_point, position) => {
 	// 'player' is the main player to pass here so we can track his movements
 	let { player: enemy } = createPlayer(world, 'enemy', mouse_point, position)

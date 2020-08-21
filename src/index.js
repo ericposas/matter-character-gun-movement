@@ -21,6 +21,7 @@ import {
 	calcMovingReticlePosition,
 	calculateBulletAngle,
 	removeOutOfBoundsBullets,
+	removeOutOfBoundsEnemies
 } from './modules/PlayerControls'
 import {
 	positionEnemyLifebar,
@@ -31,7 +32,7 @@ import {
 	enemyBulletHittestBegin, enemyBulletHittestEnd,
 	bulletGroundHittest,
 	playerBulletHittestBegin, playerBulletHittestEnd
-} from './modules/CollisionMethods'
+} from './modules/GameTickMethods'
 import { GAMEPLAY, MENU, GAME_OVER } from './modules/GameStates'
 
 
@@ -289,6 +290,7 @@ window.start = () => {
 			renderMouse(player, lastDirection, render, mouse_point, reticlePos)
 			renderEntities()
 			removeOutOfBoundsBullets(world, bullets)
+			removeOutOfBoundsEnemies(world, enemies)
 			renderPlayerMovementViaKeyInput(render, keys, player, playerProps, ground, lastDirection)
 		}
 	}
@@ -296,8 +298,5 @@ window.start = () => {
 	Events.on(engine, 'collisionStart', checkCollisions)
 	Events.on(engine, 'collisionEnd', checkCollisionsEnd)
 	Events.on(engine, 'beforeTick', gameTick)
-
-	// buildLevel(1)
-	// registerEventListeners()
 
 }

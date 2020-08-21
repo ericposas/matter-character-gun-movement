@@ -30,7 +30,6 @@ const killPlayer = (player, world, destroyGameObjects, changeGameState) => {
 
 const removePlayerFromWorld = (player, world) => {
 	World.remove(world, player)
-
 }
 
 const killEnemy = (player, enemies, enemy, world) => {

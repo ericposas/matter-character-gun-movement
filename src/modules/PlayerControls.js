@@ -2,6 +2,20 @@ import { Render, Body, Composite, Vector, World } from 'matter-js'
 import { BULLET_FORCE } from './GameConstants'
 import { width, height } from '../config'
 
+export const removeOutOfBoundsEnemies = (world, enemies) => {
+	for (let i = 0; i < enemies.length; ++i) {
+		let enemy = enemies[i]
+		let enemyBody = enemy.bodies[0]
+		if (enemyBody.position.x > world.bounds.max.x || enemyBody.position.x < 0 || enemyBody.position.y > world.bounds.max.y) {
+			console.log('enemy fell out of bounds and was removed')
+			let idx = enemies.indexOf(enemy)
+			enemy.stopShooting(enemies)
+			enemy.removeLifebar()
+			World.remove(world, enemy)
+			if (idx > -1) { enemies.splice(idx, 1) }
+		}
+	}
+}
 
 export const removeOutOfBoundsBullets = (world, bullets) => {
 	// remove out-of-bounds bullets

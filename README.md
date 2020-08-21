@@ -14,7 +14,6 @@
 
 ### general
 - remove bullets when they hit a ragdoll
-- remove enemies who fall off of the level (check against world bounds)
 - create total enemy count for the level, you win when all enemies are cleared
 - experiment with level layout, ground width, etc. so that we can fit a better game view instead of the awkward upper-left corner
 - another possible fix for the view is to put the game in a 800x550 popup window, but then we really can't submit the game anywhere but on an owned url

@@ -149,22 +149,15 @@ window.start = () => {
 	function spawnEnemies(n, rate) {
 		for (let i = 0; i < n; ++i) {
 			let timeout = setTimeout(() => {
-				enemiesToBeSpawned[i]()
 				console.log(i)
-			}, rate * i)
-			enemiesToBeSpawned.push(
-				function() {
-					if (enemiesToBeSpawned.length > 0) {
-						createEnemy(enemies, bullets, player, world, null, { x: random.int(50, ground.bounds.max.x - 50), y: 0 })
-					} else {
-						clearTimeout(timeout)
-					}
-				}
-			)
+				createEnemy(enemies, bullets, player, world, null, { x: random.int(50, ground.bounds.max.x - 50), y: 0 })
+			}, (rate * i))
+			enemiesToBeSpawned.push(timeout)
 		}
 	}
 	function destroyEnemiesToBeSpawned() {
-		enemiesToBeSpawned = []
+		// enemiesToBeSpawned = []
+		enemiesToBeSpawned.forEach(timeout => clearTimeout(timeout))
 	}
 
 	const buildLevel = () => {

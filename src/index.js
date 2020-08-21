@@ -40,7 +40,7 @@ window.start = () => {
 	let gameState = ''
 	let currentLevel = 0
 	let keys = []
-	let enemies = [], bullets = []
+	let enemies = [], bullets = [], enemiesToBeSpawned = []
 	let crouched = false
 	let lastDirection = ''
 	let reticlePos = { x: 0, y: 0 }
@@ -63,12 +63,14 @@ window.start = () => {
 			document.getElementById('menu').style.display = 'block'
 			startBtn.style.left = (width/2) - (parseInt(getComputedStyle(startBtn).getPropertyValue('width'))/2) + 'px'
 			startBtn.style.top = (height/2) - (parseInt(getComputedStyle(startBtn).getPropertyValue('height'))/2) + 'px'
-			startBtn.addEventListener('click', startGame)
 			function startGame(e) {
 				changeLevel()
 				changeGameState(GAMEPLAY)
 				document.getElementById('menu').style.display = 'none'
-				startBtn.removeEventListener('click', startGame)
+			}
+			if (!startBtn.clickListenerHasBeenSet) {
+				startBtn.addEventListener('click', startGame)
+				startBtn.clickListenerHasBeenSet = true
 			}
 		}
 		if (gameState === GAMEPLAY) {
@@ -78,17 +80,22 @@ window.start = () => {
 			let tryAgainBtn = document.getElementById('try-again-button')
 			let gameover = document.getElementById('game-over-screen')
 			gameover.style.display = 'block'
+			tryAgainBtn.style.display = 'block'
 			function playAgain(e) {
-				gameover.style.display = 'none'
 				changeGameState(GAMEPLAY)
-				tryAgainBtn.removeEventListener('click', playAgain)
+				tryAgainBtn.style.display = 'none'
+				gameover.style.display = 'none'
 			}
-			tryAgainBtn.addEventListener('click', playAgain)
+			if (!tryAgainBtn.clickListenerHasBeenSet) {
+				tryAgainBtn.addEventListener('click', playAgain)
+				tryAgainBtn.clickListenerHasBeenSet = true
+			}
 		}
 	}
 
 	function changeLevel(lvl) {
 		if (currentLevel === 0) { currentLevel = 1 }
+		else if (!lvl) { currentLevel = currentLevel }
 		else { currentLevel = lvl }
 	}
 
@@ -115,7 +122,6 @@ window.start = () => {
 	function destroyGameObjects() {
 		if (checkGameEntitiesReady()) {
 			console.log('destroyGameObjects')
-			destroyEnemiesToBeSpawned()
 			if (player && ground) {
 				World.remove(world, [player, ground])
 			}
@@ -136,24 +142,12 @@ window.start = () => {
 			mouse_control = null
 			addSwappedBody = null
 			playerSwapBod = null
+			destroyEnemiesToBeSpawned()
 		}
 	}
 
-	// const spawnEnemies = (n, rate) => {
-	// 	let timeout
-	// 	for (let i = 0; i < n; ++i) {
-	// 		timeout = setTimeout(() => {
-	// 			if (gameState == GAMEPLAY) {
-	// 				createEnemy(enemies, bullets, player, world, null, { x: random.int(50, ground.bounds.max.x - 50), y: 0 })
-	// 			} else {
-	// 				clearTimeout(timeout)
-	// 			}
-	// 		}, rate * i)
-	// 	}
-	// }
-
-	let enemiesToBeSpawned = []
 	function spawnEnemies(n, rate) {
+		console.log('spawning enemies')
 		for (let i = 0; i < n; ++i) {
 			let timeout = setTimeout(() => {
 				console.log(i)
@@ -163,14 +157,19 @@ window.start = () => {
 		}
 	}
 	function destroyEnemiesToBeSpawned() {
-		enemiesToBeSpawned.forEach(timeout => clearTimeout(timeout))
+		enemiesToBeSpawned.forEach(timeout => {
+			clearTimeout(timeout)
+			console.log('timeout should clear')
+		})
 		enemiesToBeSpawned = []
+		console.log(enemies, enemiesToBeSpawned)
 	}
 
 	const buildLevel = () => {
+		console.log('building level..')
 		if (currentLevel == 1) {
 			createGameObjects()
-			spawnEnemies(20, 2000)
+			spawnEnemies(10, 500)
 
 			// destroyGameObjects()
 			// changeLevel(2)

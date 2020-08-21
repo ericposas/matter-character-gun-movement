@@ -55,8 +55,11 @@ export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_poi
 	}
 	let shouldShoot = true
 	const bulletHandler = () => {
-		if (shouldShoot && player) {
-			let playerPos = player.bodies[0].position
+		if (shouldShoot) {
+			let playerPos
+			if (player) {
+				playerPos = player.bodies[0].position
+			} else { playerPos = { x: 0, y: 0 } }
 			let arm = enemy.bodies[2]
 			let armWidth = arm.bounds.max.x - arm.bounds.min.x
 			let armHeight = arm.bounds.max.y - arm.bounds.min.y

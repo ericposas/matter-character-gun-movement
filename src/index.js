@@ -30,8 +30,9 @@ import {
 	checkPlayerIsOnGroundBegin, checkPlayerIsOnGroundEnd,
 	enemyBulletHittestBegin, enemyBulletHittestEnd,
 	bulletGroundHittest,
+	playerBulletHittestBegin, playerBulletHittestEnd
 } from './modules/CollisionMethods'
-import { GAMEPLAY, MENU } from './modules/GameStates'
+import { GAMEPLAY, MENU, GAME_OVER } from './modules/GameStates'
 
 
 window.start = () => {
@@ -52,9 +53,13 @@ window.start = () => {
 
 	registerEventListeners()
 
-	changeGameState('menu')
+	changeGameState(MENU)
 
 	function changeGameState(state) {
+		function displayPlayerLifeBar() {
+			document.getElementById('player-lifebar').style.display = 'block'
+			document.getElementById('player-lifebar-inner').style.cssText = "top:2px;left: 2px;width:756px;height:16px;position:relative;background-color:green;"
+		}
 		gameState = state
 		if (gameState === MENU) {
 			// build a temporary game menu, or just show/hide an html block
@@ -65,13 +70,26 @@ window.start = () => {
 			startBtn.addEventListener('click', startGame)
 			function startGame(e) {
 				changeLevel()
-				changeGameState('gameplay')
-				startBtn.style.display = 'none'
+				changeGameState(GAMEPLAY)
+				document.getElementById('menu').style.display = 'none'
+				displayPlayerLifeBar()
 				startBtn.removeEventListener('click', startGame)
 			}
 		}
-		if (gameState == 'gameplay') {
+		if (gameState === GAMEPLAY) {
 			buildLevel()
+		}
+		if (gameState === GAME_OVER) {
+			let tryAgainBtn = document.getElementById('try-again-button')
+			let gameover = document.getElementById('game-over-screen')
+			gameover.style.display = 'block'
+			function playAgain(e) {
+				gameover.style.display = 'none'
+				changeGameState(GAMEPLAY)
+				displayPlayerLifeBar()
+				tryAgainBtn.removeEventListener('click', playAgain)
+			}
+			tryAgainBtn.addEventListener('click', playAgain)
 		}
 	}
 
@@ -92,12 +110,17 @@ window.start = () => {
 	}
 
 	function destroyGameObjects() {
-		World.remove(world, [player, ground])
+		destroyEnemiesToBeSpawned()
+		if (player && ground) {
+			World.remove(world, [player, ground])
+		}
 		let en = []
 		enemies.forEach(enemy => {
 			enemy.stopShooting(enemies)
 			enemy.removeLifebar()
-			World.remove(world, enemy)
+			if (enemy) {
+				World.remove(world, enemy)
+			}
 		})
 		enemies = []
 		ground = null
@@ -109,19 +132,46 @@ window.start = () => {
 		playerSwapBod = null
 	}
 
-	const spawnEnemies = (n, rate) => {
+	// const spawnEnemies = (n, rate) => {
+	// 	let timeout
+	// 	for (let i = 0; i < n; ++i) {
+	// 		timeout = setTimeout(() => {
+	// 			if (gameState == GAMEPLAY) {
+	// 				createEnemy(enemies, bullets, player, world, null, { x: random.int(50, ground.bounds.max.x - 50), y: 0 })
+	// 			} else {
+	// 				clearTimeout(timeout)
+	// 			}
+	// 		}, rate * i)
+	// 	}
+	// }
+
+	let enemiesToBeSpawned = []
+	function spawnEnemies(n, rate) {
 		for (let i = 0; i < n; ++i) {
-			setTimeout(() => {
-				createEnemy(enemies, bullets, player, world, null, { x: random.int(50, ground.bounds.max.x - 50), y: 0 })
+			let timeout = setTimeout(() => {
+				enemiesToBeSpawned[i]()
+				console.log(i)
 			}, rate * i)
+			enemiesToBeSpawned.push(
+				function() {
+					if (enemiesToBeSpawned.length > 0) {
+						createEnemy(enemies, bullets, player, world, null, { x: random.int(50, ground.bounds.max.x - 50), y: 0 })
+					} else {
+						clearTimeout(timeout)
+					}
+				}
+			)
 		}
+	}
+	function destroyEnemiesToBeSpawned() {
+		enemiesToBeSpawned = []
 	}
 
 	const buildLevel = () => {
 		if (currentLevel == 1) {
 			createGameObjects()
-			spawnEnemies(30, 3000)
-			
+			spawnEnemies(20, 3000)
+
 			// destroyGameObjects()
 			// changeLevel(2)
 			// buildLevel()
@@ -205,9 +255,10 @@ window.start = () => {
 		if (gameState == GAMEPLAY && checkGameEntitiesReady()) {
 			// LOOP THROUGH ALL COLLISION TYPES
 			for (let i = 0; i < e.pairs.length; ++i) {
+				bulletGroundHittest(e, i, world, bullets)
 				checkPlayerIsOnGroundBegin(e, i, player)
 				enemyBulletHittestBegin(e, i, world, bulletForceAngle, bullets)
-				bulletGroundHittest(e, i, world, bullets)
+				playerBulletHittestBegin(e, i, world, bulletForceAngle, bullets)
 			}
 		}
 	}
@@ -218,6 +269,7 @@ window.start = () => {
 				// LOOP THROUGH ALL COLLISION TYPES
 				checkPlayerIsOnGroundEnd(e, i, player)
 				enemyBulletHittestEnd(e, i, player, enemies, world, bullets)
+				playerBulletHittestEnd(e, i, player, world, destroyGameObjects, changeGameState)
 			}
 		}
 	}

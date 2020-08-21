@@ -2,6 +2,7 @@ body, html {
 	margin: 0;
 	overflow: hidden;
 	cursor: crosshair;
+	background-color: #000;
 }
 
 canvas {
@@ -14,9 +15,45 @@ canvas {
 }
 
 #menu-button {
+	color: #555;
 	position: relative;
 	font-family: Arial;
 	font-size: 40px;
 	background-color: #333;
 	padding: 20px;
+}
+
+#player-lifebar {
+	top: 520px;
+	left: 20px;
+	width: 760px;
+	height: 20px;
+	position: absolute;
+	background-color: #333;
+}
+
+#player-lifebar-inner {
+}
+
+#game-over-screen {
+	color: red;
+	width: 800px;
+	font-size: 100px;
+	position: absolute;
+	text-align: center;
+	font-family: Arial;
+}
+
+#game-over-text {
+	line-height: 600px;
+}
+
+#try-again-button {
+	top: 0;
+	padding: 10px;
+	position: absolute;
+	background-color: #333;
+	font-size: 18px;
+	cursor: pointer;
+	color: #fff;
 }

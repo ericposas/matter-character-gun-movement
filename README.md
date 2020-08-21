@@ -5,6 +5,8 @@
 - could make the menu using standard html or pixi.js graphics
 
 ## BUGS
+- enemy spawner keeps spawning old set of enemies once we switch back to GAMEPLAY state
+- "obj is null" error when we get to the GAME_OVER screen and playerObjects are removed
 - shooting enemy arm still not damaging correctly
 - player 'drifts' when he's idle
 

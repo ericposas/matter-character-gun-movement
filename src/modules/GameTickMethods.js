@@ -10,8 +10,8 @@ export const removeOutOfBoundsRagdolls = (world, ragdolls) => {
 		let ragdollBody = ragdoll.bodies[0]
 		if (ragdollBody.position.x > world.bounds.max.x || ragdollBody.position.x < 0 || ragdollBody.position.y > world.bounds.max.y) {
 			let idx = ragdolls.indexOf(ragdoll)
-			World.remove(world, ragdoll)
 			if (idx > -1) {
+				World.remove(world, ragdoll)
 				ragdolls.splice(idx, 1)
 				console.log('ragdoll fell out of bounds and was removed', ragdolls)
 			}
@@ -24,12 +24,14 @@ export const removeOutOfBoundsEnemies = (world, enemies) => {
 		let enemy = enemies[i]
 		let enemyBody = enemy.bodies[0]
 		if (enemyBody.position.x > world.bounds.max.x || enemyBody.position.x < 0 || enemyBody.position.y > world.bounds.max.y) {
-			console.log('enemy fell out of bounds and was removed')
 			let idx = enemies.indexOf(enemy)
-			enemy.stopShooting(enemies)
-			enemy.removeLifebar()
-			World.remove(world, enemy)
-			if (idx > -1) { enemies.splice(idx, 1) }
+			if (idx > -1) {
+				enemy.stopShooting(enemies)
+				enemy.removeLifebar()
+				World.remove(world, enemy)
+				enemies.splice(idx, 1)
+				console.log('enemy fell out of bounds and was removed', enemies)
+			}
 		}
 	}
 }
@@ -40,11 +42,10 @@ export const removeOutOfBoundsBullets = (world, bullets) => {
 		let bullet = bullets[i]
 		if (bullet.position.x > world.bounds.max.x || bullet.position.x < 0 || bullet.position.y < 0 ) {
 				let idx = bullets.indexOf(bullet)
-				World.remove(world, bullet)
-				if (idx > -1) { bullets.splice(idx, 1) }
-				// bullets = bullets.filter(b => b != bullet)
-				// splice() method is mutating so it works better in this case
-				// ..to use filter() method, we would need to use a closure
+				if (idx > -1) {
+					World.remove(world, bullet)
+					bullets.splice(idx, 1)
+				}
 		}
 	}
 }
@@ -98,12 +99,11 @@ const removeEnemyFromWorld = (player, enemies, enemy, world, ragdolls) => {
 		// add a ragdoll in place of enemy character!
 		let ragdoll = createRagdoll(world, 1)
 		ragdolls.push(ragdoll)
-		console.log(ragdolls)
+		console.log('enemy killed, ragdoll added to world..')
+		console.log('enemy count:', enemies)
+		console.log('ragdolls', ragdolls)
 		Composite.translate(ragdoll, { x: enemy.position.x, y: enemy.position.y - 100 })
-		Body.applyForce(ragdoll.bodies[0], ragdoll.bodies[0].position, {
-			x: _x,
-			y: BULLET_IMPACT/2
-		})
+		Body.applyForce(ragdoll.bodies[0], ragdoll.bodies[0].position, { x: _x, y: BULLET_IMPACT/2 })
 		// set time limit for ragdoll body to be removed from scene
 		setTimeout(() => {
 			let idx = ragdolls.indexOf(ragdoll)
@@ -113,7 +113,6 @@ const removeEnemyFromWorld = (player, enemies, enemy, world, ragdolls) => {
 				console.log('ragdoll removed', ragdolls)
 			}
 		}, RAGDOLL_REMOVAL_TIMEOUT)
-
 	}
 }
 

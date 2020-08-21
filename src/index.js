@@ -131,10 +131,23 @@ window.start = () => {
 				enemy.removeLifebar()
 				if (enemy) {
 					World.remove(world, enemy)
+					enemy = null
+				}
+			})
+			bullets.forEach(bullet => {
+				if (bullet) {
+					bullet = null
+				}
+			})
+			ragdolls.forEach(ragdoll => {
+				if (ragdoll) {
+					ragdoll = null
 				}
 			})
 			keys = []
 			enemies = []
+			bullets = []
+			ragdolls = []
 			ground = null
 			player = null
 			playerProps = null
@@ -178,11 +191,6 @@ window.start = () => {
 		if (currentLevel == 2) {
 			createGameObjects()
 
-			// for (let i = 0; i < 10; ++i) {
-			// 	createEnemy(enemies, bullets, player, world, null, { x: 150 * i, y: 0 })
-			// }
-			// destroyGameObjects()
-			// changeLevel(1)
 		}
 	}
 

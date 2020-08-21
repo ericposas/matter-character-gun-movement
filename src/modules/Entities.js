@@ -1,19 +1,14 @@
-import {
-	Composite, Composites, Constraint, Bodies, World, Body, Vector
-} from 'matter-js'
-import {
-	GROUND, BULLET, BOX,
-	PLAYER_HEAD, PLAYER_BODY,
-	ENEMY_HEAD, ENEMY_BODY,
-} from './CollisionFilterConstants'
+import { Composite, Composites, Constraint, Bodies, World, Body, Vector } from 'matter-js'
+import { GROUND, BULLET, BOX, PLAYER_HEAD, PLAYER_BODY, ENEMY_HEAD, ENEMY_BODY } from './CollisionFilterConstants'
 import { BULLET_REMOVAL_TIMEOUT, ENEMY_BULLET_FORCE } from './GameConstants'
 import random from 'random'
 import { TweenLite } from 'gsap'
 
-export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_point, position) => {
-	// 'player' is the main player to pass here so we can track his movements
+// ragdollsArray is not used here, but is now available to the enemy instance
+export const createEnemy = (enemiesArray, bulletsArray, ragdollsArray, player, world, mouse_point, position) => {
+
 	let { player: enemy } = createPlayer(world, 'enemy', mouse_point, position)
-	// let enemyBulletForce = .025
+
 	const createEnemyLifeBar = () => {
 		let barWd = 60, barHt = 10
 		let outerbar = document.createElement('div')
@@ -31,7 +26,7 @@ export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_poi
 		}
 	}
 	let { outerbar, bar, size } = createEnemyLifeBar()
-	// set enemy part to reference the dom lifebar element
+	// set enemy part to reference the DOM lifebar element
 	enemy.bodies[0]._lifebar = bar
 	enemy.bodies[1]._lifebar = bar
 	enemy.bodies[0]._outerLifebar = outerbar
@@ -80,7 +75,7 @@ export const createEnemy = (enemiesArray, bulletsArray, player, world, mouse_poi
 			// set time to remove bullet automatically
 			setTimeout(() => {
 				let idx = bulletsArray.indexOf(enemyBullet)
-				if (idx) {
+				if (idx > -1) {
 					World.remove(world, enemyBullet)
 					bulletsArray.splice(idx, 1)
 				}

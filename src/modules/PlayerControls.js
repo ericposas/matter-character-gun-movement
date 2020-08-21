@@ -2,36 +2,6 @@ import { Render, Body, Composite, Vector, World } from 'matter-js'
 import { BULLET_FORCE } from './GameConstants'
 import { width, height } from '../config'
 
-export const removeOutOfBoundsEnemies = (world, enemies) => {
-	for (let i = 0; i < enemies.length; ++i) {
-		let enemy = enemies[i]
-		let enemyBody = enemy.bodies[0]
-		if (enemyBody.position.x > world.bounds.max.x || enemyBody.position.x < 0 || enemyBody.position.y > world.bounds.max.y) {
-			console.log('enemy fell out of bounds and was removed')
-			let idx = enemies.indexOf(enemy)
-			enemy.stopShooting(enemies)
-			enemy.removeLifebar()
-			World.remove(world, enemy)
-			if (idx > -1) { enemies.splice(idx, 1) }
-		}
-	}
-}
-
-export const removeOutOfBoundsBullets = (world, bullets) => {
-	// remove out-of-bounds bullets
-	for (let i = 0; i < bullets.length; ++i) {
-		let bullet = bullets[i]
-		if (bullet.position.x > world.bounds.max.x || bullet.position.x < 0 || bullet.position.y < 0 ) {
-				let idx = bullets.indexOf(bullet)
-				World.remove(world, bullet)
-				if (idx > -1) { bullets.splice(idx, 1) }
-				// bullets = bullets.filter(b => b != bullet)
-				// splice() method is mutating so it works better in this case
-				// ..to use filter() method, we would need to use a closure
-		}
-	}
-}
-
 export const calculateBulletAngle = (player, render, reticlePos) => {
 	let playerPos = player.bodies[0].position
 	let targetAngle = Vector.angle(playerPos, {

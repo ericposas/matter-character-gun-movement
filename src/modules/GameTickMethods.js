@@ -4,6 +4,50 @@ import { BULLET_FORCE_MULTIPLIER, BULLET_IMPACT, RAGDOLL_REMOVAL_TIMEOUT } from 
 import { GAME_OVER, MENU } from './GameStates'
 import { createRagdoll } from './Ragdoll'
 
+export const removeOutOfBoundsRagdolls = (world, ragdolls) => {
+	for (let i = 0; i < ragdolls.length; ++i) {
+		let ragdoll = ragdolls[i]
+		let ragdollBody = ragdoll.bodies[0]
+		if (ragdollBody.position.x > world.bounds.max.x || ragdollBody.position.x < 0 || ragdollBody.position.y > world.bounds.max.y) {
+			let idx = ragdolls.indexOf(ragdoll)
+			World.remove(world, ragdoll)
+			if (idx > -1) {
+				ragdolls.splice(idx, 1)
+				console.log('ragdoll fell out of bounds and was removed', ragdolls)
+			}
+		}
+	}
+}
+
+export const removeOutOfBoundsEnemies = (world, enemies) => {
+	for (let i = 0; i < enemies.length; ++i) {
+		let enemy = enemies[i]
+		let enemyBody = enemy.bodies[0]
+		if (enemyBody.position.x > world.bounds.max.x || enemyBody.position.x < 0 || enemyBody.position.y > world.bounds.max.y) {
+			console.log('enemy fell out of bounds and was removed')
+			let idx = enemies.indexOf(enemy)
+			enemy.stopShooting(enemies)
+			enemy.removeLifebar()
+			World.remove(world, enemy)
+			if (idx > -1) { enemies.splice(idx, 1) }
+		}
+	}
+}
+
+export const removeOutOfBoundsBullets = (world, bullets) => {
+	// remove out-of-bounds bullets
+	for (let i = 0; i < bullets.length; ++i) {
+		let bullet = bullets[i]
+		if (bullet.position.x > world.bounds.max.x || bullet.position.x < 0 || bullet.position.y < 0 ) {
+				let idx = bullets.indexOf(bullet)
+				World.remove(world, bullet)
+				if (idx > -1) { bullets.splice(idx, 1) }
+				// bullets = bullets.filter(b => b != bullet)
+				// splice() method is mutating so it works better in this case
+				// ..to use filter() method, we would need to use a closure
+		}
+	}
+}
 
 const causeDamage = (elm, dmg) => {
 	if (elm) {
@@ -32,17 +76,17 @@ const removePlayerFromWorld = (player, world) => {
 	World.remove(world, player)
 }
 
-const killEnemy = (player, enemies, enemy, world) => {
+const killEnemy = (player, enemies, enemy, world, ragdolls) => {
 	if (enemy._lifebar) {
 		let lifeAmt = parseInt(enemy._lifebar.style.width, 10)
 		if (lifeAmt <= 0) {
 			enemy._composite.stopShooting()
-			removeEnemyFromWorld(player, enemies, enemy, world)
+			removeEnemyFromWorld(player, enemies, enemy, world, ragdolls)
 		}
 	}
 }
 
-const removeEnemyFromWorld = (player, enemies, enemy, world) => {
+const removeEnemyFromWorld = (player, enemies, enemy, world, ragdolls) => {
 	if (enemy._outerLifebar.parentNode == document.body) {
 		let enIdx = enemies.indexOf(enemy._composite)
 		let _x = (
@@ -53,6 +97,8 @@ const removeEnemyFromWorld = (player, enemies, enemy, world) => {
 		document.body.removeChild(enemy._outerLifebar)
 		// add a ragdoll in place of enemy character!
 		let ragdoll = createRagdoll(world, 1)
+		ragdolls.push(ragdoll)
+		console.log(ragdolls)
 		Composite.translate(ragdoll, { x: enemy.position.x, y: enemy.position.y - 100 })
 		Body.applyForce(ragdoll.bodies[0], ragdoll.bodies[0].position, {
 			x: _x,
@@ -60,8 +106,13 @@ const removeEnemyFromWorld = (player, enemies, enemy, world) => {
 		})
 		// set time limit for ragdoll body to be removed from scene
 		setTimeout(() => {
-			World.remove(world, ragdoll)
-		}, RAGDOLL_REMOVAL_TIMEOUT) // 10 seconds
+			let idx = ragdolls.indexOf(ragdoll)
+			if (idx > -1) {
+				World.remove(world, ragdoll)
+				ragdolls.splice(idx, 1)
+				console.log('ragdoll removed', ragdolls)
+			}
+		}, RAGDOLL_REMOVAL_TIMEOUT)
 
 	}
 }
@@ -170,13 +221,13 @@ export const checkPlayerIsOnGroundEnd = (e, i, player) => {
 	}
 }
 
-export const enemyBulletHittestEnd = (e, i, player, enemies, world) => {
+export const enemyBulletHittestEnd = (e, i, player, enemies, world, ragdolls) => {
 	if (e.pairs[i].bodyA.label.indexOf('enemy') > -1 && e.pairs[i].bodyB.label == 'bullet') {
 		let enemy = e.pairs[i].bodyA
-		killEnemy(player, enemies, enemy, world)
+		killEnemy(player, enemies, enemy, world, ragdolls)
 	} else if (e.pairs[i].bodyB.label.indexOf('enemy') > -1 && e.pairs[i].bodyA.label == 'bullet') {
 		let enemy = e.pairs[i].bodyB
-		killEnemy(player, enemies, enemy, world)
+		killEnemy(player, enemies, enemy, world, ragdolls)
 	}
 }
 

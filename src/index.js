@@ -19,9 +19,7 @@ import {
 	toggleCrouch,
 	renderPlayerMovementViaKeyInput,
 	calcMovingReticlePosition,
-	calculateBulletAngle,
-	removeOutOfBoundsBullets,
-	removeOutOfBoundsEnemies
+	calculateBulletAngle
 } from './modules/PlayerControls'
 import {
 	positionEnemyLifebar,
@@ -31,7 +29,8 @@ import {
 	checkPlayerIsOnGroundBegin, checkPlayerIsOnGroundEnd,
 	enemyBulletHittestBegin, enemyBulletHittestEnd,
 	bulletGroundHittest,
-	playerBulletHittestBegin, playerBulletHittestEnd
+	playerBulletHittestBegin, playerBulletHittestEnd,
+	removeOutOfBoundsBullets, removeOutOfBoundsEnemies, removeOutOfBoundsRagdolls
 } from './modules/GameTickMethods'
 import { GAMEPLAY, MENU, GAME_OVER } from './modules/GameStates'
 
@@ -41,7 +40,7 @@ window.start = () => {
 	let gameState = ''
 	let currentLevel = 0
 	let keys = []
-	let enemies = [], bullets = [], enemiesToBeSpawned = []
+	let enemies = [], bullets = [], ragdolls = [], enemiesToBeSpawned = []
 	let crouched = false
 	let lastDirection = ''
 	let reticlePos = { x: 0, y: 0 }
@@ -152,7 +151,7 @@ window.start = () => {
 		for (let i = 0; i < n; ++i) {
 			let timeout = setTimeout(() => {
 				console.log(i)
-				createEnemy(enemies, bullets, player, world, null, { x: random.int(50, ground.bounds.max.x - 50), y: 0 })
+				createEnemy(enemies, bullets, ragdolls, player, world, null, { x: random.int(50, ground.bounds.max.x - 50), y: 0 })
 			}, (rate * i))
 			enemiesToBeSpawned.push(timeout)
 		}
@@ -213,7 +212,7 @@ window.start = () => {
 				// set time to remove bullet automatically
 				setTimeout(() => {
 					let idx = bullets.indexOf(bullet)
-					if (idx) {
+					if (idx > -1) {
 						World.remove(world, bullet)
 						bullets.splice(idx, 1)
 					}
@@ -268,7 +267,7 @@ window.start = () => {
 			for (let i = 0; i < e.pairs.length; ++i) {
 				// LOOP THROUGH ALL COLLISION TYPES
 				checkPlayerIsOnGroundEnd(e, i, player)
-				enemyBulletHittestEnd(e, i, player, enemies, world, bullets)
+				enemyBulletHittestEnd(e, i, player, enemies, world, ragdolls)
 				playerBulletHittestEnd(e, i, player, world, destroyGameObjects, changeGameState)
 			}
 		}
@@ -291,6 +290,7 @@ window.start = () => {
 			renderEntities()
 			removeOutOfBoundsBullets(world, bullets)
 			removeOutOfBoundsEnemies(world, enemies)
+			removeOutOfBoundsRagdolls(world, ragdolls)
 			renderPlayerMovementViaKeyInput(render, keys, player, playerProps, ground, lastDirection)
 		}
 	}

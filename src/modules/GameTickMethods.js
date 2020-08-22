@@ -3,7 +3,7 @@ import { BODY_DAMAGE, HEAD_DAMAGE, LIMB_DAMAGE, PLAYER_LIFEBAR_MULTIPLIER } from
 import { BULLET_FORCE_MULTIPLIER, BULLET_IMPACT, RAGDOLL_REMOVAL_TIMEOUT } from './constants/GameConstants'
 import { GAME_OVER, MENU } from './constants/GameStates'
 import { createRagdoll } from './Ragdoll'
-import { UpdateEnemyCount } from './events/EventTypes'
+import { UpdateEnemyCount, DecrementEnemyKillCount } from './events/EventTypes'
 
 export const removeOutOfBoundsRagdolls = (world, ragdolls) => {
 	for (let i = 0; i < ragdolls.length; ++i) {
@@ -32,6 +32,7 @@ export const removeOutOfBoundsEnemies = (world, enemies) => {
 				World.remove(world, enemy)
 				enemies.splice(idx, 1)
 				dispatchEvent(UpdateEnemyCount)
+				dispatchEvent(DecrementEnemyKillCount)
 				console.log('enemy fell out of bounds and was removed', enemies)
 			}
 		}
@@ -96,9 +97,12 @@ const removeEnemyFromWorld = (player, enemies, enemy, world, ragdolls, bulletFor
 		let enIdx = enemies.indexOf(enemy._composite)
 		if (enIdx > -1) {
 			dispatchEvent(UpdateEnemyCount)
+			dispatchEvent(DecrementEnemyKillCount)
 			enemies.splice(enIdx, 1)
 			World.remove(world, enemy._composite)
-			document.body.removeChild(enemy._outerLifebar)
+			if (enemy._outerLifebar.parentNode == document.body) {
+				document.body.removeChild(enemy._outerLifebar)
+			}
 		}
 		// add a ragdoll in place of enemy character!
 		let ragdoll = createRagdoll(world, 1)

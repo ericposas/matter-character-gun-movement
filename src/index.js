@@ -1,5 +1,6 @@
 import './index.scss'
 import random from 'random'
+import { TweenLite, Power1 } from 'gsap'
 import { width, height } from './config'
 import { Bodies, Body, World, Constraint, Composite, Composites, Events,
 	Vector, Render } from 'matter-js'
@@ -17,8 +18,9 @@ import { checkPlayerIsOnGroundBegin, checkPlayerIsOnGroundEnd, enemyBulletHittes
 	bulletGroundHittest, playerBulletHittestBegin, playerBulletHittestEnd,
 	removeOutOfBoundsBullets, removeOutOfBoundsEnemies, removeOutOfBoundsRagdolls
 } from './modules/GameTickMethods'
-import { GAMEPLAY, MENU, GAME_OVER } from './modules/constants/GameStates'
-import { UPDATE_ENEMY_COUNT, UpdateEnemyCount } from './modules/events/EventTypes'
+import { GAMEPLAY, MENU, GAME_OVER, WAVE_WON } from './modules/constants/GameStates'
+import { UPDATE_ENEMY_COUNT, UpdateEnemyCount, DECREMENT_ENEMY_KILL_COUNT,
+	UPDATE_WAVE, UpdateWave } from './modules/events/EventTypes'
 
 
 window.start = () => {
@@ -31,6 +33,8 @@ window.start = () => {
 	let ragdolls = [] // composites
 	let enemiesToBeSpawned = [] // composites
 	let enemyCountDOM = document.getElementById('enemy-count')
+	let enemiesToKillInWave, startWave = false
+	let waveLevelDOM = document.getElementById('wave-count')
 	let crouched = false
 	let lastDirection = ''
 	let reticlePos = { x: 0, y: 0 }
@@ -43,6 +47,8 @@ window.start = () => {
 	registerEventListeners()
 
 	changeGameState(MENU)
+
+	const setEnemyWaveCountCheck = n => { enemyWaveCount = n; checkEnemyWaveCount = true; }
 
 	function changeGameState(state) {
 		gameState = state
@@ -63,13 +69,24 @@ window.start = () => {
 			}
 		}
 		if (gameState === GAMEPLAY) {
+			createGameObjects()
 			buildLevel()
 		}
+		// if (gameState === WAVE_WON) {
+		// 	console.log('wave won')
+		// 	startWave = false
+		// 	destroyGameObjects()
+		//
+		// 	// changeLevel(2)
+		// 	// buildLevel()
+		// }
 		if (gameState === GAME_OVER) {
 			let tryAgainBtn = document.getElementById('try-again-button')
 			let gameover = document.getElementById('game-over-screen')
 			gameover.style.display = 'block'
 			tryAgainBtn.style.display = 'block'
+			TweenLite.set(gameover, { x: 0, alpha: 1 })
+			TweenLite.from(gameover, 1, { y: -200, alpha: 0 })
 			function playAgain(e) {
 				changeGameState(GAMEPLAY)
 				tryAgainBtn.style.display = 'none'
@@ -88,8 +105,8 @@ window.start = () => {
 		else { currentLevel = lvl }
 	}
 
-	function displayPlayerLifeBar() {
-		document.getElementById('player-lifebar').style.display = 'block'
+	function displayPlayerLifeBar(str) {
+		document.getElementById('player-lifebar').style.display = str
 		document.getElementById('player-lifebar-inner').style.cssText = "top:2px;left: 2px;width:756px;height:16px;position:relative;background-color:green;"
 	}
 
@@ -104,7 +121,7 @@ window.start = () => {
 			mouse_control = playerObjects.mouse_control
 			addSwappedBody = playerObjects.addSwappedBody
 			playerSwapBod = playerObjects.swapBod
-			displayPlayerLifeBar()
+			displayPlayerLifeBar('block')
 		}
 	}
 
@@ -147,19 +164,22 @@ window.start = () => {
 			addSwappedBody = null
 			playerSwapBod = null
 			destroyEnemiesToBeSpawned()
+			displayPlayerLifeBar('none')
 		}
 	}
 
 	function spawnEnemies(n, rate) {
 		console.log('spawning enemies')
-		for (let i = 0; i < n; ++i) {
+		let i
+		for (i = 0; i < n; ++i) {
 			let timeout = setTimeout(() => {
-				console.log(i)
 				window.dispatchEvent(UpdateEnemyCount)
 				createEnemy(enemies, bullets, ragdolls, player, world, null, { x: random.int(50, ground.bounds.max.x - 50), y: 0 })
 			}, (rate * i))
 			enemiesToBeSpawned.push(timeout)
 		}
+		enemiesToKillInWave = n
+		startWave = true
 	}
 	function destroyEnemiesToBeSpawned() {
 		enemiesToBeSpawned.forEach(timeout => {
@@ -172,28 +192,52 @@ window.start = () => {
 
 	const buildLevel = () => {
 		console.log('building level..')
-		if (currentLevel == 1) {
-			createGameObjects()
-			spawnEnemies(10, 500)
+		dispatchEvent(UpdateWave)
 
-			// destroyGameObjects()
-			// changeLevel(2)
-			// buildLevel()
+		if (currentLevel == 1) {
+			spawnEnemies(10, 1000)
+
 		}
 		if (currentLevel == 2) {
-			createGameObjects()
-
+			spawnEnemies(15, 1000)
 		}
+
 	}
 
 	function registerEventListeners() {
 		// EVENT LISTENERS
-		addEventListener(UPDATE_ENEMY_COUNT, e => {
-			enemyCountDOM.innerHTML = `enemy count: ${enemies.length-1}`
+		addEventListener(UPDATE_WAVE, e => {
+			waveLevelDOM.innerHTML = `wave: ${currentLevel}`
 		})
-		// document.addEventListener(ENEMY_COUNT_DECREMENT, e => {
-		// 	enemyCountDOM.childNodes(0).innerHTML = enemies.length
-		// })
+
+		addEventListener(DECREMENT_ENEMY_KILL_COUNT, e => {
+			enemiesToKillInWave -= 1
+			console.log(enemiesToKillInWave)
+			if (enemiesToKillInWave == 0) {
+				let waveWon = document.getElementById('wave-won-msg')
+				waveWon.style.display = 'block'
+				TweenLite.set(waveWon, { x: 0, alpha: 1 })
+				TweenLite.from(waveWon, 1, { x: -400 })
+				TweenLite.delayedCall(3, () => {
+					TweenLite.to(waveWon, 1, {
+						// x: 900,
+						alpha: 0,
+						ease: Power1.easeIn,
+						onComplete: () => {
+							changeLevel((currentLevel+1))
+							buildLevel()
+						}
+					})
+				})
+			}
+		})
+
+		addEventListener(UPDATE_ENEMY_COUNT, e => {
+			if (startWave) {
+				let enemyLen = enemies.length-1
+				enemyCountDOM.innerHTML = `enemy count: ${enemyLen < 0 ? 0 : enemyLen}`
+			}
+		})
 
 		render.canvas.addEventListener('mousemove', e => {
 			if (gameState === GAMEPLAY) {

@@ -1,5 +1,5 @@
 import { Render, Body, Composite, Vector, World } from 'matter-js'
-import { BULLET_FORCE } from './GameConstants'
+import { BULLET_FORCE } from './constants/GameConstants'
 import { width, height } from '../config'
 
 export const calculateBulletAngle = (player, render, reticlePos) => {

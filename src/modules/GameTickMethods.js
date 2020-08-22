@@ -1,7 +1,7 @@
 import { World, Body, Composite } from 'matter-js'
-import { BODY_DAMAGE, HEAD_DAMAGE, LIMB_DAMAGE, PLAYER_LIFEBAR_MULTIPLIER } from './DamageConstants'
-import { BULLET_FORCE_MULTIPLIER, BULLET_IMPACT, RAGDOLL_REMOVAL_TIMEOUT } from './GameConstants'
-import { GAME_OVER, MENU } from './GameStates'
+import { BODY_DAMAGE, HEAD_DAMAGE, LIMB_DAMAGE, PLAYER_LIFEBAR_MULTIPLIER } from './constants/DamageConstants'
+import { BULLET_FORCE_MULTIPLIER, BULLET_IMPACT, RAGDOLL_REMOVAL_TIMEOUT } from './constants/GameConstants'
+import { GAME_OVER, MENU } from './constants/GameStates'
 import { createRagdoll } from './Ragdoll'
 
 export const removeOutOfBoundsRagdolls = (world, ragdolls) => {

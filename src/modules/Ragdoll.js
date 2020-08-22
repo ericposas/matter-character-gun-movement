@@ -1,11 +1,9 @@
-import {
-	Body, Bodies, Constraint, Composite, World
-} from 'matter-js'
+import { Body, Bodies, Constraint, Composite, World } from 'matter-js'
 import {
 	GROUND, BULLET, BOX,
 	PLAYER_HEAD, PLAYER_BODY,
 	ENEMY_HEAD, ENEMY_BODY,
-} from './CollisionFilterConstants'
+} from './constants/CollisionFilterConstants'
 
 export function createRagdoll(world, scale) {
 	let parts = []

@@ -1,6 +1,6 @@
 import { Composite, Composites, Constraint, Bodies, World, Body, Vector } from 'matter-js'
-import { GROUND, BULLET, BOX, PLAYER_HEAD, PLAYER_BODY, ENEMY_HEAD, ENEMY_BODY } from './CollisionFilterConstants'
-import { BULLET_REMOVAL_TIMEOUT, ENEMY_BULLET_FORCE } from './GameConstants'
+import { GROUND, BULLET, BOX, PLAYER_HEAD, PLAYER_BODY, ENEMY_HEAD, ENEMY_BODY } from './constants/CollisionFilterConstants'
+import { BULLET_REMOVAL_TIMEOUT, ENEMY_BULLET_FORCE } from './constants/GameConstants'
 import random from 'random'
 import { TweenLite } from 'gsap'
 

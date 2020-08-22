@@ -1,7 +1,5 @@
-import {
-	World, Bodies
-} from 'matter-js'
-import { GROUND } from './CollisionFilterConstants'
+import { World, Bodies } from 'matter-js'
+import { GROUND } from './constants/CollisionFilterConstants'
 
 export const createGround = (world, width, height) => {
 	let ground = Bodies.rectangle(width, height, width * 2, 100, {

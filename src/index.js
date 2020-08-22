@@ -12,8 +12,8 @@ import {
 	GROUND, BULLET, BOX,
 	PLAYER_HEAD, PLAYER_BODY,
 	ENEMY_HEAD, ENEMY_BODY,
-} from './modules/CollisionFilterConstants'
-import { BULLET_REMOVAL_TIMEOUT } from './modules/GameConstants'
+} from './modules/constants/CollisionFilterConstants'
+import { BULLET_REMOVAL_TIMEOUT } from './modules/constants/GameConstants'
 import {
 	renderMouse,
 	toggleCrouch,
@@ -33,7 +33,7 @@ import {
 	playerBulletHittestBegin, playerBulletHittestEnd,
 	removeOutOfBoundsBullets, removeOutOfBoundsEnemies, removeOutOfBoundsRagdolls
 } from './modules/GameTickMethods'
-import { GAMEPLAY, MENU, GAME_OVER } from './modules/GameStates'
+import { GAMEPLAY, MENU, GAME_OVER } from './modules/constants/GameStates'
 
 
 window.start = () => {
@@ -53,7 +53,7 @@ window.start = () => {
 	let { world, render, engine } = boilerplate()
 	let playerObjects
 	let player, playerProps, mouse_point, mouse_control, playerSwapBod, addSwappedBody
-	
+
 	registerEventListeners()
 
 	changeGameState(MENU)

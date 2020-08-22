@@ -9,6 +9,20 @@ canvas {
 	overflow: hidden;
 }
 
+#enemy-count-container {
+	left: 680px;
+	width: 100px;
+	padding: 10px;
+	position: absolute;
+	background-color: #222;
+	border-radius: 2px;
+	border: 1px solid #444;
+}
+
+#enemy-count {
+	color: #fff;
+}
+
 #menu {
 	position: absolute;
 	text-align: center;

@@ -1,39 +1,24 @@
 import './index.scss'
 import random from 'random'
 import { width, height } from './config'
-import {
-	Bodies, Body, World, Constraint,
-	Composite, Composites, Events, Vector, Render
-} from 'matter-js'
+import { Bodies, Body, World, Constraint, Composite, Composites, Events,
+	Vector, Render } from 'matter-js'
 import { matterBoilerplate as boilerplate } from './modules/MatterBoilerplate'
 import { createPlayer, createEnemy } from './modules/Entities'
 import { createGround } from './modules/Platforms'
-import {
-	GROUND, BULLET, BOX,
-	PLAYER_HEAD, PLAYER_BODY,
-	ENEMY_HEAD, ENEMY_BODY,
-} from './modules/constants/CollisionFilterConstants'
+import { GROUND, BULLET, BOX, PLAYER_HEAD, PLAYER_BODY,
+	ENEMY_HEAD, ENEMY_BODY } from './modules/constants/CollisionFilterConstants'
 import { BULLET_REMOVAL_TIMEOUT } from './modules/constants/GameConstants'
-import {
-	renderMouse,
-	toggleCrouch,
-	renderPlayerMovementViaKeyInput,
-	calcMovingReticlePosition,
-	calculateBulletAngle
-} from './modules/PlayerControls'
-import {
-	positionEnemyLifebar,
-	positionEnemyAim
-} from './modules/EnemyControls'
-import {
-	checkPlayerIsOnGroundBegin, checkPlayerIsOnGroundEnd,
-	enemyBulletHittestBegin, enemyBulletHittestEnd,
-	ragdollBulletHittestBegin, ragdollBulletHittestEnd,
-	bulletGroundHittest,
-	playerBulletHittestBegin, playerBulletHittestEnd,
+import { renderMouse, toggleCrouch, renderPlayerMovementViaKeyInput,
+	calcMovingReticlePosition, calculateBulletAngle } from './modules/PlayerControls'
+import { positionEnemyLifebar, positionEnemyAim } from './modules/EnemyControls'
+import { checkPlayerIsOnGroundBegin, checkPlayerIsOnGroundEnd, enemyBulletHittestBegin,
+	enemyBulletHittestEnd, ragdollBulletHittestBegin, ragdollBulletHittestEnd,
+	bulletGroundHittest, playerBulletHittestBegin, playerBulletHittestEnd,
 	removeOutOfBoundsBullets, removeOutOfBoundsEnemies, removeOutOfBoundsRagdolls
 } from './modules/GameTickMethods'
 import { GAMEPLAY, MENU, GAME_OVER } from './modules/constants/GameStates'
+import { UPDATE_ENEMY_COUNT, UpdateEnemyCount } from './modules/events/EventTypes'
 
 
 window.start = () => {
@@ -45,6 +30,7 @@ window.start = () => {
 	let bullets = [] // bodies
 	let ragdolls = [] // composites
 	let enemiesToBeSpawned = [] // composites
+	let enemyCountDOM = document.getElementById('enemy-count')
 	let crouched = false
 	let lastDirection = ''
 	let reticlePos = { x: 0, y: 0 }
@@ -169,6 +155,7 @@ window.start = () => {
 		for (let i = 0; i < n; ++i) {
 			let timeout = setTimeout(() => {
 				console.log(i)
+				window.dispatchEvent(UpdateEnemyCount)
 				createEnemy(enemies, bullets, ragdolls, player, world, null, { x: random.int(50, ground.bounds.max.x - 50), y: 0 })
 			}, (rate * i))
 			enemiesToBeSpawned.push(timeout)
@@ -201,6 +188,13 @@ window.start = () => {
 
 	function registerEventListeners() {
 		// EVENT LISTENERS
+		addEventListener(UPDATE_ENEMY_COUNT, e => {
+			enemyCountDOM.innerHTML = `enemy count: ${enemies.length-1}`
+		})
+		// document.addEventListener(ENEMY_COUNT_DECREMENT, e => {
+		// 	enemyCountDOM.childNodes(0).innerHTML = enemies.length
+		// })
+
 		render.canvas.addEventListener('mousemove', e => {
 			if (gameState === GAMEPLAY) {
 				reticlePos = {

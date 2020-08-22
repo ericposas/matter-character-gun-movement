@@ -5,7 +5,6 @@
 - could make the menu using standard html or pixi.js graphics
 
 ## BUGS
-- shooting enemy arm still not damaging correctly
 - player 'drifts' towards the direction of the mouse cursor when he's idle.. maybe its a "feature"
 
 ## TODO

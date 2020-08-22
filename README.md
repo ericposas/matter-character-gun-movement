@@ -5,15 +5,12 @@
 - could make the menu using standard html or pixi.js graphics
 
 ## BUGS
-- cuplrit for the multiple buildLevel() calls was removeEventListener() failing to remove and firing multiple times bc of each function instance that was being created each run through
-- "obj is null" error when we get to the GAME_OVER screen and playerObjects are removed - haven't seen in a few hours now
 - shooting enemy arm still not damaging correctly
-- player 'drifts' towards the direction of the mouse cursor when he's idle
+- player 'drifts' towards the direction of the mouse cursor when he's idle.. maybe its a "feature"
 
 ## TODO
 
 ### general
-- remove bullets when they hit a ragdoll
 - create total enemy count for the level, you win when all enemies are cleared
 - experiment with level layout, ground width, etc. so that we can fit a better game view instead of the awkward upper-left corner
 - another possible fix for the view is to put the game in a 800x550 popup window, but then we really can't submit the game anywhere but on an owned url

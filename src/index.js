@@ -28,6 +28,7 @@ import {
 import {
 	checkPlayerIsOnGroundBegin, checkPlayerIsOnGroundEnd,
 	enemyBulletHittestBegin, enemyBulletHittestEnd,
+	ragdollBulletHittestBegin, ragdollBulletHittestEnd,
 	bulletGroundHittest,
 	playerBulletHittestBegin, playerBulletHittestEnd,
 	removeOutOfBoundsBullets, removeOutOfBoundsEnemies, removeOutOfBoundsRagdolls
@@ -40,17 +41,19 @@ window.start = () => {
 	let gameState = ''
 	let currentLevel = 0
 	let keys = []
-	let enemies = [], bullets = [], ragdolls = [], enemiesToBeSpawned = []
+	let enemies = [] // composites
+	let bullets = [] // bodies
+	let ragdolls = [] // composites
+	let enemiesToBeSpawned = [] // composites
 	let crouched = false
 	let lastDirection = ''
 	let reticlePos = { x: 0, y: 0 }
-	let bulletForceAngle = { x: 0, y: 0 }
 	let ground
 	// generate Matter world
 	let { world, render, engine } = boilerplate()
 	let playerObjects
 	let player, playerProps, mouse_point, mouse_control, playerSwapBod, addSwappedBody
-
+	
 	registerEventListeners()
 
 	changeGameState(MENU)
@@ -266,8 +269,9 @@ window.start = () => {
 			for (let i = 0; i < e.pairs.length; ++i) {
 				bulletGroundHittest(e, i, world, bullets)
 				checkPlayerIsOnGroundBegin(e, i, player)
-				enemyBulletHittestBegin(e, i, world, bulletForceAngle, bullets)
-				playerBulletHittestBegin(e, i, world, bulletForceAngle, bullets)
+				enemyBulletHittestBegin(e, i, world, calculateBulletAngle(player, render, reticlePos), bullets)
+				playerBulletHittestBegin(e, i, world, calculateBulletAngle(player, render, reticlePos), bullets)
+				ragdollBulletHittestBegin(e, i, world, calculateBulletAngle(player, render, reticlePos), bullets)
 			}
 		}
 	}
@@ -277,7 +281,8 @@ window.start = () => {
 			for (let i = 0; i < e.pairs.length; ++i) {
 				// LOOP THROUGH ALL COLLISION TYPES
 				checkPlayerIsOnGroundEnd(e, i, player)
-				enemyBulletHittestEnd(e, i, player, enemies, world, ragdolls)
+				enemyBulletHittestEnd(e, i, player, enemies, world, ragdolls, calculateBulletAngle(player, render, reticlePos))
+				ragdollBulletHittestEnd(e, i, player, ragdolls, world)
 				playerBulletHittestEnd(e, i, player, world, destroyGameObjects, changeGameState)
 			}
 		}

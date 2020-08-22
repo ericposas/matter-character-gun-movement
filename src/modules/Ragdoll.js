@@ -1,5 +1,5 @@
 import {
-	Bodies, Constraint, Composite, World
+	Body, Bodies, Constraint, Composite, World
 } from 'matter-js'
 import {
 	GROUND, BULLET, BOX,
@@ -8,7 +8,7 @@ import {
 } from './CollisionFilterConstants'
 
 export function createRagdoll(world, scale) {
-
+	let parts = []
 	scale = scale | 1
 	// position = position | { x: 0, y: 0 }
 
@@ -62,16 +62,16 @@ export function createRagdoll(world, scale) {
 			category: ENEMY_BODY
 		}
 	})
-	lowerLeg1.label = 'lower leg 1'
-	upperLeg1.label = 'upper leg 1'
-	lowerLeg2.label = 'lower leg 2'
-	upperLeg2.label = 'upper leg 2'
-	upperArm1.label = 'upper arm 1'
-	lowerArm1.label = 'lower arm 1'
-	upperArm2.label = 'upper arm 2'
-	lowerArm2.label = 'lower arm 2'
-	head.label = 'head'
-	torso.label = 'torso'
+	lowerLeg1.label = 'ragdoll lower leg 1'
+	upperLeg1.label = 'ragdoll upper leg 1'
+	lowerLeg2.label = 'ragdoll lower leg 2'
+	upperLeg2.label = 'ragdoll upper leg 2'
+	upperArm1.label = 'ragdoll upper arm 1'
+	lowerArm1.label = 'ragdoll lower arm 1'
+	upperArm2.label = 'ragdoll upper arm 2'
+	lowerArm2.label = 'ragdoll lower arm 2'
+	head.label = 'ragdoll head'
+	torso.label = 'ragdoll torso'
 
 	let renderProps = {
 		anchors: false,
@@ -151,8 +151,14 @@ export function createRagdoll(world, scale) {
 		render: renderProps
 	})
 
-	let collection = Composite.create({
-	})
+	let collection = Composite.create()
+	parts.push(
+		lowerLeg1, lowerLeg2, upperLeg1, upperLeg2,
+		lowerArm1, lowerArm2, upperArm1, upperArm2,
+		head, torso
+	)
+	parts.forEach(part => part._composite = collection)
+
 	Composite.add(collection, [
 		head, torso,
 		lowerLeg1, lowerLeg2,
@@ -166,6 +172,10 @@ export function createRagdoll(world, scale) {
 		upperarm2_to_torso, lowerarm2_to_upperarm2
 	])
 	World.add(world, [collection])
+
+	// collection.applyForceToSelf = () => {
+	// 	Body.applyForce(torso, torso.position, { x: 0, y: -.2 })
+	// }
 
 	return collection
 }

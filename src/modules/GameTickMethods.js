@@ -77,22 +77,26 @@ const removePlayerFromWorld = (player, world) => {
 	World.remove(world, player)
 }
 
-const killEnemy = (player, enemies, enemy, world, ragdolls) => {
+const killEnemy = (player, enemies, enemy, world, ragdolls, bulletForceAngle) => {
 	if (enemy._lifebar) {
 		let lifeAmt = parseInt(enemy._lifebar.style.width, 10)
 		if (lifeAmt <= 0) {
 			enemy._composite.stopShooting()
-			removeEnemyFromWorld(player, enemies, enemy, world, ragdolls)
+			// below function adds a ragdoll
+			removeEnemyFromWorld(player, enemies, enemy, world, ragdolls, bulletForceAngle)
 		}
 	}
 }
 
-const removeEnemyFromWorld = (player, enemies, enemy, world, ragdolls) => {
+const removeEnemyFromWorld = (player, enemies, enemy, world, ragdolls, bulletForceAngle) => {
 	if (enemy._outerLifebar.parentNode == document.body) {
+		console.log(bulletForceAngle)
 		let enIdx = enemies.indexOf(enemy._composite)
-		let _x = (
-			enemy.position.x < player.bodies[0].position.x ? -BULLET_IMPACT : BULLET_IMPACT
-		)
+		// let _x = (
+		// 	enemy.position.x < player.bodies[0].position.x
+		// 	? -bulletForceAngle.x
+		// 	: bulletForceAngle.x
+		// )
 		enemies.splice(enIdx, 1)
 		World.remove(world, enemy._composite)
 		document.body.removeChild(enemy._outerLifebar)
@@ -103,7 +107,10 @@ const removeEnemyFromWorld = (player, enemies, enemy, world, ragdolls) => {
 		console.log('enemy count:', enemies)
 		console.log('ragdolls', ragdolls)
 		Composite.translate(ragdoll, { x: enemy.position.x, y: enemy.position.y - 100 })
-		Body.applyForce(ragdoll.bodies[0], ragdoll.bodies[0].position, { x: _x, y: BULLET_IMPACT/2 })
+		Body.applyForce(ragdoll.bodies[0], ragdoll.bodies[0].position, {
+			x: (bulletForceAngle.x * BULLET_FORCE_MULTIPLIER),
+			y: -(bulletForceAngle.y * BULLET_FORCE_MULTIPLIER)
+		})
 		// set time limit for ragdoll body to be removed from scene
 		setTimeout(() => {
 			let idx = ragdolls.indexOf(ragdoll)
@@ -143,6 +150,27 @@ const processDamageType = (entity) => {
 	}
 }
 
+export const ragdollBulletHittestBegin = (e, i, world, bulletForceAngle, bullets) => {
+	let ragdoll, bullet
+	if (e.pairs[i].bodyA.label.indexOf('ragdoll') > -1 && e.pairs[i].bodyB.label == 'bullet') {
+		ragdoll = e.pairs[i].bodyA._composite
+		bullet = e.pairs[i].bodyB
+		let idx = bullets.indexOf(bullet)
+		if (idx > -1) {
+			World.remove(world, bullet)
+			bullets.splice(idx, 1)
+		}
+	} else if (e.pairs[i].bodyB.label.indexOf('ragdoll') > -1 && e.pairs[i].bodyA.label == 'bullet') {
+		ragdoll = e.pairs[i].bodyB._composite
+		bullet = e.pairs[i].bodyA
+		let idx = bullets.indexOf(bullet)
+		if (idx > -1) {
+			World.remove(world, bullet)
+			bullets.splice(idx, 1)
+		}
+	}
+}
+
 export const playerBulletHittestBegin = (e, i, world, bulletForceAngle, bullets) => {
 	if (e.pairs[i].bodyA.label.indexOf('player') > -1 && e.pairs[i].bodyB.label == 'enemy bullet') {
 		let player = e.pairs[i].bodyA
@@ -150,16 +178,20 @@ export const playerBulletHittestBegin = (e, i, world, bulletForceAngle, bullets)
 		let idx = bullets.indexOf(bullet)
 		processDamageType(player)
 		// Body.applyForce(enemy, enemy.position, { x: bulletForceAngle.x * BULLET_FORCE_MULTIPLIER })
-		World.remove(world, bullet)
-		if (idx > -1) { bullets.splice(idx, 1) }
+		if (idx > -1) {
+			World.remove(world, bullet)
+			bullets.splice(idx, 1)
+		}
 	} else if (e.pairs[i].bodyB.label.indexOf('player') > -1 && e.pairs[i].bodyA.label == 'enemy bullet') {
 		let player = e.pairs[i].bodyB
 		let bullet = e.pairs[i].bodyA
 		let idx = bullets.indexOf(bullet)
 		processDamageType(player)
 		// Body.applyForce(enemy, enemy.position, { x: bulletForceAngle.x * BULLET_FORCE_MULTIPLIER })
-		World.remove(world, bullet)
-		if (idx > -1) { bullets.splice(idx, 1) }
+		if (idx > -1) {
+			World.remove(world, bullet)
+			bullets.splice(idx, 1)
+		}
 	}
 }
 
@@ -170,28 +202,36 @@ export const enemyBulletHittestBegin = (e, i, world, bulletForceAngle, bullets) 
 		let idx = bullets.indexOf(bullet)
 		processDamageType(enemy)
 		Body.applyForce(enemy, enemy.position, { x: bulletForceAngle.x * BULLET_FORCE_MULTIPLIER })
-		World.remove(world, bullet)
-		if (idx > -1) { bullets.splice(idx, 1) }
+		if (idx > -1) {
+			World.remove(world, bullet)
+			bullets.splice(idx, 1)
+		}
 	} else if (e.pairs[i].bodyB.label.indexOf('enemy') > -1 && e.pairs[i].bodyA.label == 'bullet') {
 		let enemy = e.pairs[i].bodyB
 		let bullet = e.pairs[i].bodyA
 		let idx = bullets.indexOf(bullet)
 		processDamageType(enemy)
 		Body.applyForce(enemy, enemy.position, { x: bulletForceAngle.x * BULLET_FORCE_MULTIPLIER })
-		World.remove(world, bullet)
-		if (idx > -1) { bullets.splice(idx, 1) }
+		if (idx > -1) {
+			World.remove(world, bullet)
+			bullets.splice(idx, 1)
+		}
 	}
 	// if enemies shoot each other, remove the bullet
 	if (e.pairs[i].bodyA.label.indexOf('enemy') > -1 && e.pairs[i].bodyB.label.indexOf('enemy bullet') > -1) {
 		let bullet = e.pairs[i].bodyB
 		let idx = bullets.indexOf(bullet)
-		World.remove(world, bullet)
-		if (idx > -1) { bullets.splice(idx, 1) }
+		if (idx > -1) {
+			World.remove(world, bullet)
+			bullets.splice(idx, 1)
+		}
 	} else if (e.pairs[i].bodyB.label.indexOf('enemy') > -1 && e.pairs[i].bodyA.label.indexOf('enemy bullet') > -1) {
 		let bullet = e.pairs[i].bodyA
 		let idx = bullets.indexOf(bullet)
-		World.remove(world, bullet)
-		if (idx > -1) { bullets.splice(idx, 1) }
+		if (idx > -1) {
+			World.remove(world, bullet)
+			bullets.splice(idx, 1)
+		}
 	}
 }
 
@@ -220,13 +260,25 @@ export const checkPlayerIsOnGroundEnd = (e, i, player) => {
 	}
 }
 
-export const enemyBulletHittestEnd = (e, i, player, enemies, world, ragdolls) => {
+export const ragdollBulletHittestEnd = (e, i, player, ragdolls, world) => {
+	if (e.pairs[i].bodyA.label.indexOf('ragdoll') > -1 && e.pairs[i].bodyB.label == 'bullet') {
+		let ragdollPart = e.pairs[i].bodyA
+		let ragdoll = ragdollPart._composite
+		// Body.applyForce(ragdollPart, ragdollPart.position, { x: 0, y: -BULLET_IMPACT })
+	} else if (e.pairs[i].bodyB.label.indexOf('ragdoll') > -1 && e.pairs[i].bodyA.label == 'bullet') {
+		let ragdollPart = e.pairs[i].bodyB
+		let ragdoll = ragdollPart._composite
+		// Body.applyForce(ragdollPart, ragdollPart.position, { x: 0, y: -BULLET_IMPACT })
+	}
+}
+
+export const enemyBulletHittestEnd = (e, i, player, enemies, world, ragdolls, bulletForceAngle) => {
 	if (e.pairs[i].bodyA.label.indexOf('enemy') > -1 && e.pairs[i].bodyB.label == 'bullet') {
 		let enemy = e.pairs[i].bodyA
-		killEnemy(player, enemies, enemy, world, ragdolls)
+		killEnemy(player, enemies, enemy, world, ragdolls, bulletForceAngle)
 	} else if (e.pairs[i].bodyB.label.indexOf('enemy') > -1 && e.pairs[i].bodyA.label == 'bullet') {
 		let enemy = e.pairs[i].bodyB
-		killEnemy(player, enemies, enemy, world, ragdolls)
+		killEnemy(player, enemies, enemy, world, ragdolls, bulletForceAngle)
 	}
 }
 

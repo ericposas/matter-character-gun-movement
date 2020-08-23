@@ -45,7 +45,7 @@ export const toggleCrouch = (crouched, setCrouched, player, addSwappedBody, play
 	}
 }
 
-export const renderPlayerMovementViaKeyInput = (render, keys, player, playerProps, ground, lastDirection) => {
+export const renderPlayerMovementViaKeyInput = (render, keys, player, playerProps, ground, lastDirection, crouched, setCrouched, addSwappedBody, playerSwapBod) => {
 	if (player) {
 		let playerPos = player.bodies[0].position
 		let playerBod = player.bodies[1]
@@ -64,11 +64,15 @@ export const renderPlayerMovementViaKeyInput = (render, keys, player, playerProp
 		if (keys[87] &&
 			(player.bodies[1].position.y - playerHeight) > (groundHeight-15) &&
 			player.ground) {
-				player.bodies[1].force = (
-					lastDirection == 'left'
-					?	{ x: -0.1, y: playerProps.jumpForce }
-					: { x: 0.1, y: playerProps.jumpForce }
-				)
+				if (!crouched) {
+					player.bodies[1].force = (
+						lastDirection == 'left'
+						?	{ x: -0.1, y: playerProps.jumpForce }
+						: { x: 0.1, y: playerProps.jumpForce }
+					)
+				} else {
+					toggleCrouch(crouched, setCrouched, player, addSwappedBody, playerSwapBod)
+				}
 			} else {
 				Body.setAngle(player.bodies[1], 0)
 				Body.setDensity(player.bodies[1], .025)

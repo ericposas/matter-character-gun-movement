@@ -11,7 +11,8 @@ import { GROUND, BULLET, BOX, PLAYER_HEAD, PLAYER_BODY,
 	ENEMY_HEAD, ENEMY_BODY } from './modules/constants/CollisionFilterConstants'
 import { BULLET_REMOVAL_TIMEOUT } from './modules/constants/GameConstants'
 import { renderMouse, toggleCrouch, renderPlayerMovementViaKeyInput,
-	calcMovingReticlePosition, calculateBulletAngle } from './modules/PlayerControls'
+	calcMovingReticlePosition, calculateBulletAngle, setCrouched
+} from './modules/PlayerControls'
 import { positionEnemyLifebar, positionEnemyAim } from './modules/EnemyControls'
 import { checkPlayerIsOnGroundBegin, checkPlayerIsOnGroundEnd, enemyBulletHittestBegin,
 	enemyBulletHittestEnd, ragdollBulletHittestBegin, ragdollBulletHittestEnd,
@@ -212,6 +213,18 @@ window.start = () => {
 
 	}
 
+	// clever use of javascript closure to pass these variables to another function for setting
+	const setCrouched = (swapped) => {
+		crouched = !crouched;
+		player = swapped.player // reassign player variable to the new swapped player
+		playerProps = swapped.playerProps
+		let mx = mouse_point.position.x
+		let my = mouse_point.position.y
+		mouse_point = swapped.mouse_point
+		mouse_point.position.x = mx
+		mouse_point.position.y = my
+	}
+
 	function registerEventListeners() {
 		// EVENT LISTENERS
 		addEventListener(UPDATE_WAVE, e => {
@@ -281,16 +294,16 @@ window.start = () => {
 			if (gameState === GAMEPLAY) {
 				keys[e.keyCode] = true
 				// clever use of javascript closure to pass these variables to another function for setting
-				const setCrouched = (swapped) => {
-					crouched = !crouched;
-					player = swapped.player // reassign player variable to the new swapped player
-					playerProps = swapped.playerProps
-					let mx = mouse_point.position.x
-					let my = mouse_point.position.y
-					mouse_point = swapped.mouse_point
-					mouse_point.position.x = mx
-					mouse_point.position.y = my
-				}
+				// const setCrouched = (swapped) => {
+				// 	crouched = !crouched;
+				// 	player = swapped.player // reassign player variable to the new swapped player
+				// 	playerProps = swapped.playerProps
+				// 	let mx = mouse_point.position.x
+				// 	let my = mouse_point.position.y
+				// 	mouse_point = swapped.mouse_point
+				// 	mouse_point.position.x = mx
+				// 	mouse_point.position.y = my
+				// }
 				if (keys[83]) {
 					toggleCrouch(crouched, setCrouched, player, addSwappedBody, playerSwapBod)
 				}
@@ -321,7 +334,7 @@ window.start = () => {
 			}
 		}
 	}
-	
+
 	const checkCollisionsEnd = e => {
 		if (gameState == GAMEPLAY && checkGameEntitiesReady()) {
 			for (let i = 0; i < e.pairs.length; ++i) {
@@ -353,7 +366,7 @@ window.start = () => {
 			removeOutOfBoundsEnemies(world, enemies)
 			removeOutOfBoundsRagdolls(world, ragdolls)
 			removeOutOfBoundsPlayer(player, world, destroyGameObjects, changeGameState)
-			renderPlayerMovementViaKeyInput(render, keys, player, playerProps, ground, lastDirection)
+			renderPlayerMovementViaKeyInput(render, keys, player, playerProps, ground, lastDirection, crouched, setCrouched, addSwappedBody, playerSwapBod)
 		}
 	}
 

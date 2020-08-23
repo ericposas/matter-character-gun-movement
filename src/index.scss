@@ -33,6 +33,7 @@ canvas {
 	border: 1px solid #444;
 	font-family: Arial;
 	color: white;
+	pointer-events: none;
 }
 
 #enemy-count-container {
@@ -45,6 +46,7 @@ canvas {
 	border-radius: 2px;
 	border: 1px solid #444;
 	font-family: Arial;
+	pointer-events: none;
 }
 
 #enemy-count {

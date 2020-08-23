@@ -1,6 +1,6 @@
 import './index.scss'
 import random from 'random'
-import { TweenLite, Power1 } from 'gsap'
+// import { TweenLite, Power1 } from 'gsap'
 import { width, height } from './config'
 import { Bodies, Body, World, Constraint, Composite, Composites, Events,
 	Vector, Render } from 'matter-js'
@@ -85,8 +85,8 @@ window.start = () => {
 			let gameover = document.getElementById('game-over-screen')
 			gameover.style.display = 'block'
 			tryAgainBtn.style.display = 'block'
-			TweenLite.set(gameover, { x: 0, alpha: 1 })
-			TweenLite.from(gameover, 1, { y: -200, alpha: 0 })
+			TweenLite.set(gameover, { left: 0, alpha: 1 })
+			TweenLite.from(gameover, 1, { left: -200, alpha: 0 })
 			function playAgain(e) {
 				changeGameState(GAMEPLAY)
 				tryAgainBtn.style.display = 'none'
@@ -216,11 +216,10 @@ window.start = () => {
 			if (enemiesToKillInWave == 0) {
 				let waveWon = document.getElementById('wave-won-msg')
 				waveWon.style.display = 'block'
-				TweenLite.set(waveWon, { x: 0, alpha: 1 })
-				TweenLite.from(waveWon, 1, { x: -400 })
+				TweenLite.set(waveWon, { left: 0, alpha: 1 })
+				TweenLite.from(waveWon, 1, { left: -400 })
 				TweenLite.delayedCall(3, () => {
 					TweenLite.to(waveWon, 1, {
-						// x: 900,
 						alpha: 0,
 						ease: Power1.easeIn,
 						onComplete: () => {

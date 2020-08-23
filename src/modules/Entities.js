@@ -2,7 +2,7 @@ import { Composite, Composites, Constraint, Bodies, World, Body, Vector } from '
 import { GROUND, BULLET, BOX, PLAYER_HEAD, PLAYER_BODY, ENEMY_HEAD, ENEMY_BODY } from './constants/CollisionFilterConstants'
 import { BULLET_REMOVAL_TIMEOUT, ENEMY_BULLET_FORCE } from './constants/GameConstants'
 import random from 'random'
-import { TweenLite } from 'gsap'
+// import { TweenLite } from 'gsap'
 
 // ragdollsArray is not used here, but is now available to the enemy instance
 export const createEnemy = (enemiesArray, bulletsArray, ragdollsArray, player, world, mouse_point, position) => {

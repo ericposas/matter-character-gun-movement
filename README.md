@@ -21,7 +21,6 @@
 
 ### player
 - smooth out player platforming / controls
-- create player lifebar and accept damage from enemy bullets
 
 ### game
 - create game states for menu, pause, in-game, level-transition, game end, etc. and a way to smoothly remove bodies/graphics and build next scene

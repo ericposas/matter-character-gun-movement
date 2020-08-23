@@ -1,6 +1,11 @@
 import { Composite, Composites, Constraint, Bodies, World, Body, Vector } from 'matter-js'
 import { GROUND, BULLET, BOX, PLAYER_HEAD, PLAYER_BODY, ENEMY_HEAD, ENEMY_BODY } from './constants/CollisionFilterConstants'
-import { BULLET_REMOVAL_TIMEOUT, ENEMY_BULLET_FORCE } from './constants/GameConstants'
+import {
+	BULLET_REMOVAL_TIMEOUT, ENEMY_BULLET_FORCE,
+	ENEMY_BULLET_SHOOT_INTERVAL_MIN, ENEMY_BULLET_SHOOT_INTERVAL_MAX,
+	ENEMY_CROUCH_INTERVAL_MIN, ENEMY_CROUCH_INTERVAL_MAX,
+	ENEMY_JUMP_INTERVAL_MIN, ENEMY_JUMP_INTERVAL_MAX
+} from './constants/GameConstants'
 import { UpdateEnemyCount } from './events/EventTypes'
 import random from 'random'
 // import { TweenLite } from 'gsap'
@@ -8,7 +13,7 @@ import random from 'random'
 // ragdollsArray is not used here, but is now available to the enemy instance
 export const createEnemy = (enemiesArray, bulletsArray, ragdollsArray, player, world, mouse_point, position, swapEnemyBody) => {
 
-	let { player: enemy, swapBod, addSwappedBody } = createPlayer(world, 'enemy', mouse_point, position)
+	let { player: enemy, playerProps: enemyProps, swapBod, addSwappedBody } = createPlayer(world, 'enemy', mouse_point, position)
 
 	const createEnemyLifeBar = () => {
 		let barWd = 60, barHt = 10
@@ -34,15 +39,6 @@ export const createEnemy = (enemiesArray, bulletsArray, ragdollsArray, player, w
 			enemy.constraints[3],
 			enemy.constraints[4]
 		])
-		// enemy.bodies[0]._lifebar = bar
-		// enemy.bodies[1]._lifebar = bar
-		// enemy.bodies[0]._outerLifebar = outerbar
-		// enemy.bodies[1]._outerLifebar = outerbar
-		// enemy.bodies[0]._barsize = size
-		// enemy.bodies[1]._barsize = size
-		// enemy.bodies[0]._composite = enemy
-		// enemy.bodies[1]._composite = enemy
-		// enemy.bodies[2]._composite = enemy
 		enemy.bodies.forEach(body => {
 			body._lifebar = bar
 			body._outerLifebar = outerbar
@@ -57,10 +53,17 @@ export const createEnemy = (enemiesArray, bulletsArray, ragdollsArray, player, w
 				document.body.removeChild(outerbar)
 			}
 		}
+		enemy.ground = false
+		enemy.setGround = (bool) => {
+			enemy.ground = bool
+			// console.log('enemy is on ground: ', bool);
+		}
 	}
 	processEnemyFromPlayer()
 
 	let shouldShoot = true
+	let getRandomShootInterval = () => random.int(ENEMY_BULLET_SHOOT_INTERVAL_MIN, ENEMY_BULLET_SHOOT_INTERVAL_MAX)
+	let shootTime = getRandomShootInterval()
 	const bulletHandler = () => {
 		if (shouldShoot) {
 			let playerPos
@@ -85,6 +88,7 @@ export const createEnemy = (enemiesArray, bulletsArray, ragdollsArray, player, w
 				x: Math.cos(arm.angle) * ENEMY_BULLET_FORCE,
 				y: Math.sin(arm.angle) * ENEMY_BULLET_FORCE
 			})
+			shootTime = getRandomShootInterval()
 			// set time to remove bullet automatically
 			setTimeout(() => {
 				let idx = bulletsArray.indexOf(enemyBullet)
@@ -93,12 +97,12 @@ export const createEnemy = (enemiesArray, bulletsArray, ragdollsArray, player, w
 					bulletsArray.splice(idx, 1)
 				}
 			}, BULLET_REMOVAL_TIMEOUT)
-			setTimeout(bulletHandler, random.int(500, 3000))
+			setTimeout(bulletHandler, shootTime)
 		}
 	}
 	// test enemy shooting code
 	// using setTimeout instead of setInterval to get a new random number each time
-	setTimeout(bulletHandler, random.int(500, 3000)) // shoot a bullet randomly between .5 to 3.0 seconds
+	setTimeout(bulletHandler, shootTime) // shoot a bullet randomly between .5 to 3.0 seconds
 
 	// create random enemy movement
 	let directionChangeInterval = setInterval(() => {
@@ -114,8 +118,10 @@ export const createEnemy = (enemiesArray, bulletsArray, ragdollsArray, player, w
 	}, random.int(3000, 6000)) // change up directional flag every 3 to 6 seconds
 	// create random enemy crouching
 	let crouched = false
+	let getRandomCrouchInterval = () => random.int(ENEMY_CROUCH_INTERVAL_MIN, ENEMY_CROUCH_INTERVAL_MAX)
+	let crouchTime = getRandomCrouchInterval()
 	let crouchInterval = setInterval(() => {
-		if (shouldShoot) {
+		if (shouldShoot && enemy.ground) {
 			let swapped
 			let x = enemy.bodies[0].position.x, y = enemy.bodies[0].position.y
 			if (!crouched) {
@@ -124,6 +130,7 @@ export const createEnemy = (enemiesArray, bulletsArray, ragdollsArray, player, w
 				swapped = addSwappedBody(swapBod('normal', enemy, x, y))
 			}
 			crouched = !crouched
+			crouchTime = getRandomCrouchInterval()
 			let { player: _enemy, playerProps: enemyProps,  } = swapped
 			swapEnemyBody(_enemy, enemy)
 			enemy = _enemy
@@ -132,7 +139,28 @@ export const createEnemy = (enemiesArray, bulletsArray, ragdollsArray, player, w
 		} else {
 			clearInterval(crouchInterval)
 		}
-	}, random.int(3000, 6000))
+	}, crouchTime)
+	// create random enemy jumping
+	// let jumping = false
+	let getRandomJumpInterval = () => random.int(ENEMY_JUMP_INTERVAL_MIN, ENEMY_JUMP_INTERVAL_MAX)
+	let jumpTime = getRandomJumpInterval()
+	let jumpInterval = setInterval(() => {
+		if (shouldShoot) {
+			if (enemy.ground && !crouched) {
+				enemy.bodies[1].force = (
+					enemy._direction == 'left'
+					?	{ x: -5, y: -50 }
+					: { x: 5, y: -50 }
+				)
+				enemy.setGround(false)
+				jumpTime = getRandomJumpInterval()
+			} else {
+				Body.setAngle(player.bodies[1], 0)
+			}
+		} else {
+			clearInterval(jumpInterval)
+		}
+	}, jumpTime)
 	// create a translation object
 	// using gsap, update the position of the enemy onUpdate() and change x value dep. on direction
 	const moveEnemy = () => {

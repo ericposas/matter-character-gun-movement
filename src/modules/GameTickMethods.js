@@ -142,6 +142,16 @@ export const checkPlayerIsOnGroundBegin = (e, i, player) => {
 	}
 }
 
+export const checkEnemiesAreOnGround = (e, i, enemies) => {
+	for (let j = 0; j < enemies.length; ++j) {
+		if (e.pairs[i].bodyA === enemies[j].bodies[1] && e.pairs[i].bodyB.label.indexOf('ground') > -1) {
+			enemies[j].setGround(true)
+		} else if (e.pairs[i].bodyB === enemies[j].bodies[1] && e.pairs[i].bodyA.label.indexOf('ground') > -1) {
+			enemies[j].setGround(true)
+		}
+	}
+}
+
 const processDamageType = (entity) => {
 	if (entity.label.indexOf('enemy') > -1) {
 		entity.label.indexOf('head') > -1

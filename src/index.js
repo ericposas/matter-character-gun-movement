@@ -17,7 +17,7 @@ import { checkPlayerIsOnGroundBegin, checkPlayerIsOnGroundEnd, enemyBulletHittes
 	enemyBulletHittestEnd, ragdollBulletHittestBegin, ragdollBulletHittestEnd,
 	bulletGroundHittest, playerBulletHittestBegin, playerBulletHittestEnd,
 	removeOutOfBoundsBullets, removeOutOfBoundsEnemies, removeOutOfBoundsRagdolls,
-	removeOutOfBoundsPlayer
+	removeOutOfBoundsPlayer, checkEnemiesAreOnGround
 } from './modules/GameTickMethods'
 import { GAMEPLAY, MENU, GAME_OVER, WAVE_WON } from './modules/constants/GameStates'
 import { UPDATE_ENEMY_COUNT, UpdateEnemyCount, DECREMENT_ENEMY_KILL_COUNT,
@@ -314,13 +314,14 @@ window.start = () => {
 			for (let i = 0; i < e.pairs.length; ++i) {
 				bulletGroundHittest(e, i, world, bullets)
 				checkPlayerIsOnGroundBegin(e, i, player)
+				checkEnemiesAreOnGround(e, i, enemies)
 				enemyBulletHittestBegin(e, i, world, calculateBulletAngle(player, render, reticlePos), bullets)
 				playerBulletHittestBegin(e, i, world, calculateBulletAngle(player, render, reticlePos), bullets)
 				ragdollBulletHittestBegin(e, i, world, calculateBulletAngle(player, render, reticlePos), bullets)
 			}
 		}
 	}
-
+	
 	const checkCollisionsEnd = e => {
 		if (gameState == GAMEPLAY && checkGameEntitiesReady()) {
 			for (let i = 0; i < e.pairs.length; ++i) {

@@ -239,12 +239,13 @@ window.start = () => {
 		})
 
 		addEventListener(UPDATE_ENEMY_COUNT, e => {
-			if (startWave) {
-				let enemyLen = enemies.length-1
-				enemyCountDOM.innerHTML = `enemy count: ${enemyLen < 0 ? 0 : enemyLen}`
-			}
+			// if (startWave) {
+			// console.log('enemies array length', enemies.length)
+			// let enemyLen = enemies.length
+			enemyCountDOM.innerHTML = `enemies left: ${enemiesToKillInWave}`
+			// }
 		})
-		
+
 		render.canvas.addEventListener('mousemove', e => {
 			if (gameState === GAMEPLAY) {
 				reticlePos = {

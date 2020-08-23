@@ -38,8 +38,8 @@ export const removeOutOfBoundsEnemies = (world, enemies) => {
 				enemy.removeLifebar()
 				World.remove(world, enemy)
 				enemies.splice(idx, 1)
-				dispatchEvent(UpdateEnemyCount)
 				dispatchEvent(DecrementEnemyKillCount)
+				dispatchEvent(UpdateEnemyCount)
 				console.log('enemy fell out of bounds and was removed', enemies)
 			}
 		}
@@ -103,8 +103,8 @@ const removeEnemyFromWorld = (player, enemies, enemy, world, ragdolls, bulletFor
 		console.log(bulletForceAngle)
 		let enIdx = enemies.indexOf(enemy._composite)
 		if (enIdx > -1) {
-			dispatchEvent(UpdateEnemyCount)
 			dispatchEvent(DecrementEnemyKillCount)
+			dispatchEvent(UpdateEnemyCount)
 			enemies.splice(enIdx, 1)
 			World.remove(world, enemy._composite)
 			if (enemy._outerLifebar.parentNode == document.body) {

@@ -17,7 +17,6 @@
 - make random health drops in different sizes (drop between waves)
 
 ### enemies
-- make enemies crouch randomly
 - add variance to enemy lifebar and damage rates
 
 ### player

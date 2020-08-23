@@ -10,9 +10,8 @@
 ## TODO
 
 ### general
-- when player falls out of bounds, process a game over
 - experiment with level layout, ground width, etc. so that we can fit a better game view instead of the awkward upper-left corner
-- another possible fix for the view is to put the game in a 800x550 popup window, but then we really can't submit the game anywhere but on an owned url
+- game works fine in an html iframe
 
 ### items
 - make random health drops in different sizes (drop between waves)

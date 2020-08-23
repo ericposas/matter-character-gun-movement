@@ -5,6 +5,13 @@ import { GAME_OVER, MENU } from './constants/GameStates'
 import { createRagdoll } from './Ragdoll'
 import { UpdateEnemyCount, DecrementEnemyKillCount } from './events/EventTypes'
 
+export const removeOutOfBoundsPlayer = (player, world, destroyGameObjects, changeGameState) => {
+	if (player.bodies[0].position.x > world.bounds.max.x || player.bodies[0].position.x < -100 || player.bodies[0].position.y > world.bounds.max.y) {
+		killPlayer(player, world, destroyGameObjects, changeGameState, true)
+		// console.log(true)
+	}
+}
+
 export const removeOutOfBoundsRagdolls = (world, ragdolls) => {
 	for (let i = 0; i < ragdolls.length; ++i) {
 		let ragdoll = ragdolls[i]
@@ -66,10 +73,10 @@ const causeDamage = (elm, dmg) => {
 	}
 }
 
-const killPlayer = (player, world, destroyGameObjects, changeGameState) => {
+const killPlayer = (player, world, destroyGameObjects, changeGameState, forceDeath) => {
 	let lifebar = document.getElementById('player-lifebar-inner')
 	let lifeAmt = parseInt(lifebar.style.width, 10)
-	if (lifeAmt <= 0) {
+	if (lifeAmt <= 0 || forceDeath == true) {
 		destroyGameObjects()
 		changeGameState(GAME_OVER)
 		document.getElementById('player-lifebar').style.display = 'none'

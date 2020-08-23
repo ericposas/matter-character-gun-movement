@@ -16,7 +16,8 @@ import { positionEnemyLifebar, positionEnemyAim } from './modules/EnemyControls'
 import { checkPlayerIsOnGroundBegin, checkPlayerIsOnGroundEnd, enemyBulletHittestBegin,
 	enemyBulletHittestEnd, ragdollBulletHittestBegin, ragdollBulletHittestEnd,
 	bulletGroundHittest, playerBulletHittestBegin, playerBulletHittestEnd,
-	removeOutOfBoundsBullets, removeOutOfBoundsEnemies, removeOutOfBoundsRagdolls
+	removeOutOfBoundsBullets, removeOutOfBoundsEnemies, removeOutOfBoundsRagdolls,
+	removeOutOfBoundsPlayer
 } from './modules/GameTickMethods'
 import { GAMEPLAY, MENU, GAME_OVER, WAVE_WON } from './modules/constants/GameStates'
 import { UPDATE_ENEMY_COUNT, UpdateEnemyCount, DECREMENT_ENEMY_KILL_COUNT,
@@ -35,6 +36,9 @@ window.start = () => {
 	let enemyCountDOM = document.getElementById('enemy-count')
 	let enemiesToKillInWave, startWave = false
 	let waveLevelDOM = document.getElementById('wave-count')
+	let waveWon = document.getElementById('wave-won-msg'), waveWonTweenOut = null
+	let tryAgainBtn = document.getElementById('try-again-button')
+	let gameover = document.getElementById('game-over-screen')
 	let crouched = false
 	let lastDirection = ''
 	let reticlePos = { x: 0, y: 0 }
@@ -72,17 +76,9 @@ window.start = () => {
 			createGameObjects()
 			buildLevel()
 		}
-		// if (gameState === WAVE_WON) {
-		// 	console.log('wave won')
-		// 	startWave = false
-		// 	destroyGameObjects()
-		//
-		// 	// changeLevel(2)
-		// 	// buildLevel()
-		// }
 		if (gameState === GAME_OVER) {
-			let tryAgainBtn = document.getElementById('try-again-button')
-			let gameover = document.getElementById('game-over-screen')
+			if (waveWonTweenOut) { waveWonTweenOut.kill() }
+			waveWon.style.display = 'none'
 			gameover.style.display = 'block'
 			tryAgainBtn.style.display = 'block'
 			TweenLite.set(gameover, { left: 0, alpha: 1 })
@@ -169,17 +165,19 @@ window.start = () => {
 	}
 
 	function spawnEnemies(n, rate) {
-		console.log('spawning enemies')
-		let i
-		for (i = 0; i < n; ++i) {
-			let timeout = setTimeout(() => {
-				window.dispatchEvent(UpdateEnemyCount)
-				createEnemy(enemies, bullets, ragdolls, player, world, null, { x: random.int(50, ground.bounds.max.x - 50), y: 0 })
-			}, (rate * i))
-			enemiesToBeSpawned.push(timeout)
+		if (checkGameEntitiesReady()) {
+			console.log('spawning enemies')
+			let i
+			for (i = 0; i < n; ++i) {
+				let timeout = setTimeout(() => {
+					window.dispatchEvent(UpdateEnemyCount)
+					createEnemy(enemies, bullets, ragdolls, player, world, null, { x: random.int(50, ground.bounds.max.x - 50), y: 0 })
+				}, (rate * i))
+				enemiesToBeSpawned.push(timeout)
+			}
+			enemiesToKillInWave = n
+			startWave = true
 		}
-		enemiesToKillInWave = n
-		startWave = true
 	}
 	function destroyEnemiesToBeSpawned() {
 		enemiesToBeSpawned.forEach(timeout => {
@@ -195,10 +193,13 @@ window.start = () => {
 		dispatchEvent(UpdateWave)
 
 		if (currentLevel == 1) {
-			spawnEnemies(10, 1000)
+			spawnEnemies(5, 1000)
 
 		}
 		if (currentLevel == 2) {
+			spawnEnemies(10, 1000)
+		}
+		if (currentLevel == 3) {
 			spawnEnemies(15, 1000)
 		}
 
@@ -214,12 +215,11 @@ window.start = () => {
 			enemiesToKillInWave -= 1
 			console.log(enemiesToKillInWave)
 			if (enemiesToKillInWave == 0) {
-				let waveWon = document.getElementById('wave-won-msg')
 				waveWon.style.display = 'block'
 				TweenLite.set(waveWon, { left: 0, alpha: 1 })
 				TweenLite.from(waveWon, 1, { left: -400 })
 				TweenLite.delayedCall(3, () => {
-					TweenLite.to(waveWon, 1, {
+					waveWonTweenOut = TweenLite.to(waveWon, 1, {
 						alpha: 0,
 						ease: Power1.easeIn,
 						onComplete: () => {
@@ -343,6 +343,7 @@ window.start = () => {
 			removeOutOfBoundsBullets(world, bullets)
 			removeOutOfBoundsEnemies(world, enemies)
 			removeOutOfBoundsRagdolls(world, ragdolls)
+			removeOutOfBoundsPlayer(player, world, destroyGameObjects, changeGameState)
 			renderPlayerMovementViaKeyInput(render, keys, player, playerProps, ground, lastDirection)
 		}
 	}

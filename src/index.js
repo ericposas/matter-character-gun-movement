@@ -170,8 +170,15 @@ window.start = () => {
 			let i
 			for (i = 0; i < n; ++i) {
 				let timeout = setTimeout(() => {
-					window.dispatchEvent(UpdateEnemyCount)
-					createEnemy(enemies, bullets, ragdolls, player, world, null, { x: random.int(50, ground.bounds.max.x - 50), y: 0 })
+					// window.dispatchEvent(UpdateEnemyCount)
+					createEnemy(
+						enemies, bullets, ragdolls, player, world, null,
+						{ x: random.int(50, ground.bounds.max.x - 50), y: 0 },
+						// enemies references this index.js scope
+						// we pass a function that will allow the enemy function to access
+						// the index.js scope or 'context'
+						(newEnemyBody, enemy) => { enemies[enemies.indexOf(enemy)] = newEnemyBody }
+					)
 				}, (rate * i))
 				enemiesToBeSpawned.push(timeout)
 			}
@@ -237,7 +244,7 @@ window.start = () => {
 				enemyCountDOM.innerHTML = `enemy count: ${enemyLen < 0 ? 0 : enemyLen}`
 			}
 		})
-
+		
 		render.canvas.addEventListener('mousemove', e => {
 			if (gameState === GAMEPLAY) {
 				reticlePos = {

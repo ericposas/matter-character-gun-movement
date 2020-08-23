@@ -1,13 +1,14 @@
 import { Composite, Composites, Constraint, Bodies, World, Body, Vector } from 'matter-js'
 import { GROUND, BULLET, BOX, PLAYER_HEAD, PLAYER_BODY, ENEMY_HEAD, ENEMY_BODY } from './constants/CollisionFilterConstants'
 import { BULLET_REMOVAL_TIMEOUT, ENEMY_BULLET_FORCE } from './constants/GameConstants'
+import { UpdateEnemyCount } from './events/EventTypes'
 import random from 'random'
 // import { TweenLite } from 'gsap'
 
 // ragdollsArray is not used here, but is now available to the enemy instance
-export const createEnemy = (enemiesArray, bulletsArray, ragdollsArray, player, world, mouse_point, position) => {
+export const createEnemy = (enemiesArray, bulletsArray, ragdollsArray, player, world, mouse_point, position, swapEnemyBody) => {
 
-	let { player: enemy } = createPlayer(world, 'enemy', mouse_point, position)
+	let { player: enemy, swapBod, addSwappedBody } = createPlayer(world, 'enemy', mouse_point, position)
 
 	const createEnemyLifeBar = () => {
 		let barWd = 60, barHt = 10
@@ -27,26 +28,38 @@ export const createEnemy = (enemiesArray, bulletsArray, ragdollsArray, player, w
 	}
 	let { outerbar, bar, size } = createEnemyLifeBar()
 	// set enemy part to reference the DOM lifebar element
-	enemy.bodies[0]._lifebar = bar
-	enemy.bodies[1]._lifebar = bar
-	enemy.bodies[0]._outerLifebar = outerbar
-	enemy.bodies[1]._outerLifebar = outerbar
-	enemy.bodies[0]._barsize = size
-	enemy.bodies[1]._barsize = size
-	Composite.remove(enemy, [
-		enemy.bodies[3],
-		enemy.constraints[3],
-		enemy.constraints[4]
-	])
-	enemiesArray.push(enemy)
-	enemy.stopShooting = () => {
-		shouldShoot = false
-	}
-	enemy.removeLifebar = () => {
-		if (outerbar.parentNode == document.body) {
-			document.body.removeChild(outerbar)
+	const processEnemyFromPlayer = () => {
+		Composite.remove(enemy, [
+			enemy.bodies[3],
+			enemy.constraints[3],
+			enemy.constraints[4]
+		])
+		// enemy.bodies[0]._lifebar = bar
+		// enemy.bodies[1]._lifebar = bar
+		// enemy.bodies[0]._outerLifebar = outerbar
+		// enemy.bodies[1]._outerLifebar = outerbar
+		// enemy.bodies[0]._barsize = size
+		// enemy.bodies[1]._barsize = size
+		// enemy.bodies[0]._composite = enemy
+		// enemy.bodies[1]._composite = enemy
+		// enemy.bodies[2]._composite = enemy
+		enemy.bodies.forEach(body => {
+			body._lifebar = bar
+			body._outerLifebar = outerbar
+			body._barsize = size
+			body._composite = enemy
+		})
+		enemy.stopShooting = () => {
+			shouldShoot = false
+		}
+		enemy.removeLifebar = () => {
+			if (outerbar.parentNode == document.body) {
+				document.body.removeChild(outerbar)
+			}
 		}
 	}
+	processEnemyFromPlayer()
+
 	let shouldShoot = true
 	const bulletHandler = () => {
 		if (shouldShoot) {
@@ -88,13 +101,38 @@ export const createEnemy = (enemiesArray, bulletsArray, ragdollsArray, player, w
 	setTimeout(bulletHandler, random.int(500, 3000)) // shoot a bullet randomly between .5 to 3.0 seconds
 
 	// create random enemy movement
-	setInterval(() => {
-		if (enemy._direction == undefined || enemy._direction == 'undefined' || enemy._direction == 'right') {
-			enemy._direction = 'left'
+	let directionChangeInterval = setInterval(() => {
+		if (shouldShoot) {
+			if (enemy._direction == undefined || enemy._direction == 'undefined' || enemy._direction == 'right') {
+				enemy._direction = 'left'
+			} else {
+				enemy._direction = 'right'
+			}
 		} else {
-			enemy._direction = 'right'
+			clearInterval(directionChangeInterval)
 		}
 	}, random.int(3000, 6000)) // change up directional flag every 3 to 6 seconds
+	// create random enemy crouching
+	let crouched = false
+	let crouchInterval = setInterval(() => {
+		if (shouldShoot) {
+			let swapped
+			let x = enemy.bodies[0].position.x, y = enemy.bodies[0].position.y
+			if (!crouched) {
+				swapped = addSwappedBody(swapBod('short', enemy, x, y))
+			} else {
+				swapped = addSwappedBody(swapBod('normal', enemy, x, y))
+			}
+			crouched = !crouched
+			let { player: _enemy, playerProps: enemyProps,  } = swapped
+			swapEnemyBody(_enemy, enemy)
+			enemy = _enemy
+			enemy.playerProps = enemyProps
+			processEnemyFromPlayer()
+		} else {
+			clearInterval(crouchInterval)
+		}
+	}, random.int(3000, 6000))
 	// create a translation object
 	// using gsap, update the position of the enemy onUpdate() and change x value dep. on direction
 	const moveEnemy = () => {
@@ -113,7 +151,8 @@ export const createEnemy = (enemiesArray, bulletsArray, ragdollsArray, player, w
 		}
 	}
 	moveEnemy()
-
+	enemiesArray.push(enemy)
+	dispatchEvent(UpdateEnemyCount)
 	return enemy
 
 }

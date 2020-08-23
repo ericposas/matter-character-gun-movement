@@ -6,9 +6,6 @@ module.exports = {
     filename: 'bundle.js',
     path: require('path').resolve(__dirname, 'dist')
   },
-  watchOptions: {
-    ignored: /node_modules/
-  },
   module: {
     rules: [
       {

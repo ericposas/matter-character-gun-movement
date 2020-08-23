@@ -16,7 +16,8 @@
 		"style-loader": "^1.0.0",
 		"webpack": "^4.39.3",
 		"webpack-cli": "^3.3.8",
-		"webpack-dev-server": "^3.11.0"
+		"webpack-dev-server": "^3.11.0",
+		"webpack-merge": "^5.1.2"
 	},
 	"dependencies": {
 		"gsap": "^3.5.0",
@@ -25,8 +26,8 @@
 		"random": "^2.2.0"
 	},
 	"scripts": {
-		"compile": "webpack --production",
-		"dev:server": "webpack-dev-server --watch --development"
+		"start": "webpack-dev-server --open --config webpack.dev.js",
+		"build": "webpack --config webpack.production.js"
 	},
 	"babel": {
 		"presets": [

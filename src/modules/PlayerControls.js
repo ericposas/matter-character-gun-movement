@@ -5,8 +5,9 @@ import { width, height } from '../config'
 export const calcMovingReticlePosition = (player, render) => {
 	// console.log(render.bounds)
 	return {
-		x: player.bodies[0].position.x + ((render.bounds.min.x - render.bounds.max.x)/2),
-		y: player.bodies[0].position.y + ((render.bounds.min.y - render.bounds.max.y)/2)
+		x: player.bodies[0].position.x - ((render.bounds.max.x - render.bounds.min.x)/2),
+		y: player.bodies[0].position.y - ((render.bounds.max.y - render.bounds.min.y)/2)
+		// y: player.bodies[0].position.y + ((render.bounds.min.y - render.bounds.max.y)/2)
 	}
 }
 
@@ -71,8 +72,22 @@ export const renderPlayerMovementViaKeyInput = (world, render, keys, player, pla
 		let playerNormalHt = ((playerBod.bounds.max.y - playerBod.bounds.min.y)/2) + (playerHead.bounds.max.y - playerHead.bounds.min.y)
 		// try to keep render view in-step with player character
 		Render.lookAt(render, {
-			min: { x: playerPos.x + width/2, y: player.crouched ? playerPos.y - playerNormalHt - height/2 : playerPos.y - height/2 },
-			max: { x: playerPos.x - width/2, y: player.crouched ? playerPos.y + playerNormalHt + height/2 : playerPos.y + height/2 }
+			min: {
+				x: playerPos.x + width/2,
+				y: (
+					player.crouched
+					? playerPos.y - playerNormalHt - height/2
+					: playerPos.y - height/2
+				)
+			},
+			max: {
+				x: playerPos.x - width/2,
+				y: (
+						player.crouched
+						? playerPos.y + playerNormalHt + height/2
+						: playerPos.y + height/2
+					)
+			}
 		})
 
 		// math calculating size / pos of elms

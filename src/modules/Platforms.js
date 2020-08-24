@@ -2,7 +2,8 @@ import { World, Bodies } from 'matter-js'
 import { GROUND } from './constants/CollisionFilterConstants'
 
 export const createGround = (world, width, height) => {
-	let ground = Bodies.rectangle(0, height, width * 2, 100, {
+	let gHt = 400
+	let ground = Bodies.rectangle(0, height + gHt/2, width * 2, gHt, {
 		label: 'ground',
 		isStatic: true,
 		collisionFilter: {

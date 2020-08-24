@@ -147,17 +147,28 @@ export const checkPlayerIsOnPlatformBegin = (e, i, player) => {
 		let pBod = player.bodies[1]
 		let platform = e.pairs[i].bodyB
 		if (pBod.position.y < (platform.position.y - (platform.bounds.max.y - platform.bounds.min.y))) {
-			player.onPlatform = true
-			player._currentPlatform = platform
-			console.log('player is on platform')
+			// check if player position is between platfom width
+			if (
+					(pBod.position.x - ((pBod.bounds.max.x - pBod.bounds.min.x) + 10)) > platform.bounds.min.x ||
+					(pBod.position.x + ((pBod.bounds.max.x - pBod.bounds.min.x) + 10)) < platform.bounds.max.x
+				 ) {
+				player.onPlatform = true
+				player._currentPlatform = platform
+				console.log('player is on platform')
+			}
 		}
 	} else if (e.pairs[i].bodyB === player.bodies[1] && e.pairs[i].bodyA.label.indexOf('platform') > -1) {
 		let pBod = player.bodies[1]
 		let platform = e.pairs[i].bodyA
 		if (pBod.position.y < (platform.position.y - (platform.bounds.max.y - platform.bounds.min.y))) {
-			player.onPlatform = true
-			player._currentPlatform = platform
-			console.log('player is on platform')
+			if (
+					(pBod.position.x - ((pBod.bounds.max.x - pBod.bounds.min.x) + 10)) > platform.bounds.min.x ||
+					(pBod.position.x + ((pBod.bounds.max.x - pBod.bounds.min.x) + 10)) < platform.bounds.max.x
+				 ) {
+				player.onPlatform = true
+				player._currentPlatform = platform
+				console.log('player is on platform')
+			}
 		}
 	}
 }

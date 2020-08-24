@@ -222,6 +222,7 @@ window.start = () => {
 	// clever use of javascript closure to pass these variables to another function for setting
 	const setCrouched = (swapped) => {
 		crouched = !crouched;
+		player.crouched = crouched
 		player = swapped.player // reassign player variable to the new swapped player
 		playerProps = swapped.playerProps
 		let mx = mouse_point.position.x
@@ -307,7 +308,7 @@ window.start = () => {
 		document.body.addEventListener('keydown', e => {
 			if (gameState === GAMEPLAY) {
 				keys[e.keyCode] = true
-				if ((keys[83] && player.ground) || (keys[83] && player.onPlatform) || (keys[87] && crouched)) {
+				if ((keys[83] && player.ground) || (keys[83] && player.onPlatform)) {
 					toggleCrouch(crouched, setCrouched, player, addSwappedBody, playerSwapBod)
 				}
 			}
@@ -370,7 +371,7 @@ window.start = () => {
 			removeOutOfBoundsEnemies(world, enemies)
 			removeOutOfBoundsRagdolls(world, ragdolls)
 			removeOutOfBoundsPlayer(player, world, destroyGameObjects, changeGameState)
-			renderPlayerMovementViaKeyInput(render, keys, player, playerProps, ground, lastDirection, crouched, setCrouched, addSwappedBody, playerSwapBod)
+			renderPlayerMovementViaKeyInput(world, render, keys, player, playerProps, ground, lastDirection, crouched, setCrouched, addSwappedBody, playerSwapBod)
 		}
 	}
 

@@ -50,7 +50,7 @@ export const removeOutOfBoundsBullets = (world, bullets) => {
 	// remove out-of-bounds bullets
 	for (let i = 0; i < bullets.length; ++i) {
 		let bullet = bullets[i]
-		if (bullet.position.x > world.bounds.max.x || bullet.position.x < world.bounds.min.x || bullet.position.y < 0 ) {
+		if (bullet.position.x > world.bounds.max.x || bullet.position.x < world.bounds.min.x || bullet.position.y < world.bounds.min.y ) {
 				let idx = bullets.indexOf(bullet)
 				if (idx > -1) {
 					World.remove(world, bullet)
@@ -282,7 +282,6 @@ export const bulletGroundHittest = (e, i, world, bullets) => {
 		let idx = bullets.indexOf(bullet)
 		World.remove(world, bullet)
 		if (idx > -1) { bullets.splice(idx, 1) }
-
 	} else if (e.pairs[i].bodyB.label.indexOf('bullet') > -1  && e.pairs[i].bodyA.label === 'ground') {
 		let bullet = e.pairs[i].bodyB
 		let idx = bullets.indexOf(bullet)

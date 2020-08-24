@@ -10,8 +10,8 @@
 ## TODO
 
 ### general
+- get rid of 'jitter' when toggling crouched 
 - incorporate additional platforms to jump on
-- get rid of immediate jump when pressing up key from crouch (when on a platform)
 - game works fine in an embedded html iframe
 
 ### items

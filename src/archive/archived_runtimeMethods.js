@@ -43,8 +43,9 @@ export const checkBulletCollisionGroundRemove = (e, world) => {
 // render mouse
 export const renderMouse = (player, render, mouse_point, reticlePos, lastDirection) => {
 	requestAnimationFrame(renderMouse)
-	mouse_point.position.x = reticlePos.x + calcMovingReticlePosition(player, render)
-	mouse_point.position.y = reticlePos.y
+	let movingReticlePos = calcMovingReticlePosition(player, render)
+	mouse_point.position.x = reticlePos.x + movingReticlePos.x
+	mouse_point.position.y = reticlePos.y - movingReticlePos.y
 	if (mouse_point.position.x > player.bodies[1].position.x) {
 		lastDirection = 'left'
 	} else {

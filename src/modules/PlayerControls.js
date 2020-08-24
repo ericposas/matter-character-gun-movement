@@ -2,12 +2,21 @@ import { Render, Body, Composite, Vector, World } from 'matter-js'
 import { BULLET_FORCE } from './constants/GameConstants'
 import { width, height } from '../config'
 
+export const calcMovingReticlePosition = (player, render) => {
+	// console.log(render.bounds)
+	return {
+		x: player.bodies[0].position.x + ((render.bounds.min.x - render.bounds.max.x)/2),
+		y: player.bodies[0].position.y + ((render.bounds.min.y - render.bounds.max.y)/2)
+	}
+}
+
 export const calculateBulletAngle = (player, render, reticlePos) => {
 	if (player) {
 		let playerPos = player.bodies[0].position
+		let movingReticle = calcMovingReticlePosition(player, render)
 		let targetAngle = Vector.angle(playerPos, {
-			x: reticlePos.x + calcMovingReticlePosition(player, render),
-			y: reticlePos.y
+			x: reticlePos.x + movingReticle.x,
+			y: reticlePos.y + movingReticle.y
 		})
 		return {
 			x: Math.cos(targetAngle) * BULLET_FORCE,
@@ -22,14 +31,11 @@ export const calculateBulletAngle = (player, render, reticlePos) => {
 }
 
 export const renderMouse = (player, lastDirection, render, mouse_point, reticlePos) => { // called in the 'beforeTick' Engine event
-	mouse_point.position.x = reticlePos.x + calcMovingReticlePosition(player, render)
-	mouse_point.position.y = reticlePos.y
+	let movingReticle = calcMovingReticlePosition(player, render)
+	mouse_point.position.x = reticlePos.x + movingReticle.x
+	mouse_point.position.y = reticlePos.y + movingReticle.y
 	if (mouse_point.position.x > player.bodies[1].position.x) { lastDirection = 'left' }
 	else { lastDirection = 'right' }
-}
-
-export const calcMovingReticlePosition = (player, render) => {
-	return player.bodies[0].position.x + ((render.bounds.min.x - render.bounds.max.x)/2)
 }
 
 export const toggleCrouch = (crouched, setCrouched, player, addSwappedBody, playerSwapBod) => {
@@ -50,14 +56,14 @@ export const toggleCrouch = (crouched, setCrouched, player, addSwappedBody, play
 	}
 }
 
-export const renderPlayerMovementViaKeyInput = (render, keys, player, playerProps, ground, lastDirection, crouched, setCrouched, addSwappedBody, playerSwapBod) => {
+export const renderPlayerMovementViaKeyInput = (world, render, keys, player, playerProps, ground, lastDirection, crouched, setCrouched, addSwappedBody, playerSwapBod) => {
 	if (player) {
 		let playerPos = player.bodies[0].position
 		let playerBod = player.bodies[1]
 		// try to keep render view in-step with player character
 		Render.lookAt(render, {
-			min: { x: playerPos.x + width/2, y: 0 },
-			max: { x: playerPos.x - width/2, y: height }
+			min: { x: playerPos.x + width/2, y: playerPos.y - height/2 },
+			max: { x: playerPos.x - width/2, y: playerPos.y + height/2 }
 		})
 
 		// math calculating size / pos of elms
@@ -68,8 +74,7 @@ export const renderPlayerMovementViaKeyInput = (render, keys, player, playerProp
 
 		// jump key
 		if (
-				(keys[87] && (player.ground && ((player.bodies[1].position.y - playerHeight) < groundHeight))) ||
-				(keys[87] && player.onPlatform)
+				(keys[87] && player.ground) || (keys[87] && player.onPlatform)
 			 ) {
 				if (!crouched) {
 					player.bodies[1].force = (
@@ -77,10 +82,9 @@ export const renderPlayerMovementViaKeyInput = (render, keys, player, playerProp
 						?	{ x: -0.1, y: playerProps.jumpForce }
 						: { x: 0.1, y: playerProps.jumpForce }
 					)
+				} else {
+					toggleCrouch(crouched, setCrouched, player, addSwappedBody, playerSwapBod)
 				}
-				// else {
-				// 	toggleCrouch(crouched, setCrouched, player, addSwappedBody, playerSwapBod)
-				// }
 			} else {
 				Body.setAngle(player.bodies[1], 0)
 				Body.setDensity(player.bodies[1], .025)

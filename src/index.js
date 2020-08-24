@@ -181,6 +181,7 @@ window.start = () => {
 			}
 			enemiesToKillInWave = n
 			startWave = true
+			dispatchEvent(UpdateEnemyCount)
 		}
 	}
 	function destroyEnemiesToBeSpawned() {
@@ -227,6 +228,12 @@ window.start = () => {
 	function registerEventListeners() {
 		// EVENT LISTENERS
 		addEventListener(UPDATE_WAVE, e => {
+			TweenLite.to(waveLevelDOM.parentNode, .2, {
+				scaleX: 1.1, scaleY: 1.1,
+				onComplete: () => {
+					TweenLite.to(waveLevelDOM.parentNode, .35, { scaleX: 1.0, scaleY: 1.0 })
+				}
+			})
 			waveLevelDOM.innerHTML = `wave: ${currentLevel}`
 		})
 
@@ -251,6 +258,12 @@ window.start = () => {
 		})
 
 		addEventListener(UPDATE_ENEMY_COUNT, e => {
+			TweenLite.to(enemyCountDOM.parentNode, .2, {
+				scaleX: 1.1, scaleY: 1.1,
+				onComplete: () => {
+					TweenLite.to(enemyCountDOM.parentNode, .35, { scaleX: 1.0, scaleY: 1.0 })
+				}
+			})
 			enemyCountDOM.innerHTML = `enemies left: ${enemiesToKillInWave}`
 		})
 

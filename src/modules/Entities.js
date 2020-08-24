@@ -180,7 +180,7 @@ export const createEnemy = (enemiesArray, bulletsArray, ragdollsArray, player, w
 	}
 	moveEnemy()
 	enemiesArray.push(enemy)
-	dispatchEvent(UpdateEnemyCount)
+	// dispatchEvent(UpdateEnemyCount)
 	return enemy
 
 }

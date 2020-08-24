@@ -200,7 +200,7 @@ window.start = () => {
 
 		if (currentLevel == 1) {
 			spawnEnemies(3, 1000)
-			let platform1 = Bodies.rectangle(0, 0, width, 20, { isStatic: true })
+			let platform1 = Bodies.rectangle(0, 0, width, 40, { isStatic: true })
 			platform1.label = 'platform'
 			World.add(world, platform1)
 			Body.translate(platform1, { x: 0, y: 300 })
@@ -220,8 +220,9 @@ window.start = () => {
 	}
 
 	// clever use of javascript closure to pass these variables to another function for setting
-	const setCrouched = (swapped) => {
-		crouched = !crouched;
+	const setCrouched = (swapped, bool) => {
+		// crouched = !crouched;
+		crouched = bool
 		player.crouched = crouched
 		player = swapped.player // reassign player variable to the new swapped player
 		playerProps = swapped.playerProps

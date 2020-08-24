@@ -10,7 +10,6 @@
 ## TODO
 
 ### general
-- get rid of 'jitter' when toggling crouched 
 - incorporate additional platforms to jump on
 - game works fine in an embedded html iframe
 

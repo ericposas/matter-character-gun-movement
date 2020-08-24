@@ -38,32 +38,41 @@ export const renderMouse = (player, lastDirection, render, mouse_point, reticleP
 	else { lastDirection = 'right' }
 }
 
-export const toggleCrouch = (crouched, setCrouched, player, addSwappedBody, playerSwapBod) => {
+export const toggleCrouch = (crouched, setCrouched, player, addSwappedBody, playerSwapBod, uncrouchBool) => {
 	if (player) {
 		let swapped
 		let x = player.bodies[0].position.x
 		let y = (
 			player.onPlatform && player._currentPlatform
-			? player._currentPlatform.position.y - (player._currentPlatform.bounds.max.y - player._currentPlatform.bounds.min.y) - (player.bodies[0].bounds.max.y - player.bodies[0].bounds.min.y)
-			: player.bodies[1].position.y - (player.bodies[0].bounds.max.y - player.bodies[0].bounds.min.y)
+			? player._currentPlatform.bounds.min.y - 20
+			: height - 90
 		)
 		if (!crouched) {
 			swapped = addSwappedBody(playerSwapBod('short', player, x, y))
-		} else {
-			swapped = addSwappedBody(playerSwapBod('normal', player, x, y))
+			setCrouched(swapped, true)
 		}
-		setCrouched(swapped)
+		if (uncrouchBool) {
+			swapped = addSwappedBody(playerSwapBod('normal', player, x, y))
+			setCrouched(swapped, false)
+		}
+		// else {
+		// 	swapped = addSwappedBody(playerSwapBod('normal', player, x, y))
+		// }
+		// setCrouched(swapped)
 	}
 }
 
 export const renderPlayerMovementViaKeyInput = (world, render, keys, player, playerProps, ground, lastDirection, crouched, setCrouched, addSwappedBody, playerSwapBod) => {
 	if (player) {
 		let playerPos = player.bodies[0].position
+		let playerHead = player.bodies[0]
 		let playerBod = player.bodies[1]
+		let playerShortHt = (playerBod.bounds.max.y - playerBod.bounds.min.y) + (playerHead.bounds.max.y - playerHead.bounds.min.y)
+		let playerNormalHt = ((playerBod.bounds.max.y - playerBod.bounds.min.y)/2) + (playerHead.bounds.max.y - playerHead.bounds.min.y)
 		// try to keep render view in-step with player character
 		Render.lookAt(render, {
-			min: { x: playerPos.x + width/2, y: playerPos.y - height/2 },
-			max: { x: playerPos.x - width/2, y: playerPos.y + height/2 }
+			min: { x: playerPos.x + width/2, y: player.crouched ? playerPos.y - playerNormalHt - height/2 : playerPos.y - height/2 },
+			max: { x: playerPos.x - width/2, y: player.crouched ? playerPos.y + playerNormalHt + height/2 : playerPos.y + height/2 }
 		})
 
 		// math calculating size / pos of elms
@@ -83,7 +92,7 @@ export const renderPlayerMovementViaKeyInput = (world, render, keys, player, pla
 						: { x: 0.1, y: playerProps.jumpForce }
 					)
 				} else {
-					toggleCrouch(crouched, setCrouched, player, addSwappedBody, playerSwapBod)
+					toggleCrouch(crouched, setCrouched, player, addSwappedBody, playerSwapBod, true)
 				}
 			} else {
 				Body.setAngle(player.bodies[1], 0)

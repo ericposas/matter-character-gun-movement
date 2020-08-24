@@ -46,7 +46,7 @@ export const toggleCrouch = (crouched, setCrouched, player, addSwappedBody, play
 		let y = (
 			player.onPlatform && player._currentPlatform
 			? player._currentPlatform.bounds.min.y - 20
-			: height - 90
+			: height - 40
 		)
 		if (!crouched) {
 			swapped = addSwappedBody(playerSwapBod('short', player, x, y))

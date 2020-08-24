@@ -1,4 +1,4 @@
-import { World, Bodies } from 'matter-js'
+import { World, Bodies, Body } from 'matter-js'
 import { GROUND } from './constants/CollisionFilterConstants'
 
 export const createGround = (world, width, height) => {
@@ -12,4 +12,12 @@ export const createGround = (world, width, height) => {
 	})
 	World.add(world, ground)
 	return ground
+}
+
+export const createPlatform = (world, width, height, position) => {
+	let platform = Bodies.rectangle(0, 0, width, height, { isStatic: true })
+	platform.label = 'platform'
+	World.add(world, platform)
+	Body.translate(platform, position)
+	return platform
 }

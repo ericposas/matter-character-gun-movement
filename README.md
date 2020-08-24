@@ -10,7 +10,8 @@
 ## TODO
 
 ### general
-- incorporate additional platforms to jump on
+- add destructible platforms
+- look into 'unsticking' character from platforms/walls when trying to jump on them (and missing)
 - game works fine in an embedded html iframe
 
 ### items

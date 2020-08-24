@@ -5,7 +5,7 @@ import { Bodies, Body, World, Constraint, Composite, Composites, Events,
 	Vector, Render } from 'matter-js'
 import { matterBoilerplate as boilerplate } from './modules/MatterBoilerplate'
 import { createPlayer, createEnemy } from './modules/Entities'
-import { createGround } from './modules/Platforms'
+import { createGround, createPlatform } from './modules/Platforms'
 import { GROUND, BULLET, BOX, PLAYER_HEAD, PLAYER_BODY,
 	ENEMY_HEAD, ENEMY_BODY } from './modules/constants/CollisionFilterConstants'
 import { BULLET_REMOVAL_TIMEOUT } from './modules/constants/GameConstants'
@@ -200,10 +200,8 @@ window.start = () => {
 
 		if (currentLevel == 1) {
 			spawnEnemies(3, 1000)
-			let platform1 = Bodies.rectangle(0, 0, width, 40, { isStatic: true })
-			platform1.label = 'platform'
-			World.add(world, platform1)
-			Body.translate(platform1, { x: 0, y: 300 })
+			createPlatform(world, width, 40, { x: 0, y: 340 })
+			createPlatform(world, 200, 40, { x: 200, y: 100 })
 
 		}
 		if (currentLevel == 2) {
@@ -330,7 +328,7 @@ window.start = () => {
 		if (gameState == GAMEPLAY && checkGameEntitiesReady()) {
 			// LOOP THROUGH ALL COLLISION TYPES
 			for (let i = 0; i < e.pairs.length; ++i) {
-				bulletGroundHittest(e, i, world, bullets)
+				// bulletGroundHittest(e, i, world, bullets)
 				checkPlayerIsOnGroundBegin(e, i, player)
 				checkPlayerIsOnPlatformBegin(e, i, player)
 				checkEnemiesAreOnGround(e, i, enemies)

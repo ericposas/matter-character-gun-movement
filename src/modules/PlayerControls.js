@@ -33,9 +33,14 @@ export const calcMovingReticlePosition = (player, render) => {
 }
 
 export const toggleCrouch = (crouched, setCrouched, player, addSwappedBody, playerSwapBod) => {
-	if (player && player.ground) {
+	if (player) {
 		let swapped
-		let x = player.bodies[0].position.x, y = player.bodies[0].position.y
+		let x = player.bodies[0].position.x
+		let y = (
+			player.onPlatform && player._currentPlatform
+			? player._currentPlatform.position.y - (player._currentPlatform.bounds.max.y - player._currentPlatform.bounds.min.y) - (player.bodies[0].bounds.max.y - player.bodies[0].bounds.min.y)
+			: player.bodies[1].position.y - (player.bodies[0].bounds.max.y - player.bodies[0].bounds.min.y)
+		)
 		if (!crouched) {
 			swapped = addSwappedBody(playerSwapBod('short', player, x, y))
 		} else {
@@ -59,20 +64,23 @@ export const renderPlayerMovementViaKeyInput = (render, keys, player, playerProp
 		let playerHeight = (playerBod.bounds.max.y - playerBod.bounds.min.y)
 		let groundHeight = (height - (ground.bounds.max.y - ground.bounds.min.y))
 		groundHeight -= (ground.position.y - groundHeight)
+		// let platformHeight = (height - (player._currentPlatform.height))
 
 		// jump key
-		if (keys[87] &&
-			(player.bodies[1].position.y - playerHeight) > (groundHeight-15) &&
-			player.ground) {
+		if (
+				(keys[87] && (player.ground && ((player.bodies[1].position.y - playerHeight) < groundHeight))) ||
+				(keys[87] && player.onPlatform)
+			 ) {
 				if (!crouched) {
 					player.bodies[1].force = (
 						lastDirection == 'left'
 						?	{ x: -0.1, y: playerProps.jumpForce }
 						: { x: 0.1, y: playerProps.jumpForce }
 					)
-				} else {
-					toggleCrouch(crouched, setCrouched, player, addSwappedBody, playerSwapBod)
 				}
+				// else {
+				// 	toggleCrouch(crouched, setCrouched, player, addSwappedBody, playerSwapBod)
+				// }
 			} else {
 				Body.setAngle(player.bodies[1], 0)
 				Body.setDensity(player.bodies[1], .025)
@@ -88,7 +96,7 @@ export const renderPlayerMovementViaKeyInput = (render, keys, player, playerProp
 
 			if (keys[65]) {
 				lastDirection = 'left'
-				if (player.ground) {
+				if (player.ground || player.onPlatform) {
 					Composite.translate(player, { x: -playerProps.acceleration, y: 0 })
 				} else {
 					Composite.translate(player, { x: -playerProps.inAirMovementSpeed, y: 0 })
@@ -96,7 +104,7 @@ export const renderPlayerMovementViaKeyInput = (render, keys, player, playerProp
 			} else {
 				if (keys[68]) {
 					lastDirection = 'right'
-					if (player.ground) {
+					if (player.ground || player.onPlatform) {
 						Composite.translate(player, { x: playerProps.acceleration, y: 0 })
 					} else {
 						Composite.translate(player, { x: playerProps.inAirMovementSpeed, y: 0 })

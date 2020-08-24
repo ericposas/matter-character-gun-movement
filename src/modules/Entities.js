@@ -189,7 +189,7 @@ const getShortBody = (type, btype, mouse_point, x, y) => {
 	let player = Composite.create({
 		ground: false
 	})
-	let head = Bodies.rectangle(x, 400, 25, 30, {
+	let head = Bodies.rectangle(x, y, 25, 30, {
 		collisionFilter: {
 			category: PLAYER_BODY,
 			mask: GROUND
@@ -205,7 +205,7 @@ const getShortBody = (type, btype, mouse_point, x, y) => {
 		movementSpeed: 6,
 		acceleration: 0
 	}
-	let bod = Bodies.rectangle(x, 450, 60, 50, {
+	let bod = Bodies.rectangle(x, y, 60, 50, {
 		inertia: Infinity,
 		density: .25,
 		friction: 1,
@@ -231,14 +231,14 @@ const getShortBody = (type, btype, mouse_point, x, y) => {
 		pointB: { x: 10, y: -25 },
 		length: 0
 	})
-	let upperarm = Bodies.rectangle(x, 400, type == 'player' ? 20 : 40, 15, {
+	let upperarm = Bodies.rectangle(x, y, type == 'player' ? 20 : 40, 15, {
 		collisionFilter: {
 			category: PLAYER_BODY,
 			mask: GROUND
 		}
 	})
 	upperarm.label = type == 'player' ? 'player arm' : 'enemy arm'
-	let lowerarm = Bodies.rectangle(x, 400, 20, 12, {
+	let lowerarm = Bodies.rectangle(x, y, 20, 12, {
 		collisionFilter: {
 			category: PLAYER_BODY,
 			mask: GROUND
@@ -295,7 +295,7 @@ const getNormalBody = (type, btype, mouse_point, x, y) => {
 	let player = Composite.create({
 		ground: false
 	})
-	let head = Bodies.rectangle(x, 400, 25, 30, {
+	let head = Bodies.rectangle(x, y, 25, 30, {
 		collisionFilter: {
 			category: PLAYER_BODY,
 			mask: GROUND
@@ -311,7 +311,7 @@ const getNormalBody = (type, btype, mouse_point, x, y) => {
 		movementSpeed: 6,
 		acceleration: 0
 	}
-	let bod = Bodies.rectangle(x, 450, 60, 100, {
+	let bod = Bodies.rectangle(x, y, 60, 100, {
 		inertia: Infinity,
 		density: .25,
 		friction: 1,
@@ -337,14 +337,14 @@ const getNormalBody = (type, btype, mouse_point, x, y) => {
 		pointB: { x: 10, y: -50 },
 		length: 0
 	})
-	let upperarm = Bodies.rectangle(x, 400, type == 'player' ? 20 : 40, 15, {
+	let upperarm = Bodies.rectangle(x, y, type == 'player' ? 20 : 40, 15, {
 		collisionFilter: {
 			category: PLAYER_BODY,
 			mask: GROUND
 		}
 	})
 	upperarm.label = type == 'player' ? 'player arm' : 'enemy arm'
-	let lowerarm = Bodies.rectangle(x, 400, 20, 12, {
+	let lowerarm = Bodies.rectangle(x, y, 20, 12, {
 		collisionFilter: {
 			category: PLAYER_BODY,
 			mask: GROUND

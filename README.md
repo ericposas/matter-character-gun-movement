@@ -11,8 +11,8 @@
 
 ### general
 - incorporate additional platforms to jump on
-- experiment with level layout, ground width, etc. so that we can fit a better game view instead of the awkward upper-left corner
-- game works fine in an html iframe
+- get rid of immediate jump when pressing up key from crouch (when on a platform)
+- game works fine in an embedded html iframe
 
 ### items
 - make random health drops in different sizes (drop between waves)

@@ -17,7 +17,8 @@ import { checkPlayerIsOnGroundBegin, checkPlayerIsOnGroundEnd, enemyBulletHittes
 	enemyBulletHittestEnd, ragdollBulletHittestBegin, ragdollBulletHittestEnd,
 	bulletGroundHittest, playerBulletHittestBegin, playerBulletHittestEnd,
 	removeOutOfBoundsBullets, removeOutOfBoundsEnemies, removeOutOfBoundsRagdolls,
-	removeOutOfBoundsPlayer, checkEnemiesAreOnGround
+	removeOutOfBoundsPlayer, checkEnemiesAreOnGround, checkPlayerIsOnPlatformBegin,
+	checkPlayerIsOnPlatformEnd
 } from './modules/GameTickMethods'
 import { GAMEPLAY, MENU, GAME_OVER, WAVE_WON } from './modules/constants/GameStates'
 import { UPDATE_ENEMY_COUNT, UpdateEnemyCount, DECREMENT_ENEMY_KILL_COUNT,
@@ -199,6 +200,11 @@ window.start = () => {
 
 		if (currentLevel == 1) {
 			spawnEnemies(3, 1000)
+			let platform1 = Bodies.rectangle(0, 0, width, 20, { isStatic: true })
+			platform1.label = 'platform'
+			World.add(world, platform1)
+			Body.translate(platform1, { x: 0, y: 300 })
+
 		}
 		if (currentLevel == 2) {
 			spawnEnemies(5, 1000)
@@ -301,7 +307,7 @@ window.start = () => {
 		document.body.addEventListener('keydown', e => {
 			if (gameState === GAMEPLAY) {
 				keys[e.keyCode] = true
-				if (keys[83]) {
+				if ((keys[83] && player.ground) || (keys[83] && player.onPlatform) || (keys[87] && crouched)) {
 					toggleCrouch(crouched, setCrouched, player, addSwappedBody, playerSwapBod)
 				}
 			}
@@ -324,6 +330,7 @@ window.start = () => {
 			for (let i = 0; i < e.pairs.length; ++i) {
 				bulletGroundHittest(e, i, world, bullets)
 				checkPlayerIsOnGroundBegin(e, i, player)
+				checkPlayerIsOnPlatformBegin(e, i, player)
 				checkEnemiesAreOnGround(e, i, enemies)
 				enemyBulletHittestBegin(e, i, world, calculateBulletAngle(player, render, reticlePos), bullets)
 				playerBulletHittestBegin(e, i, world, calculateBulletAngle(player, render, reticlePos), bullets)
@@ -337,6 +344,7 @@ window.start = () => {
 			for (let i = 0; i < e.pairs.length; ++i) {
 				// LOOP THROUGH ALL COLLISION TYPES
 				checkPlayerIsOnGroundEnd(e, i, player)
+				checkPlayerIsOnPlatformEnd(e, i, player)
 				enemyBulletHittestEnd(e, i, player, enemies, world, ragdolls, calculateBulletAngle(player, render, reticlePos))
 				ragdollBulletHittestEnd(e, i, player, ragdolls, world)
 				playerBulletHittestEnd(e, i, player, world, destroyGameObjects, changeGameState)
@@ -350,7 +358,6 @@ window.start = () => {
 			enemies.forEach((enemy, i) => {
 				positionEnemyLifebar(enemy, render)
 				positionEnemyAim(enemy, player)
-
 			})
 		}
 	}

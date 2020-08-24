@@ -142,6 +142,26 @@ export const checkPlayerIsOnGroundBegin = (e, i, player) => {
 	}
 }
 
+export const checkPlayerIsOnPlatformBegin = (e, i, player) => {
+	if (e.pairs[i].bodyA === player.bodies[1] && e.pairs[i].bodyB.label.indexOf('platform') > -1) {
+		let pBod = player.bodies[1]
+		let platform = e.pairs[i].bodyB
+		if (pBod.position.y < (platform.position.y - (platform.bounds.max.y - platform.bounds.min.y))) {
+			player.onPlatform = true
+			player._currentPlatform = platform
+			console.log('player is on platform')
+		}
+	} else if (e.pairs[i].bodyB === player.bodies[1] && e.pairs[i].bodyA.label.indexOf('platform') > -1) {
+		let pBod = player.bodies[1]
+		let platform = e.pairs[i].bodyA
+		if (pBod.position.y < (platform.position.y - (platform.bounds.max.y - platform.bounds.min.y))) {
+			player.onPlatform = true
+			player._currentPlatform = platform
+			console.log('player is on platform')
+		}
+	}
+}
+
 export const checkEnemiesAreOnGround = (e, i, enemies) => {
 	for (let j = 0; j < enemies.length; ++j) {
 		if (e.pairs[i].bodyA === enemies[j].bodies[1] && e.pairs[i].bodyB.label.indexOf('ground') > -1) {
@@ -268,6 +288,18 @@ export const bulletGroundHittest = (e, i, world, bullets) => {
 		let idx = bullets.indexOf(bullet)
 		World.remove(world, bullet)
 		if (idx > -1) { bullets.splice(idx, 1) }
+	}
+}
+
+export const checkPlayerIsOnPlatformEnd = (e, i, player) => {
+	if (player) {
+		if (e.pairs[i].bodyA === player.bodies[1] && e.pairs[i].bodyB.label.indexOf('platform') > -1) {
+			player.onPlatform = false
+			player._currentPlatform = null
+		} else if (e.pairs[i].bodyB === player.bodies[1] && e.pairs[i].bodyA.label.indexOf('platform') > -1) {
+			player.onPlatform = false
+			player._currentPlatform = null
+		}
 	}
 }
 

@@ -10,6 +10,7 @@
 ## TODO
 
 ### general
+- incorporate additional platforms to jump on
 - experiment with level layout, ground width, etc. so that we can fit a better game view instead of the awkward upper-left corner
 - game works fine in an html iframe
 

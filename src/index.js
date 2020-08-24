@@ -1,6 +1,5 @@
 import './index.scss'
 import random from 'random'
-// import { TweenLite, Power1 } from 'gsap'
 import { width, height } from './config'
 import { Bodies, Body, World, Constraint, Composite, Composites, Events,
 	Vector, Render } from 'matter-js'
@@ -104,12 +103,12 @@ window.start = () => {
 
 	function displayPlayerLifeBar(str) {
 		document.getElementById('player-lifebar').style.display = str
-		document.getElementById('player-lifebar-inner').style.cssText = "top:2px;left: 2px;width:756px;height:16px;position:relative;background-color:green;"
+		document.getElementById('player-lifebar-inner').style.cssText = `top:2px;left:2px;width:${width-24}px;height:8px;position:relative;background-color:green;`
 	}
 
 	function createGameObjects() {
 		if (checkGameEntitiesReady() == false) {
-			console.log('createGameObjects')
+			// console.log('createGameObjects')
 			ground = createGround(world, width, height)
 			playerObjects = createPlayer(world, 'player', null, { x:50, y:0 })
 			player = playerObjects.player
@@ -124,7 +123,7 @@ window.start = () => {
 
 	function destroyGameObjects() {
 		if (checkGameEntitiesReady()) {
-			console.log('destroyGameObjects')
+			// console.log('destroyGameObjects')
 			if (player && ground) {
 				World.remove(world, [player, ground])
 			}
@@ -167,17 +166,14 @@ window.start = () => {
 
 	function spawnEnemies(n, rate) {
 		if (checkGameEntitiesReady()) {
-			console.log('spawning enemies')
+			// console.log('spawning enemies')
 			let i
 			for (i = 0; i < n; ++i) {
 				let timeout = setTimeout(() => {
-					// window.dispatchEvent(UpdateEnemyCount)
 					createEnemy(
 						enemies, bullets, ragdolls, player, world, null,
-						{ x: random.int(50, ground.bounds.max.x - 50), y: 0 },
-						// enemies references this index.js scope
-						// we pass a function that will allow the enemy function to access
-						// the index.js scope or 'context'
+						{ x: random.int(world.bounds.min.x + 50, world.bounds.max.x - 50), y: 0 },
+						// enemies references this index.js scope -- we pass a function that will allow the enemy function to access the index.js scope or 'context'
 						(newEnemyBody, enemy) => { enemies[enemies.indexOf(enemy)] = newEnemyBody }
 					)
 				}, (rate * i))
@@ -190,26 +186,29 @@ window.start = () => {
 	function destroyEnemiesToBeSpawned() {
 		enemiesToBeSpawned.forEach(timeout => {
 			clearTimeout(timeout)
-			console.log('timeout should clear')
+			// console.log('timeout should clear')
 		})
 		enemiesToBeSpawned = []
 		console.log(enemies, enemiesToBeSpawned)
 	}
 
 	const buildLevel = () => {
-		console.log('building level..')
+		// console.log('building level..')
 		dispatchEvent(UpdateWave)
 
 		if (currentLevel == 1) {
-			spawnEnemies(5, 1000)
-
+			spawnEnemies(3, 1000)
 		}
 		if (currentLevel == 2) {
-			spawnEnemies(10, 1000)
+			spawnEnemies(5, 1000)
 		}
 		if (currentLevel == 3) {
-			spawnEnemies(15, 1000)
+			spawnEnemies(7, 1000)
 		}
+		if (currentLevel == 4) {
+			spawnEnemies(9, 1000)
+		}
+
 
 	}
 
@@ -233,7 +232,7 @@ window.start = () => {
 
 		addEventListener(DECREMENT_ENEMY_KILL_COUNT, e => {
 			enemiesToKillInWave -= 1
-			console.log(enemiesToKillInWave)
+			// console.log(enemiesToKillInWave)
 			if (enemiesToKillInWave == 0) {
 				waveWon.style.display = 'block'
 				TweenLite.set(waveWon, { left: 0, alpha: 1 })
@@ -252,11 +251,7 @@ window.start = () => {
 		})
 
 		addEventListener(UPDATE_ENEMY_COUNT, e => {
-			// if (startWave) {
-			// console.log('enemies array length', enemies.length)
-			// let enemyLen = enemies.length
 			enemyCountDOM.innerHTML = `enemies left: ${enemiesToKillInWave}`
-			// }
 		})
 
 		render.canvas.addEventListener('mousemove', e => {
@@ -293,17 +288,6 @@ window.start = () => {
 		document.body.addEventListener('keydown', e => {
 			if (gameState === GAMEPLAY) {
 				keys[e.keyCode] = true
-				// clever use of javascript closure to pass these variables to another function for setting
-				// const setCrouched = (swapped) => {
-				// 	crouched = !crouched;
-				// 	player = swapped.player // reassign player variable to the new swapped player
-				// 	playerProps = swapped.playerProps
-				// 	let mx = mouse_point.position.x
-				// 	let my = mouse_point.position.y
-				// 	mouse_point = swapped.mouse_point
-				// 	mouse_point.position.x = mx
-				// 	mouse_point.position.y = my
-				// }
 				if (keys[83]) {
 					toggleCrouch(crouched, setCrouched, player, addSwappedBody, playerSwapBod)
 				}

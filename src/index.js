@@ -5,7 +5,7 @@ import { Bodies, Body, World, Constraint, Composite, Composites, Events,
 	Vector, Render } from 'matter-js'
 import { matterBoilerplate as boilerplate } from './modules/MatterBoilerplate'
 import { createPlayer, createEnemy } from './modules/Entities'
-import { createGround, createPlatform } from './modules/Platforms'
+import { createGround, createPlatform, DestructiblePlatform } from './modules/Platforms'
 import { GROUND, BULLET, BOX, PLAYER_HEAD, PLAYER_BODY,
 	ENEMY_HEAD, ENEMY_BODY } from './modules/constants/CollisionFilterConstants'
 import { BULLET_REMOVAL_TIMEOUT } from './modules/constants/GameConstants'
@@ -34,6 +34,7 @@ window.start = () => {
 	let bullets = [] // bodies
 	let ragdolls = [] // composites
 	let enemiesToBeSpawned = [] // composites
+	let destructiblePlatforms = []
 	let enemyCountDOM = document.getElementById('enemy-count')
 	let enemiesToKillInWave, startWave = false
 	let waveLevelDOM = document.getElementById('wave-count')
@@ -202,6 +203,8 @@ window.start = () => {
 			spawnEnemies(3, 1000)
 			createPlatform(world, width, 40, { x: 0, y: 340 })
 			createPlatform(world, 200, 40, { x: 200, y: 100 })
+			let destructiblePlatform1 = new DestructiblePlatform(world, 300, 40, { x: -400, y: 100 }, destructiblePlatforms)
+
 
 		}
 		if (currentLevel == 2) {
@@ -355,9 +358,15 @@ window.start = () => {
 	const renderEntities = () => {
 		if (gameState == GAMEPLAY) {
 			// keep enemy lifebar positions in-sync with enemies
-			enemies.forEach((enemy, i) => {
+			enemies.forEach(enemy => {
 				positionEnemyLifebar(enemy, render)
 				positionEnemyAim(enemy, player)
+			})
+			destructiblePlatforms.forEach(platform => {
+				// positionPlatformHealth(platform) //-- refactor into this function when ready
+				platform.updateHealthbarPosition(render)
+				// console.log(platform)
+
 			})
 		}
 	}

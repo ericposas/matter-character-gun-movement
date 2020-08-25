@@ -122,3 +122,15 @@ canvas {
 #try-again-button:hover {
 	transform: scale(1.05);
 }
+
+#health-bars-container {
+	z-index: 1;
+	position: absolute;
+}
+
+.platform-health {
+	height: 3px;
+	width: 100px;
+	position: absolute;
+	background-color: yellow;
+}

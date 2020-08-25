@@ -18,7 +18,7 @@ import { checkPlayerIsOnGroundBegin, checkPlayerIsOnGroundEnd, enemyBulletHittes
 	bulletGroundHittest, playerBulletHittestBegin, playerBulletHittestEnd,
 	removeOutOfBoundsBullets, removeOutOfBoundsEnemies, removeOutOfBoundsRagdolls,
 	removeOutOfBoundsPlayer, checkEnemiesAreOnGround, checkPlayerIsOnPlatformBegin,
-	checkPlayerIsOnPlatformEnd
+	checkPlayerIsOnPlatformEnd, bulletDestructiblePlatformHittest
 } from './modules/GameTickMethods'
 import { GAMEPLAY, MENU, GAME_OVER, WAVE_WON } from './modules/constants/GameStates'
 import { UPDATE_ENEMY_COUNT, UpdateEnemyCount, DECREMENT_ENEMY_KILL_COUNT,
@@ -332,6 +332,7 @@ window.start = () => {
 			// LOOP THROUGH ALL COLLISION TYPES
 			for (let i = 0; i < e.pairs.length; ++i) {
 				// bulletGroundHittest(e, i, world, bullets)
+				bulletDestructiblePlatformHittest(e, i, world, bullets, destructiblePlatforms)
 				checkPlayerIsOnGroundBegin(e, i, player)
 				checkPlayerIsOnPlatformBegin(e, i, player)
 				checkEnemiesAreOnGround(e, i, enemies)
@@ -364,7 +365,7 @@ window.start = () => {
 			})
 			destructiblePlatforms.forEach(platform => {
 				// positionPlatformHealth(platform) //-- refactor into this function when ready
-				platform.updateHealthbarPosition(render)
+				platform._this.updateHealthbarPosition(render)
 				// console.log(platform)
 
 			})

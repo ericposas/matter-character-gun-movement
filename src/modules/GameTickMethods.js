@@ -1,5 +1,5 @@
 import { World, Body, Composite } from 'matter-js'
-import { BODY_DAMAGE, HEAD_DAMAGE, LIMB_DAMAGE, PLAYER_LIFEBAR_MULTIPLIER } from './constants/DamageConstants'
+import { BODY_DAMAGE, HEAD_DAMAGE, LIMB_DAMAGE, PLATFORM_DAMAGE, PLAYER_LIFEBAR_MULTIPLIER } from './constants/DamageConstants'
 import { BULLET_FORCE_MULTIPLIER, BULLET_IMPACT, RAGDOLL_REMOVAL_TIMEOUT } from './constants/GameConstants'
 import { GAME_OVER, MENU } from './constants/GameStates'
 import { createRagdoll } from './Ragdoll'
@@ -298,6 +298,24 @@ export const bulletGroundHittest = (e, i, world, bullets) => {
 		let idx = bullets.indexOf(bullet)
 		World.remove(world, bullet)
 		if (idx > -1) { bullets.splice(idx, 1) }
+	}
+}
+
+export const bulletDestructiblePlatformHittest = (e, i, world, bullets, dPlatArray) => {
+	if (e.pairs[i].bodyA.label.indexOf('bullet') > -1  && e.pairs[i].bodyB.label === 'destructible platform') {
+		let bullet = e.pairs[i].bodyA
+		let dPlatform = e.pairs[i].bodyB
+		dPlatform._this.damageHealthbar(PLATFORM_DAMAGE)
+		if (dPlatform._this.getHealth() <= 0) {
+			dPlatform._this.destroy()
+		}
+	} else if (e.pairs[i].bodyB.label.indexOf('bullet') > -1  && e.pairs[i].bodyA.label === 'destructible platform') {
+		let bullet = e.pairs[i].bodyB
+		let dPlatform = e.pairs[i].bodyA
+		dPlatform._this.damageHealthbar(PLATFORM_DAMAGE)
+		if (dPlatform._this.getHealth() <= 0) {
+			dPlatform._this.destroy()
+		}
 	}
 }
 

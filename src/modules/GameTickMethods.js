@@ -2,9 +2,10 @@ import { World, Body, Composite } from 'matter-js'
 import { BODY_DAMAGE, HEAD_DAMAGE, LIMB_DAMAGE, PLATFORM_DAMAGE, PLAYER_LIFEBAR_MULTIPLIER } from './constants/DamageConstants'
 import { BULLET_FORCE_MULTIPLIER, BULLET_IMPACT, RAGDOLL_REMOVAL_TIMEOUT } from './constants/GameConstants'
 import { GAME_OVER, MENU } from './constants/GameStates'
-import { PLAYER_FELL, PLAYER_SHOT } from './constants/GameConstants'
+import { PLAYER_FELL, PLAYER_SHOT, PLAYER_HEALTHBAR_LENGTH } from './constants/GameConstants'
 import { createRagdoll } from './Ragdoll'
 import { UpdateEnemyCount, DecrementEnemyKillCount } from './events/EventTypes'
+import { getCSSProp } from './Utils'
 
 export const removeOutOfBoundsPlayer = (player, world, destroyGameObjects, changeGameState) => {
 	if (player.bodies[0].position.x > world.bounds.max.x || player.bodies[0].position.x < world.bounds.min.x || player.bodies[0].position.y > world.bounds.max.y) {
@@ -143,6 +144,37 @@ const removeEnemyFromWorld = (player, enemies, enemy, world, ragdolls, bulletFor
 				// console.log('ragdoll removed', ragdolls)
 			}
 		}, RAGDOLL_REMOVAL_TIMEOUT)
+	}
+}
+
+export const checkPlayerCollectHealthDropBegin = (e, i, world, player, healthdropsArray) => {
+	let lifebar = document.getElementById('player-lifebar-inner')
+	if (
+			(e.pairs[i].bodyA === player.bodies[0] && e.pairs[i].bodyB.label.indexOf('healthdrop') > -1) ||
+			(e.pairs[i].bodyA === player.bodies[1] && e.pairs[i].bodyB.label.indexOf('healthdrop') > -1) ||
+			(e.pairs[i].bodyA === player.bodies[2] && e.pairs[i].bodyB.label.indexOf('healthdrop') > -1) ||
+			(e.pairs[i].bodyA === player.bodies[3] && e.pairs[i].bodyB.label.indexOf('healthdrop') > -1)
+		) {
+		let player = e.pairs[i].bodyA
+		let healthdrop = e.pairs[i].bodyB
+		healthdrop.collect(world, healthdropsArray)
+		lifebar.style.width = parseInt(lifebar.style.width) + healthdrop.healAmount + 'px'
+		if (parseInt(lifebar.style.width) > PLAYER_HEALTHBAR_LENGTH) {
+			lifebar.style.width = PLAYER_HEALTHBAR_LENGTH + 'px'
+		}
+	} else if (
+			(e.pairs[i].bodyB === player.bodies[0] && e.pairs[i].bodyA.label.indexOf('healthdrop') > -1) ||
+			(e.pairs[i].bodyB === player.bodies[1] && e.pairs[i].bodyA.label.indexOf('healthdrop') > -1) ||
+			(e.pairs[i].bodyB === player.bodies[2] && e.pairs[i].bodyA.label.indexOf('healthdrop') > -1) ||
+			(e.pairs[i].bodyB === player.bodies[3] && e.pairs[i].bodyA.label.indexOf('healthdrop') > -1)
+		) {
+		let player = e.pairs[i].bodyB
+		let healthdrop = e.pairs[i].bodyA
+		healthdrop.collect(world, healthdropsArray)
+		lifebar.style.width = parseInt(lifebar.style.width) + healthdrop.healAmount + 'px'
+		if (parseInt(lifebar.style.width) > PLAYER_HEALTHBAR_LENGTH) {
+			lifebar.style.width = PLAYER_HEALTHBAR_LENGTH + 'px'
+		}
 	}
 }
 

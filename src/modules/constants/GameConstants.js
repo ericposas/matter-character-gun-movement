@@ -1,3 +1,7 @@
+import { width, height } from '../../config'
+
+export const PLAYER_HEALTHBAR_LENGTH = width-24
+
 export const BULLET_REMOVAL_TIMEOUT = 1000
 export const RAGDOLL_REMOVAL_TIMEOUT = 5000
 export const BULLET_FORCE = 0.015

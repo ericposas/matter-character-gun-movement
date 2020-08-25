@@ -8,7 +8,8 @@ import { createPlayer, createEnemy } from './modules/Entities'
 import { createGround, createPlatform, DestructiblePlatform } from './modules/Platforms'
 import { GROUND, BULLET, BOX, PLAYER_HEAD, PLAYER_BODY,
 	ENEMY_HEAD, ENEMY_BODY } from './modules/constants/CollisionFilterConstants'
-import { BULLET_REMOVAL_TIMEOUT, PLATFORM_X_BUFFER, PLATFORM_Y_BUFFER, BULLET_FORCE } from './modules/constants/GameConstants'
+import { BULLET_REMOVAL_TIMEOUT, PLATFORM_X_BUFFER, PLATFORM_Y_BUFFER,
+	BULLET_FORCE, PLAYER_HEALTHBAR_LENGTH } from './modules/constants/GameConstants'
 import { renderMouse, toggleCrouch, renderPlayerMovementViaKeyInput,
 	calcMovingReticlePosition, calculateBulletAngle, setCrouched
 } from './modules/PlayerControls'
@@ -18,12 +19,14 @@ import { checkPlayerIsOnGroundBegin, checkPlayerIsOnGroundEnd, enemyBulletHittes
 	bulletGroundHittest, playerBulletHittestBegin, playerBulletHittestEnd,
 	removeOutOfBoundsBullets, removeOutOfBoundsEnemies, removeOutOfBoundsRagdolls,
 	removeOutOfBoundsPlayer, checkEnemiesAreOnGround, checkPlayerIsOnPlatformBegin,
-	checkPlayerIsOnPlatformEnd, bulletDestructiblePlatformHittest
+	checkPlayerIsOnPlatformEnd, bulletDestructiblePlatformHittest,
+	checkPlayerCollectHealthDropBegin
 } from './modules/GameTickMethods'
 import { GAMEPLAY, MENU, GAME_OVER, WAVE_WON } from './modules/constants/GameStates'
 import { UPDATE_ENEMY_COUNT, UpdateEnemyCount, DECREMENT_ENEMY_KILL_COUNT,
 	UPDATE_WAVE, UpdateWave } from './modules/events/EventTypes'
 import { getBodyWidth, getBodyHeight } from './modules/Utils'
+import { HealthDrop } from './modules/HealthDrop'
 
 
 window.start = () => {
@@ -37,6 +40,7 @@ window.start = () => {
 	let ragdolls = [] // composites
 	let enemiesToBeSpawned = [] // composites
 	let platforms = []
+	let healthdrops = []
 	let enemyCountDOM = document.getElementById('enemy-count')
 	let enemiesToKillInWave, startWave = false
 	let waveLevelDOM = document.getElementById('wave-count')
@@ -108,7 +112,7 @@ window.start = () => {
 
 	function displayPlayerLifeBar(str) {
 		document.getElementById('player-lifebar').style.display = str
-		document.getElementById('player-lifebar-inner').style.cssText = `top:2px;left:2px;width:${width-24}px;height:8px;position:relative;background-color:green;`
+		document.getElementById('player-lifebar-inner').style.cssText = `top:2px;left:2px;width:${PLAYER_HEALTHBAR_LENGTH}px;height:8px;position:relative;background-color:green;`
 	}
 
 	function createGameObjects() {
@@ -272,6 +276,10 @@ window.start = () => {
 		if (currentLevel == 1) {
 			spawnEnemies(3, 1000)
 			makePlatformLayout()
+			setTimeout(() => {
+				new HealthDrop(world, healthdrops)
+
+			}, 1000)
 
 		}
 		if (currentLevel == 2) {
@@ -405,6 +413,7 @@ window.start = () => {
 			// LOOP THROUGH ALL COLLISION TYPES
 			for (let i = 0; i < e.pairs.length; ++i) {
 				// bulletGroundHittest(e, i, world, bullets)
+				checkPlayerCollectHealthDropBegin(e, i, world, player, healthdrops)
 				bulletDestructiblePlatformHittest(e, i, world, bullets, platforms)
 				checkPlayerIsOnGroundBegin(e, i, player)
 				checkPlayerIsOnPlatformBegin(e, i, player)

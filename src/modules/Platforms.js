@@ -1,9 +1,10 @@
 import { World, Bodies, Body } from 'matter-js'
 import { GROUND } from './constants/CollisionFilterConstants'
+import { getBodyWidth, getBodyHeight } from './Utils'
 
 export const createGround = (world, width, height) => {
 	let gHt = 400
-	let ground = Bodies.rectangle(0, height + gHt/2, width * 2, gHt, {
+	let ground = Bodies.rectangle(0, height + gHt/2, getBodyWidth(world) - 500, gHt, {
 		label: 'ground',
 		isStatic: true,
 		collisionFilter: {
@@ -14,16 +15,27 @@ export const createGround = (world, width, height) => {
 	return ground
 }
 
-export const createPlatform = (world, width, height, position, addToWorldBool) => {
+export const createPlatform = (world, width, height, position, addToWorldBool, platsArray) => {
 	let platform = Bodies.rectangle(0, 0, width, height, { isStatic: true })
 	platform.label = 'platform'
-	if (addToWorldBool == undefined && addToWorldBool != false) World.add(world, platform)
+	if (addToWorldBool) { World.add(world, platform) }
 	Body.translate(platform, position)
+	if (platsArray) { platsArray.push(platform) }
+	// platform.destroy = () => {
+	// 	if (platsArray) {
+	// 		let idx = platsArray.indexOf(platform)
+	// 		if (idx > -1) {
+	// 			World.remove(world, platform)
+	// 			platsArray.splice(idx, 1)
+	// 		}
+	// 	}
+	// }
 	return platform
 }
 
 export function DestructiblePlatform(world, width, height, position, dPlatArray) {
 	let platformWidth, platformHeight, healthbarHeight
+	this.healthbarContainer = document.getElementById('health-bars-container')
 	this._platform = createPlatform(world, width, height, position, false)
 	this._platform._this = this
 	this._platform.label = 'destructible platform'
@@ -31,7 +43,7 @@ export function DestructiblePlatform(world, width, height, position, dPlatArray)
 	platformHeight = (this._platform.bounds.max.y - this._platform.bounds.min.y)
 	this.healthbar = document.createElement('div')
 	this.healthbar.classList.add('platform-health')
-	document.getElementById('health-bars-container').appendChild(this.healthbar)
+	this.healthbarContainer.appendChild(this.healthbar)
 	this.healthbar.style.width = platformWidth + 'px'
 	healthbarHeight = parseInt(getComputedStyle(this.healthbar).getPropertyValue('height'), 10)
 	this.health = 100
@@ -49,6 +61,9 @@ export function DestructiblePlatform(world, width, height, position, dPlatArray)
 		if (idx > -1) {
 			World.remove(world, this._platform)
 			dPlatArray.splice(idx, 1)
+		}
+		if (this.healthbar && this.healthbar.parentNode == this.healthbarContainer) {
+			this.healthbarContainer.removeChild(this.healthbar)
 		}
 	}
 	World.add(world, this._platform)

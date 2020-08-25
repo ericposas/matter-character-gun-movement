@@ -8,7 +8,7 @@ import { createPlayer, createEnemy } from './modules/Entities'
 import { createGround, createPlatform, DestructiblePlatform } from './modules/Platforms'
 import { GROUND, BULLET, BOX, PLAYER_HEAD, PLAYER_BODY,
 	ENEMY_HEAD, ENEMY_BODY } from './modules/constants/CollisionFilterConstants'
-import { BULLET_REMOVAL_TIMEOUT } from './modules/constants/GameConstants'
+import { BULLET_REMOVAL_TIMEOUT, PLATFORM_X_BUFFER, PLATFORM_Y_BUFFER } from './modules/constants/GameConstants'
 import { renderMouse, toggleCrouch, renderPlayerMovementViaKeyInput,
 	calcMovingReticlePosition, calculateBulletAngle, setCrouched
 } from './modules/PlayerControls'
@@ -23,6 +23,7 @@ import { checkPlayerIsOnGroundBegin, checkPlayerIsOnGroundEnd, enemyBulletHittes
 import { GAMEPLAY, MENU, GAME_OVER, WAVE_WON } from './modules/constants/GameStates'
 import { UPDATE_ENEMY_COUNT, UpdateEnemyCount, DECREMENT_ENEMY_KILL_COUNT,
 	UPDATE_WAVE, UpdateWave } from './modules/events/EventTypes'
+import { getBodyWidth, getBodyHeight } from './modules/Utils'
 
 
 window.start = () => {
@@ -34,7 +35,7 @@ window.start = () => {
 	let bullets = [] // bodies
 	let ragdolls = [] // composites
 	let enemiesToBeSpawned = [] // composites
-	let destructiblePlatforms = []
+	let platforms = []
 	let enemyCountDOM = document.getElementById('enemy-count')
 	let enemiesToKillInWave, startWave = false
 	let waveLevelDOM = document.getElementById('wave-count')
@@ -162,6 +163,7 @@ window.start = () => {
 			addSwappedBody = null
 			playerSwapBod = null
 			destroyEnemiesToBeSpawned()
+			destroyPlatforms()
 			displayPlayerLifeBar('none')
 		}
 	}
@@ -186,13 +188,61 @@ window.start = () => {
 			dispatchEvent(UpdateEnemyCount)
 		}
 	}
+
 	function destroyEnemiesToBeSpawned() {
 		enemiesToBeSpawned.forEach(timeout => {
 			clearTimeout(timeout)
 			// console.log('timeout should clear')
 		})
 		enemiesToBeSpawned = []
-		console.log(enemies, enemiesToBeSpawned)
+		// console.log(enemies, enemiesToBeSpawned)
+	}
+
+	function destroyPlatforms() {
+		platforms.forEach(platform => {
+			// specific to destructible version
+			if (platform._this) {
+				platform._this.destroy()
+			} else {
+				// regular platform -- indestructible
+				World.remove(world, platform)
+			}
+		})
+		platforms = []
+	}
+
+	const spawnDestructiblePlatforms = (n, w, h) => {
+		let groundWidth = getBodyWidth(ground)
+		let groundHeight = getBodyHeight(ground)
+		let playerHeight = (getBodyHeight(player.bodies[0]) + getBodyHeight(player.bodies[1]))
+		const getXY = () => {
+			let _xarr = [ random.int(-100, -(groundWidth/2)), random.int(100, (groundWidth/2)) ]
+			let x = _xarr[Math.floor(Math.random() * _xarr.length)]
+			let _yarr = [ random.int(0, player.bodies[0].position.y - playerHeight), random.int(player.bodies[0].position.y + playerHeight, ground.position.y - groundHeight) ]
+			let y = _yarr[Math.floor(Math.random() * _yarr.length)]
+			return { x, y }
+		}
+		// create first platform so the recursive loop can run..
+		let p = new DestructiblePlatform(world, w, h, getXY(), platforms)
+		n-=1 // take away one iteration
+
+		function tryCreate(position) {
+			console.log('trying to find position for platform...')
+			let { x, y } = position
+			platforms.forEach(plat => {
+				if (plat.position.x + (getBodyWidth(plat)/2) > x + (w/2) || plat.position.x - (getBodyWidth(plat)/2) < x - (w/2)) {
+					if (plat.position.y + (getBodyHeight(plat)/2) > y + (h/2) || plat.position.y - (getBodyHeight(plat)/2) < y - (h/2)) {
+						console.log('creating platform')
+						let platform = new DestructiblePlatform(world, w, h, { x: x, y: y }, platforms)
+					} else { tryCreate(getXY()) }
+				} else { tryCreate(getXY()) }
+			})
+		}
+
+		for (let i = 0; i < n; ++i) {
+			tryCreate(getXY())
+		}
+
 	}
 
 	const buildLevel = () => {
@@ -201,9 +251,11 @@ window.start = () => {
 
 		if (currentLevel == 1) {
 			spawnEnemies(3, 1000)
-			createPlatform(world, width, 40, { x: 0, y: 340 })
-			createPlatform(world, 200, 40, { x: 200, y: 100 })
-			let destructiblePlatform1 = new DestructiblePlatform(world, 300, 40, { x: -400, y: 100 }, destructiblePlatforms)
+			// spawnDestructiblePlatforms(3, 400, 40)
+			// spawnDestructiblePlatforms(5, 200, 40)
+			createPlatform(world, width, 40, { x: 0, y: 340 }, true, platforms)
+			createPlatform(world, 200, 40, { x: 200, y: 100 }, true, platforms)
+
 
 
 		}
@@ -332,7 +384,7 @@ window.start = () => {
 			// LOOP THROUGH ALL COLLISION TYPES
 			for (let i = 0; i < e.pairs.length; ++i) {
 				// bulletGroundHittest(e, i, world, bullets)
-				bulletDestructiblePlatformHittest(e, i, world, bullets, destructiblePlatforms)
+				bulletDestructiblePlatformHittest(e, i, world, bullets, platforms)
 				checkPlayerIsOnGroundBegin(e, i, player)
 				checkPlayerIsOnPlatformBegin(e, i, player)
 				checkEnemiesAreOnGround(e, i, enemies)
@@ -363,9 +415,9 @@ window.start = () => {
 				positionEnemyLifebar(enemy, render)
 				positionEnemyAim(enemy, player)
 			})
-			destructiblePlatforms.forEach(platform => {
+			platforms.forEach(platform => {
 				// positionPlatformHealth(platform) //-- refactor into this function when ready
-				platform._this.updateHealthbarPosition(render)
+				if (platform._this) { platform._this.updateHealthbarPosition(render) }
 				// console.log(platform)
 
 			})

@@ -12,3 +12,11 @@ export const ENEMY_CROUCH_INTERVAL_MIN = 3000
 export const ENEMY_CROUCH_INTERVAL_MAX = 10000
 export const ENEMY_JUMP_INTERVAL_MIN = 3000
 export const ENEMY_JUMP_INTERVAL_MAX = 10000
+
+// Platforms
+export const PLATFORM_Y_BUFFER = 200
+export const PLATFORM_X_BUFFER = 50
+
+// Player Death Types
+export const PLAYER_FELL = 'player fell'
+export const PLAYER_SHOT = 'player shot'

@@ -8,7 +8,7 @@ import { createPlayer, createEnemy } from './modules/Entities'
 import { createGround, createPlatform, DestructiblePlatform } from './modules/Platforms'
 import { GROUND, BULLET, BOX, PLAYER_HEAD, PLAYER_BODY,
 	ENEMY_HEAD, ENEMY_BODY } from './modules/constants/CollisionFilterConstants'
-import { BULLET_REMOVAL_TIMEOUT, PLATFORM_X_BUFFER, PLATFORM_Y_BUFFER } from './modules/constants/GameConstants'
+import { BULLET_REMOVAL_TIMEOUT, PLATFORM_X_BUFFER, PLATFORM_Y_BUFFER, BULLET_FORCE } from './modules/constants/GameConstants'
 import { renderMouse, toggleCrouch, renderPlayerMovementViaKeyInput,
 	calcMovingReticlePosition, calculateBulletAngle, setCrouched
 } from './modules/PlayerControls'
@@ -29,6 +29,7 @@ import { getBodyWidth, getBodyHeight } from './modules/Utils'
 window.start = () => {
 	// Game world variables
 	let gameState = ''
+	let lastGameState = ''
 	let currentLevel = 0
 	let keys = []
 	let enemies = [] // composites
@@ -80,6 +81,7 @@ window.start = () => {
 			buildLevel()
 		}
 		if (gameState === GAME_OVER) {
+			lastGameState = gameState
 			if (waveWonTweenOut) { waveWonTweenOut.kill() }
 			waveWon.style.display = 'none'
 			gameover.style.display = 'block'
@@ -245,28 +247,47 @@ window.start = () => {
 
 	}
 
+	const makePlatformLayout = () => {
+		destroyPlatforms()
+		// .applyForce() allows us to create platforms in the same position without affecting the player.onPlatform bool check
+		Body.applyForce(player.bodies[1], player.bodies[1].position, { x: 0, y: -1 })
+		if (currentLevel == 1) {
+			createPlatform(world, width, 40, { x: 0, y: 340 }, true, platforms)
+			createPlatform(world, 200, 40, { x: 400, y: 100 }, true, platforms)
+		}
+		else
+		if (currentLevel >= 2 && currentLevel <= 5) {
+			createPlatform(world, width, 40, { x: 0, y: 340 }, true, platforms)
+			createPlatform(world, 200, 40, { x: 400, y: 100 }, true, platforms)
+			createPlatform(world, 200, 40, { x: -400, y: 100 }, true, platforms)
+			new DestructiblePlatform(world, 200, 40, { x: 0, y: 0 }, platforms)
+		}
+
+	}
+
 	const buildLevel = () => {
 		// console.log('building level..')
 		dispatchEvent(UpdateWave)
 
 		if (currentLevel == 1) {
 			spawnEnemies(3, 1000)
-			// spawnDestructiblePlatforms(3, 400, 40)
-			// spawnDestructiblePlatforms(5, 200, 40)
-			createPlatform(world, width, 40, { x: 0, y: 340 }, true, platforms)
-			createPlatform(world, 200, 40, { x: 200, y: 100 }, true, platforms)
-
-
+			makePlatformLayout()
 
 		}
 		if (currentLevel == 2) {
 			spawnEnemies(5, 1000)
+			makePlatformLayout()
+
 		}
 		if (currentLevel == 3) {
 			spawnEnemies(7, 1000)
+			makePlatformLayout()
+
 		}
 		if (currentLevel == 4) {
 			spawnEnemies(9, 1000)
+			makePlatformLayout()
+
 		}
 
 

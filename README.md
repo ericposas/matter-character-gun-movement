@@ -14,7 +14,6 @@
 - game works fine in an embedded html iframe
 
 ### platforms
-- since we breakdown platforms on player death, we will need to rebuild them once the player clicks "try again" button
 
 ### items
 - make random health drops in different sizes (drop between waves)

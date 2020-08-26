@@ -31,10 +31,12 @@ export const calculateBulletAngle = (player, render, reticlePos) => {
 	}
 }
 
-export const renderMouse = (player, lastDirection, render, mouse_point, reticlePos) => { // called in the 'beforeTick' Engine event
+export const renderMouse = (player, lastDirection, render, mouse_point, reticlePos, domCursor) => { // called in the 'beforeTick' Engine event
 	let movingReticle = calcMovingReticlePosition(player, render)
 	mouse_point.position.x = reticlePos.x + movingReticle.x
 	mouse_point.position.y = reticlePos.y + movingReticle.y
+	domCursor.style.left = reticlePos.x + 'px'
+	domCursor.style.top = reticlePos.y + 'px'
 	if (mouse_point.position.x > player.bodies[1].position.x) { lastDirection = 'left' }
 	else { lastDirection = 'right' }
 }

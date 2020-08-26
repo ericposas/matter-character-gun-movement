@@ -14,16 +14,19 @@
 - look into 'unsticking' character from platforms/walls when trying to jump on them (and missing)
 - game works fine in an embedded html iframe
 
+### weapons
+- weapons are unlocked depending on the wave level and have unlimited usage
+- can also upgrade damage or impact force on weapons to make things more interesting
+- add shotgun
+- add smg
+- maybe change cursor depending on the weapon equipped
+
 ### platforms
 - add destructible cover
 - cover can be walked through, but stop bullets until they are destroyed
 
 ### items
-- limit grenade usage 
 - add timeout for health drops to disappear
-- add grenade item
-- add shotgun item
-- add smg item
 
 ### enemies
 - add variance to enemy lifebar and damage rates

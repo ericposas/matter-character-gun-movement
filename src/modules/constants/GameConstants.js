@@ -13,8 +13,9 @@ export const GRENADE_SIZE = 12
 export const GRENADE_FORCE = 0.025
 export const GRENADE_EXPLOSION_TIME = 2000
 export const GRENADE_EXPLOSION_FORCE = .25
-export const GRENADE_EXPLOSION_SIZE = 15
+export const GRENADE_EXPLOSION_SIZE = 18
 export const GRENADE_LIMIT_TIME = 1000
+export const SMG_LIMIT_TIME = 100
 
 // Enemy Actions Constants
 export const ENEMY_BULLET_FORCE = 0.025

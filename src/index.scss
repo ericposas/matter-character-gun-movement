@@ -3,11 +3,36 @@ $width: 1200px; $height: 550px; $lifebarWidth: 1180px;
 body, html {
 	margin: 0;
 	overflow: hidden;
-	cursor: crosshair;
 	background-color: #000;
+	// cursor: none;
 }
 
 canvas {
+}
+
+#dom-cursor {
+	z-index: 1;
+	display: none;
+	position: absolute;
+	font-size: 30px;
+	margin-left: -10px;
+	margin-top: 14px;
+	transform: scale(1.5);
+	opacity: .5;
+	color: red;
+	// font-weight: bold;
+	// transform: rotate(45deg);
+}
+
+#dom-cursor::after {
+	content: '';
+	display: block;
+	margin-left: 1.5px;
+	margin-top: -25px;
+	width: 10px;
+	height: 10px;
+	border-radius: 20px;
+	border: 2px solid red;
 }
 
 #wave-won-msg {
@@ -117,6 +142,7 @@ canvas {
 	transition: all .35s;
 	background-color: #333;
 	transform: scale(1.0);
+	user-select: none;
 }
 
 #try-again-button:hover {
@@ -134,9 +160,24 @@ canvas {
 	pointer-events: none;
 }
 
-#equipped-weapon {
+#grenade {
+	width: 30px;
+}
+
+#pistol {
+	width: 50px;
+}
+
+#smg {
+	margin-top: -22px;
+	margin-left: -14px;
+	width: 90px;
+}
+
+.equipped-weapon {
 	width: 50px;
 	padding: 10px;
+	top: 470px;
 	position: absolute;
 }
 

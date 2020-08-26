@@ -11,7 +11,7 @@ import { GROUND, BULLET, BOX, PLAYER_HEAD, PLAYER_BODY,
 import { BULLET_REMOVAL_TIMEOUT, PLATFORM_X_BUFFER, PLATFORM_Y_BUFFER,
 	BULLET_FORCE, PLAYER_HEALTHBAR_LENGTH, BULLET_SIZE, GRENADE_SIZE, GRENADE_FORCE,
 	GRENADE_EXPLOSION_TIME, GRENADE_EXPLOSION_SIZE, GRENADE_LIMIT_TIME,
-	PISTOL_LIMIT_TIME } from './modules/constants/GameConstants'
+	PISTOL_LIMIT_TIME, SMG_LIMIT_TIME } from './modules/constants/GameConstants'
 import { renderMouse, toggleCrouch, renderPlayerMovementViaKeyInput,
 	calcMovingReticlePosition, calculateBulletAngle, setCrouched
 } from './modules/PlayerControls'
@@ -29,10 +29,11 @@ import { UPDATE_ENEMY_COUNT, UpdateEnemyCount, DECREMENT_ENEMY_KILL_COUNT,
 	UPDATE_WAVE, UpdateWave } from './modules/events/EventTypes'
 import { getBodyWidth, getBodyHeight } from './modules/Utils'
 import { HealthDrop } from './modules/items/HealthDrop'
-import { PISTOL, GRENADE } from './modules/constants/Weapons'
+import { PISTOL, GRENADE, SMG } from './modules/constants/Weapons'
 // temp weapon images
 import pistolImg from './images/pistol.png'
 import grenadeImg from './images/grenade.png'
+import smgImg from './images/smg.png'
 
 
 window.start = () => {
@@ -42,13 +43,13 @@ window.start = () => {
 	let currentLevel = 0
 	let keys = []
 	let enemies = [] // composites
-	let bullets = [], lastBulletShot = Date.now()
+	let bullets = [], lastPistolBulletShot = Date.now(), lastSMGBulletShot = Date.now(), smgShooting
 	let grenades = [], grenadeTimeouts = [], lastThrownGrenade = Date.now()
 	let ragdolls = [] // composites
 	let enemiesToBeSpawned = [] // composites
 	let platforms = [] // bodies
 	let healthdrops = [] // bodies
-	let weapons = [ PISTOL, GRENADE ], equippedWeapon = PISTOL, equippedWeaponDOM = document.getElementById('equipped-weapon')
+	let weapons = [ PISTOL, GRENADE, SMG ], equippedWeapon = PISTOL, equippedWeaponDOM = document.getElementsByClassName('equipped-weapon')[0]
 	let enemyCountDOM = document.getElementById('enemy-count')
 	let enemiesToKillInWave, startWave = false
 	let waveLevelDOM = document.getElementById('wave-count')
@@ -56,6 +57,7 @@ window.start = () => {
 	let tryAgainBtn = document.getElementById('try-again-button')
 	let gameover = document.getElementById('game-over-screen')
 	let domShapesContainer = document.getElementById('dom-shapes-container')
+	let domCursor = document.getElementById('dom-cursor')
 	let crouched = false
 	let lastDirection = ''
 	let reticlePos = { x: 0, y: 0 }
@@ -76,12 +78,17 @@ window.start = () => {
 		if (gameState === MENU) {
 			// build a temporary game menu, or just show/hide an html block
 			let startBtn = document.getElementById('menu-button')
+			document.body.style.cursor = 'auto'
+			equippedWeaponDOM.style.display = 'none'
 			document.getElementById('menu').style.display = 'block'
 			startBtn.style.left = (width/2) - (parseInt(getComputedStyle(startBtn).getPropertyValue('width'))/2) + 'px'
 			startBtn.style.top = (height/2) - (parseInt(getComputedStyle(startBtn).getPropertyValue('height'))/2) + 'px'
 			function startGame(e) {
 				changeLevel()
 				changeGameState(GAMEPLAY)
+				equippedWeaponDOM.style.display = 'block'
+				domCursor.style.display = 'block'
+				document.body.style.cursor = 'none'
 				document.getElementById('menu').style.display = 'none'
 			}
 			if (!startBtn.clickListenerHasBeenSet) {
@@ -96,7 +103,13 @@ window.start = () => {
 		if (gameState === GAME_OVER) {
 			lastGameState = gameState
 			if (waveWonTweenOut) { waveWonTweenOut.kill() }
-			domShapesContainer.childNodes.forEach(node => domShapesContainer.removeChild(node))
+			domCursor.style.display = 'none'
+			document.body.style.cursor = 'auto'
+			domShapesContainer.childNodes.forEach(node => {
+				if (node.id != 'dom-cursor') {
+					domShapesContainer.removeChild(node)
+				}
+			})
 			waveWon.style.display = 'none'
 			gameover.style.display = 'block'
 			tryAgainBtn.style.display = 'block'
@@ -104,6 +117,9 @@ window.start = () => {
 			TweenLite.from(gameover, 1, { left: -200, alpha: 0 })
 			function playAgain(e) {
 				changeGameState(GAMEPLAY)
+				equippedWeaponDOM.style.display = 'none'
+				domCursor.style.display = 'block'
+				document.body.style.cursor = 'none'
 				tryAgainBtn.style.display = 'none'
 				gameover.style.display = 'none'
 			}
@@ -332,7 +348,41 @@ window.start = () => {
 	}
 
 	const switchEquippedWeaponGraphic = () => {
+		console.log('what')
+		equippedWeaponDOM.id = `${equippedWeapon}`
 		equippedWeaponDOM.src = `./images/${equippedWeapon}.png`
+	}
+
+	const shootSMG = () => {
+		if (lastSMGBulletShot + SMG_LIMIT_TIME < Date.now() && equippedWeapon == SMG) {
+			lastSMGBulletShot = Date.now()
+			let playerArm = player.bodies[3]
+			let bullet = Bodies.circle(playerArm.position.x, playerArm.position.y, BULLET_SIZE, {
+				restitution: .35,
+				collisionFilter: {
+					category: BULLET | BOX
+				}
+			})
+			bullet.label = 'bullet'
+			World.add(world, bullet)
+			bullets.push(bullet)
+			let bAngle = calculateBulletAngle(player, render, reticlePos)
+			const getRandomizedBAngle = () => (
+				{
+					x: bAngle.x,
+					y: random.float(bAngle.y-.001, bAngle.y+.001)
+				}
+			)
+			Body.applyForce(bullet, bullet.position, getRandomizedBAngle())
+			// set time to remove bullet automatically
+			setTimeout(() => {
+				let idx = bullets.indexOf(bullet)
+				if (idx > -1) {
+					World.remove(world, bullet)
+					bullets.splice(idx, 1)
+				}
+			}, BULLET_REMOVAL_TIMEOUT)
+		}
 	}
 
 	// clever use of javascript closure to pass these variables to another function for setting
@@ -405,10 +455,17 @@ window.start = () => {
 				if (equippedWeapon == GRENADE) {
 					///....
 				}
+				if (equippedWeapon == SMG) {
+					smgShooting = true
+				}
 			}
 		})
 		render.canvas.addEventListener('mouseup', e => {
 			if (gameState === GAMEPLAY && checkGameEntitiesReady()) {
+				smgShooting = false
+				if (equippedWeapon == SMG) {
+
+				}
 				if (equippedWeapon == GRENADE) {
 					if (lastThrownGrenade + GRENADE_LIMIT_TIME < Date.now()) {
 						let playerArm = player.bodies[3]
@@ -452,8 +509,8 @@ window.start = () => {
 		render.canvas.addEventListener('click', e => {
 			if (gameState === GAMEPLAY && checkGameEntitiesReady()) {
 				if (equippedWeapon == PISTOL) {
-					if (lastBulletShot + PISTOL_LIMIT_TIME < Date.now()) {
-						lastBulletShot = Date.now()
+					if (lastPistolBulletShot + PISTOL_LIMIT_TIME < Date.now()) {
+						lastPistolBulletShot = Date.now()
 						let playerArm = player.bodies[3]
 						let bullet = Bodies.circle(playerArm.position.x, playerArm.position.y, BULLET_SIZE, {
 							restitution: .35,
@@ -556,7 +613,10 @@ window.start = () => {
 
 	const gameTick = e => {
 		if (gameState == GAMEPLAY && checkGameEntitiesReady()) {
-			renderMouse(player, lastDirection, render, mouse_point, reticlePos)
+			// SMG -
+			if (smgShooting == true) { shootSMG() }
+			// SMG -
+			renderMouse(player, lastDirection, render, mouse_point, reticlePos, domCursor)
 			renderEntities()
 			removeOutOfBoundsBullets(world, bullets)
 			removeOutOfBoundsEnemies(world, enemies)

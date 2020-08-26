@@ -19,6 +19,8 @@
 - cover can be walked through, but stop bullets until they are destroyed
 
 ### items
+- limit grenade usage 
+- add timeout for health drops to disappear
 - add grenade item
 - add shotgun item
 - add smg item

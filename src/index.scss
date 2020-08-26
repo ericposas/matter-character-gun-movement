@@ -134,6 +134,12 @@ canvas {
 	pointer-events: none;
 }
 
+#equipped-weapon {
+	width: 50px;
+	padding: 10px;
+	position: absolute;
+}
+
 .platform-health {
 	height: 3px;
 	position: absolute;

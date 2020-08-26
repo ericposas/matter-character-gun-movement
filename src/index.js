@@ -9,7 +9,8 @@ import { createGround, createPlatform, DestructiblePlatform } from './modules/Pl
 import { GROUND, BULLET, BOX, PLAYER_HEAD, PLAYER_BODY,
 	ENEMY_HEAD, ENEMY_BODY } from './modules/constants/CollisionFilterConstants'
 import { BULLET_REMOVAL_TIMEOUT, PLATFORM_X_BUFFER, PLATFORM_Y_BUFFER,
-	BULLET_FORCE, PLAYER_HEALTHBAR_LENGTH } from './modules/constants/GameConstants'
+	BULLET_FORCE, PLAYER_HEALTHBAR_LENGTH, BULLET_SIZE, GRENADE_SIZE, GRENADE_FORCE,
+	GRENADE_EXPLOSION_TIME, GRENADE_EXPLOSION_SIZE } from './modules/constants/GameConstants'
 import { renderMouse, toggleCrouch, renderPlayerMovementViaKeyInput,
 	calcMovingReticlePosition, calculateBulletAngle, setCrouched
 } from './modules/PlayerControls'
@@ -20,13 +21,17 @@ import { checkPlayerIsOnGroundBegin, checkPlayerIsOnGroundEnd, enemyBulletHittes
 	removeOutOfBoundsBullets, removeOutOfBoundsEnemies, removeOutOfBoundsRagdolls,
 	removeOutOfBoundsPlayer, checkEnemiesAreOnGround, checkPlayerIsOnPlatformBegin,
 	checkPlayerIsOnPlatformEnd, bulletDestructiblePlatformHittest,
-	checkPlayerCollectHealthDropBegin
+	checkPlayerCollectHealthDropBegin, checkGrenadeExplosions
 } from './modules/GameTickMethods'
 import { GAMEPLAY, MENU, GAME_OVER, WAVE_WON } from './modules/constants/GameStates'
 import { UPDATE_ENEMY_COUNT, UpdateEnemyCount, DECREMENT_ENEMY_KILL_COUNT,
 	UPDATE_WAVE, UpdateWave } from './modules/events/EventTypes'
 import { getBodyWidth, getBodyHeight } from './modules/Utils'
 import { HealthDrop } from './modules/items/HealthDrop'
+import { PISTOL, GRENADE } from './modules/constants/Weapons'
+// temp weapon images
+import pistolImg from './images/pistol.png'
+import grenadeImg from './images/grenade.png'
 
 
 window.start = () => {
@@ -36,11 +41,12 @@ window.start = () => {
 	let currentLevel = 0
 	let keys = []
 	let enemies = [] // composites
-	let bullets = [] // bodies
+	let bullets = [], grenades = [], grenadeTimeouts = [], lastThrownGrenade // bodies
 	let ragdolls = [] // composites
 	let enemiesToBeSpawned = [] // composites
-	let platforms = []
-	let healthdrops = []
+	let platforms = [] // bodies
+	let healthdrops = [] // bodies
+	let weapons = [ PISTOL, GRENADE ], equippedWeapon = PISTOL, equippedWeaponDOM = document.getElementById('equipped-weapon')
 	let enemyCountDOM = document.getElementById('enemy-count')
 	let enemiesToKillInWave, startWave = false
 	let waveLevelDOM = document.getElementById('wave-count')
@@ -307,6 +313,10 @@ window.start = () => {
 
 	}
 
+	const switchEquippedWeaponGraphic = () => {
+		equippedWeaponDOM.src = `./images/${equippedWeapon}.png`
+	}
+
 	// clever use of javascript closure to pass these variables to another function for setting
 	const setCrouched = (swapped, bool) => {
 		// crouched = !crouched;
@@ -372,11 +382,48 @@ window.start = () => {
 				}
 			}
 		})
-		render.canvas.addEventListener('click', e => {
-			if (gameState === GAMEPLAY && checkGameEntitiesReady()) {
+		render.canvas.addEventListener('mouseup', e => {
+			if (gameState === GAMEPLAY && checkGameEntitiesReady() && equippedWeapon == GRENADE) {
 				let playerArm = player.bodies[3]
-				let bullet = Bodies.circle(playerArm.position.x, playerArm.position.y, 6, {
-					restitution: .5,
+				let grenade = Bodies.circle(playerArm.position.x, playerArm.position.y, GRENADE_SIZE, {
+					restitution: 1,
+					collisionFilter: {
+						category: BULLET | BOX
+					}
+				})
+				grenade.label = 'grenade'
+				let movingReticle = calcMovingReticlePosition(player, render)
+				let targetAngle = Vector.angle(player.bodies[0].position, {
+					x: reticlePos.x + movingReticle.x,
+					y: reticlePos.y + movingReticle.y
+				})
+				World.add(world, grenade)
+				// we can just animate the arm throw via the pixi layer
+				// Body.setAngle(playerArm, reticlePos.x > player.bodies[0].position.x ? 20 : -20)
+				grenades.push(grenade)
+				Body.applyForce(grenade, grenade.position, {
+					x: Math.cos(targetAngle) * GRENADE_FORCE,
+					y: Math.sin(targetAngle) * GRENADE_FORCE
+				})
+				let timeout = setTimeout(() => {
+					Body.scale(grenade, GRENADE_EXPLOSION_SIZE, GRENADE_EXPLOSION_SIZE)
+					grenade.label = 'explosion'
+					setTimeout(() => {
+						let idx = grenades.indexOf(grenade)
+						if (idx > -1) {
+							World.remove(world, grenade)
+							grenades.splice(idx, 1)
+						}
+					}, 10)
+				}, GRENADE_EXPLOSION_TIME)
+				grenadeTimeouts.push(timeout)
+			}
+		})
+		render.canvas.addEventListener('click', e => {
+			if (gameState === GAMEPLAY && checkGameEntitiesReady() && equippedWeapon == PISTOL) {
+				let playerArm = player.bodies[3]
+				let bullet = Bodies.circle(playerArm.position.x, playerArm.position.y, BULLET_SIZE, {
+					restitution: .35,
 					collisionFilter: {
 						category: BULLET | BOX
 					}
@@ -400,6 +447,16 @@ window.start = () => {
 				keys[e.keyCode] = true
 				if ((keys[83] && player.ground) || (keys[83] && player.onPlatform)) {
 					toggleCrouch(crouched, setCrouched, player, addSwappedBody, playerSwapBod)
+				}
+				if (keys[32]) {
+					// change weapon
+					equippedWeapon = (
+						weapons[weapons.indexOf(equippedWeapon)+1]
+						? weapons[weapons.indexOf(equippedWeapon)+1]
+						: weapons[0]
+					)
+					switchEquippedWeaponGraphic()
+					console.log(equippedWeapon)
 				}
 			}
 		})
@@ -425,6 +482,7 @@ window.start = () => {
 				checkPlayerIsOnGroundBegin(e, i, player)
 				checkPlayerIsOnPlatformBegin(e, i, player)
 				checkEnemiesAreOnGround(e, i, enemies)
+				checkGrenadeExplosions(e, i, world, player, grenades, enemies, ragdolls, healthdrops)
 				enemyBulletHittestBegin(e, i, world, calculateBulletAngle(player, render, reticlePos), bullets)
 				playerBulletHittestBegin(e, i, world, calculateBulletAngle(player, render, reticlePos), bullets)
 				ragdollBulletHittestBegin(e, i, world, calculateBulletAngle(player, render, reticlePos), bullets)

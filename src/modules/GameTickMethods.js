@@ -1,6 +1,6 @@
 import { World, Body, Composite } from 'matter-js'
 import { BODY_DAMAGE, HEAD_DAMAGE, LIMB_DAMAGE, PLATFORM_DAMAGE, PLAYER_LIFEBAR_MULTIPLIER } from './constants/DamageConstants'
-import { BULLET_FORCE_MULTIPLIER, BULLET_IMPACT, RAGDOLL_REMOVAL_TIMEOUT } from './constants/GameConstants'
+import { BULLET_FORCE_MULTIPLIER, BULLET_IMPACT, RAGDOLL_REMOVAL_TIMEOUT, GRENADE_EXPLOSION_FORCE } from './constants/GameConstants'
 import { GAME_OVER, MENU } from './constants/GameStates'
 import { PLAYER_FELL, PLAYER_SHOT, PLAYER_HEALTHBAR_LENGTH } from './constants/GameConstants'
 import { createRagdoll } from './Ragdoll'
@@ -99,7 +99,7 @@ const removePlayerFromWorld = (player, world) => {
 	World.remove(world, player)
 }
 
-const killEnemy = (player, enemies, enemy, world, ragdolls, bulletForceAngle, healthdropsArray) => {
+const killEnemy = (player, enemies, enemy, world, ragdolls, bulletForceAngle, healthdropsArray, grenadeSide) => {
 	if (enemy._lifebar) {
 		let lifeAmt = parseInt(enemy._lifebar.style.width, 10)
 		if (lifeAmt <= 0) {
@@ -110,9 +110,8 @@ const killEnemy = (player, enemies, enemy, world, ragdolls, bulletForceAngle, he
 	}
 }
 
-const removeEnemyFromWorld = (player, enemies, enemy, world, ragdolls, bulletForceAngle, healthdropsArray) => {
+const removeEnemyFromWorld = (player, enemies, enemy, world, ragdolls, bulletForceAngle, healthdropsArray, grenadeSide) => {
 	if (enemy._outerLifebar.parentNode == document.getElementById('dom-shapes-container')) {
-		// console.log(bulletForceAngle)
 		let enIdx = enemies.indexOf(enemy._composite)
 		if (enIdx > -1) {
 			dispatchEvent(DecrementEnemyKillCount)
@@ -127,10 +126,17 @@ const removeEnemyFromWorld = (player, enemies, enemy, world, ragdolls, bulletFor
 		let ragdoll = createRagdoll(world, 1)
 		ragdolls.push(ragdoll)
 		Composite.translate(ragdoll, { x: enemy.position.x, y: enemy.position.y - 100 })
-		Body.applyForce(ragdoll.bodies[0], ragdoll.bodies[0].position, {
-			x: (bulletForceAngle.x * BULLET_FORCE_MULTIPLIER),
-			y: -(bulletForceAngle.y * BULLET_FORCE_MULTIPLIER)
-		})
+		if (grenadeSide) {
+			Body.applyForce(ragdoll.bodies[0], ragdoll.bodies[0].position, {
+				x: ((grenadeSide == 'left' ? 1 : -1) * (GRENADE_EXPLOSION_FORCE/2)),
+				y: -GRENADE_EXPLOSION_FORCE
+			})
+		} else {
+			Body.applyForce(ragdoll.bodies[0], ragdoll.bodies[0].position, {
+				x: (bulletForceAngle.x * BULLET_FORCE_MULTIPLIER),
+				y: -(bulletForceAngle.y * BULLET_FORCE_MULTIPLIER)
+			})
+		}
 		// add health drop based on probability
 		if (calcProbability([0, 1, 1]) == 1) {
 			let healAmt = calcProbability([0, 0, 0, 0, 1]) == 1 ? 10 : 5
@@ -144,6 +150,37 @@ const removeEnemyFromWorld = (player, enemies, enemy, world, ragdolls, bulletFor
 				ragdolls.splice(idx, 1)
 			}
 		}, RAGDOLL_REMOVAL_TIMEOUT)
+	}
+}
+
+export const checkGrenadeExplosions = (e, i, world, player, grenadesArray, enemies, ragdolls, healthdropsArray) => {
+	if (e.pairs[i].bodyA.label.indexOf('enemy') > -1 && e.pairs[i].bodyB.label.indexOf('explosion') > -1) {
+		let explosion = e.pairs[i].bodyB
+		let enemy = e.pairs[i].bodyA
+		let grenadeSide = (explosion.position.x < enemy.position.x) ? 'left' : 'right'
+		let idx = grenadesArray.indexOf(explosion)
+		if (enemy._composite) {
+			enemy._composite.stopShooting()
+			removeEnemyFromWorld(player, enemies, enemy, world, ragdolls, null, healthdropsArray, grenadeSide)
+			if (idx > -1) {
+				World.remove(world, explosion)
+				grenadesArray.splice(idx, 1)
+			}
+		}
+		// removeEnemyFromWorld(player, enemies, enemy, world, ragdolls, null, healthdropsArray, grenadeSide)
+	} else if (e.pairs[i].bodyB.label.indexOf('enemy') > -1 && e.pairs[i].bodyA.label.indexOf('explosion') > -1) {
+		let explosion = e.pairs[i].bodyA
+		let enemy = e.pairs[i].bodyB
+		let grenadeSide = explosion.position.x < enemy.position.x ? 'left' : 'right'
+		let idx = grenadesArray.indexOf(explosion)
+		if (enemy._composite) {
+			enemy._composite.stopShooting()
+			removeEnemyFromWorld(player, enemies, enemy, world, ragdolls, null, healthdropsArray, grenadeSide)
+			if (idx > -1) {
+				World.remove(world, explosion)
+				grenadesArray.splice(idx, 1)
+			}
+		}
 	}
 }
 

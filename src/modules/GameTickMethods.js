@@ -5,12 +5,12 @@ import { GAME_OVER, MENU } from './constants/GameStates'
 import { PLAYER_FELL, PLAYER_SHOT, PLAYER_HEALTHBAR_LENGTH } from './constants/GameConstants'
 import { createRagdoll } from './Ragdoll'
 import { UpdateEnemyCount, DecrementEnemyKillCount } from './events/EventTypes'
-import { getCSSProp } from './Utils'
+import { HealthDrop } from './items/HealthDrop'
+import { getCSSProp, calcProbability } from './Utils'
 
 export const removeOutOfBoundsPlayer = (player, world, destroyGameObjects, changeGameState) => {
 	if (player.bodies[0].position.x > world.bounds.max.x || player.bodies[0].position.x < world.bounds.min.x || player.bodies[0].position.y > world.bounds.max.y) {
 		killPlayer(player, world, destroyGameObjects, changeGameState, true, PLAYER_FELL)
-		// console.log(true)
 	}
 }
 
@@ -23,7 +23,6 @@ export const removeOutOfBoundsRagdolls = (world, ragdolls) => {
 			if (idx > -1) {
 				World.remove(world, ragdoll)
 				ragdolls.splice(idx, 1)
-				// console.log('ragdoll fell out of bounds and was removed', ragdolls)
 			}
 		}
 	}
@@ -100,18 +99,18 @@ const removePlayerFromWorld = (player, world) => {
 	World.remove(world, player)
 }
 
-const killEnemy = (player, enemies, enemy, world, ragdolls, bulletForceAngle) => {
+const killEnemy = (player, enemies, enemy, world, ragdolls, bulletForceAngle, healthdropsArray) => {
 	if (enemy._lifebar) {
 		let lifeAmt = parseInt(enemy._lifebar.style.width, 10)
 		if (lifeAmt <= 0) {
 			enemy._composite.stopShooting()
 			// below function adds a ragdoll
-			removeEnemyFromWorld(player, enemies, enemy, world, ragdolls, bulletForceAngle)
+			removeEnemyFromWorld(player, enemies, enemy, world, ragdolls, bulletForceAngle, healthdropsArray)
 		}
 	}
 }
 
-const removeEnemyFromWorld = (player, enemies, enemy, world, ragdolls, bulletForceAngle) => {
+const removeEnemyFromWorld = (player, enemies, enemy, world, ragdolls, bulletForceAngle, healthdropsArray) => {
 	if (enemy._outerLifebar.parentNode == document.getElementById('dom-shapes-container')) {
 		// console.log(bulletForceAngle)
 		let enIdx = enemies.indexOf(enemy._composite)
@@ -127,21 +126,22 @@ const removeEnemyFromWorld = (player, enemies, enemy, world, ragdolls, bulletFor
 		// add a ragdoll in place of enemy character!
 		let ragdoll = createRagdoll(world, 1)
 		ragdolls.push(ragdoll)
-		// console.log('enemy killed, ragdoll added to world..')
-		// console.log('enemy count:', enemies)
-		// console.log('ragdolls', ragdolls)
 		Composite.translate(ragdoll, { x: enemy.position.x, y: enemy.position.y - 100 })
 		Body.applyForce(ragdoll.bodies[0], ragdoll.bodies[0].position, {
 			x: (bulletForceAngle.x * BULLET_FORCE_MULTIPLIER),
 			y: -(bulletForceAngle.y * BULLET_FORCE_MULTIPLIER)
 		})
+		// add health drop based on probability
+		if (calcProbability([0, 1, 1]) == 1) {
+			let healAmt = calcProbability([0, 0, 0, 0, 1]) == 1 ? 10 : 5
+			new HealthDrop(healAmt, enemy.position, world, healthdropsArray)
+		}
 		// set time limit for ragdoll body to be removed from scene
 		setTimeout(() => {
 			let idx = ragdolls.indexOf(ragdoll)
 			if (idx > -1) {
 				World.remove(world, ragdoll)
 				ragdolls.splice(idx, 1)
-				// console.log('ragdoll removed', ragdolls)
 			}
 		}, RAGDOLL_REMOVAL_TIMEOUT)
 	}
@@ -397,13 +397,13 @@ export const ragdollBulletHittestEnd = (e, i, player, ragdolls, world) => {
 	}
 }
 
-export const enemyBulletHittestEnd = (e, i, player, enemies, world, ragdolls, bulletForceAngle) => {
+export const enemyBulletHittestEnd = (e, i, player, enemies, world, ragdolls, bulletForceAngle, healthdropsArray) => {
 	if (e.pairs[i].bodyA.label.indexOf('enemy') > -1 && e.pairs[i].bodyB.label == 'bullet') {
 		let enemy = e.pairs[i].bodyA
-		killEnemy(player, enemies, enemy, world, ragdolls, bulletForceAngle)
+		killEnemy(player, enemies, enemy, world, ragdolls, bulletForceAngle, healthdropsArray)
 	} else if (e.pairs[i].bodyB.label.indexOf('enemy') > -1 && e.pairs[i].bodyA.label == 'bullet') {
 		let enemy = e.pairs[i].bodyB
-		killEnemy(player, enemies, enemy, world, ragdolls, bulletForceAngle)
+		killEnemy(player, enemies, enemy, world, ragdolls, bulletForceAngle, healthdropsArray)
 	}
 }
 

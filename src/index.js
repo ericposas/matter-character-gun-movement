@@ -26,7 +26,7 @@ import { GAMEPLAY, MENU, GAME_OVER, WAVE_WON } from './modules/constants/GameSta
 import { UPDATE_ENEMY_COUNT, UpdateEnemyCount, DECREMENT_ENEMY_KILL_COUNT,
 	UPDATE_WAVE, UpdateWave } from './modules/events/EventTypes'
 import { getBodyWidth, getBodyHeight } from './modules/Utils'
-import { HealthDrop } from './modules/HealthDrop'
+import { HealthDrop } from './modules/items/HealthDrop'
 
 
 window.start = () => {
@@ -269,13 +269,13 @@ window.start = () => {
 	}
 
 	const dropHealthdrops = () => {
-		if (currentLevel >= 1 && currentLevel <= 3) {
-			new HealthDrop(5, world, healthdrops)
+		if (currentLevel == 1 || currentLevel == 2) {
+			new HealthDrop(5, null, world, healthdrops)
 		}
 		else
-		if (currentLevel >= 4 && currentLevel <= 6) {
-			new HealthDrop(5, world, healthdrops)
-			new HealthDrop(10, world, healthdrops)
+		if (currentLevel >= 3 && currentLevel <= 6) {
+			new HealthDrop(10, null, world, healthdrops)
+			new HealthDrop(15, null, world, healthdrops)
 		}
 	}
 
@@ -297,6 +297,10 @@ window.start = () => {
 		}
 		if (currentLevel == 4) {
 			spawnEnemies(9, 1000)
+			makePlatformLayout()
+		}
+		if (currentLevel == 5) {
+			spawnEnemies(11, 1000)
 			makePlatformLayout()
 		}
 
@@ -434,7 +438,7 @@ window.start = () => {
 				// LOOP THROUGH ALL COLLISION TYPES
 				checkPlayerIsOnGroundEnd(e, i, player)
 				checkPlayerIsOnPlatformEnd(e, i, player)
-				enemyBulletHittestEnd(e, i, player, enemies, world, ragdolls, calculateBulletAngle(player, render, reticlePos))
+				enemyBulletHittestEnd(e, i, player, enemies, world, ragdolls, calculateBulletAngle(player, render, reticlePos), healthdrops)
 				ragdollBulletHittestEnd(e, i, player, ragdolls, world)
 				playerBulletHittestEnd(e, i, player, world, destroyGameObjects, changeGameState)
 			}

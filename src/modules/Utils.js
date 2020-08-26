@@ -7,3 +7,7 @@ export const getCSSProp = (htmlElm, propName, parseIntBool) => {
 		getComputedStyle(htmlElm).getPropertyValue(propName)
 	}
 }
+//example:  probability = [0, 1, 1, 1] // 75% chance
+export const calcProbability = (probabilityArray) => {
+	return probabilityArray[Math.floor(Math.random() * probabilityArray.length)]
+}

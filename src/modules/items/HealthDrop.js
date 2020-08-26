@@ -1,13 +1,15 @@
 import { Bodies, World } from 'matter-js'
-import { PLAYER_HEALTHBAR_LENGTH } from './constants/GameConstants'
-import { width } from '../config'
+import { PLAYER_HEALTHBAR_LENGTH } from '../constants/GameConstants'
+import { width } from '../../config'
 import random from 'random'
 
 export class HealthDrop {
 
-	constructor(healAmt, world, healthdropsArray) {
+	constructor(healAmt, position, world, healthdropsArray) {
 		this.domShapesContainer = document.getElementById('dom-shapes-container')
-		this.body = Bodies.circle(random.int(-width, width), 0, healAmt)
+		let x = position ? position.x : random.int(-(width/2), (width/2))
+		let y = position ? position.y : 0
+		this.body = Bodies.circle(x, y, healAmt)
 		this.body.label = 'healthdrop'
 		this.healAmount = healAmt / 100 * PLAYER_HEALTHBAR_LENGTH
 		this.body._this = this

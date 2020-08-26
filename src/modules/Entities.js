@@ -4,7 +4,8 @@ import {
 	BULLET_REMOVAL_TIMEOUT, ENEMY_BULLET_FORCE,
 	ENEMY_BULLET_SHOOT_INTERVAL_MIN, ENEMY_BULLET_SHOOT_INTERVAL_MAX,
 	ENEMY_CROUCH_INTERVAL_MIN, ENEMY_CROUCH_INTERVAL_MAX,
-	ENEMY_JUMP_INTERVAL_MIN, ENEMY_JUMP_INTERVAL_MAX
+	ENEMY_JUMP_INTERVAL_MIN, ENEMY_JUMP_INTERVAL_MAX,
+	ENEMY_SWITCH_DIRECTION_INTERVAL_MIN, ENEMY_SWITCH_DIRECTION_INTERVAL_MAX,
 } from './constants/GameConstants'
 import { UpdateEnemyCount } from './events/EventTypes'
 import random from 'random'
@@ -57,7 +58,6 @@ export const createEnemy = (enemiesArray, bulletsArray, ragdollsArray, player, w
 		enemy.ground = false
 		enemy.setGround = (bool) => {
 			enemy.ground = bool
-			// console.log('enemy is on ground: ', bool);
 		}
 	}
 	processEnemyFromPlayer()
@@ -142,7 +142,6 @@ export const createEnemy = (enemiesArray, bulletsArray, ragdollsArray, player, w
 		}
 	}, crouchTime)
 	// create random enemy jumping
-	// let jumping = false
 	let getRandomJumpInterval = () => random.int(ENEMY_JUMP_INTERVAL_MIN, ENEMY_JUMP_INTERVAL_MAX)
 	let jumpTime = getRandomJumpInterval()
 	let jumpInterval = setInterval(() => {
@@ -168,7 +167,7 @@ export const createEnemy = (enemiesArray, bulletsArray, ragdollsArray, player, w
 		let tween
 		if (shouldShoot && tween != 'undefined') {
 			let translation = { x: 0, y: 0 }
-			tween = TweenLite.to(translation, random.int(2, 5), {
+			tween = TweenLite.to(translation, random.int(ENEMY_SWITCH_DIRECTION_INTERVAL_MIN, ENEMY_SWITCH_DIRECTION_INTERVAL_MAX), {
 				x: enemy._direction == 'left' ? -1 : 1,
 				onUpdate: () => {
 					Composite.translate(enemy, translation)

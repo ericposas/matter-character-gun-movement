@@ -44,6 +44,11 @@ export class HealthDrop {
 		shape.style.height = `${healAmt * 1.5}px`
 		this.radius = healAmt * 1.5
 		this.domShapesContainer.appendChild(shape)
+		let plus = document.createElement('div')
+		plus.classList.add('healthdrop-plus-sign')
+		plus.innerHTML = '+'
+		plus.style.lineHeight = `${healAmt * 1.5}px`
+		shape.appendChild(plus)
 		this.shape = shape
 	}
 

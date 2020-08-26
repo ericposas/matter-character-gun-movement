@@ -266,7 +266,17 @@ window.start = () => {
 			createPlatform(world, 200, 40, { x: -400, y: 100 }, true, platforms)
 			new DestructiblePlatform(world, 200, 40, { x: 0, y: 0 }, platforms)
 		}
+	}
 
+	const dropHealthdrops = () => {
+		if (currentLevel >= 1 && currentLevel <= 3) {
+			new HealthDrop(5, world, healthdrops)
+		}
+		else
+		if (currentLevel >= 4 && currentLevel <= 6) {
+			new HealthDrop(5, world, healthdrops)
+			new HealthDrop(10, world, healthdrops)
+		}
 	}
 
 	const buildLevel = () => {
@@ -276,26 +286,18 @@ window.start = () => {
 		if (currentLevel == 1) {
 			spawnEnemies(3, 1000)
 			makePlatformLayout()
-			setTimeout(() => {
-				new HealthDrop(5, world, healthdrops)
-				new HealthDrop(10, world, healthdrops)
-			}, 1000)
-			
 		}
 		if (currentLevel == 2) {
 			spawnEnemies(5, 1000)
 			makePlatformLayout()
-
 		}
 		if (currentLevel == 3) {
 			spawnEnemies(7, 1000)
 			makePlatformLayout()
-
 		}
 		if (currentLevel == 4) {
 			spawnEnemies(9, 1000)
 			makePlatformLayout()
-
 		}
 
 
@@ -331,6 +333,7 @@ window.start = () => {
 			enemiesToKillInWave -= 1
 			// console.log(enemiesToKillInWave)
 			if (enemiesToKillInWave == 0) {
+				dropHealthdrops()
 				waveWon.style.display = 'block'
 				TweenLite.set(waveWon, { left: 0, alpha: 1 })
 				TweenLite.from(waveWon, 1, { left: -400 })

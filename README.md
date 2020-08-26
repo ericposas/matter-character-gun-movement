@@ -1,6 +1,7 @@
 # Game: Powered by Matter.js javascript physics engine
 
 ## NOTES
+- ._this on a matter body refers to the class/prototype function that controls it so that we can call our custom methods
 - game_state git branch is the latest feature branch
 - could make the menu using standard html or pixi.js graphics
 
@@ -16,7 +17,6 @@
 ### platforms
 
 ### items
-- make random health drops in different sizes (drop between waves)
 
 ### enemies
 - add variance to enemy lifebar and damage rates

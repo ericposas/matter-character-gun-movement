@@ -1,44 +1,57 @@
 import { Bodies, World } from 'matter-js'
 import { PLAYER_HEALTHBAR_LENGTH } from './constants/GameConstants'
-
-const HEALTH_DROP_SIZE = 10
-const HEAL_AMOUNT = 10
+import { width } from '../config'
+import random from 'random'
 
 export class HealthDrop {
 
-	constructor(world, healthdropsArray) {
-		this.body = Bodies.circle(0, 0, HEALTH_DROP_SIZE)
+	constructor(healAmt, world, healthdropsArray) {
+		this.domShapesContainer = document.getElementById('dom-shapes-container')
+		this.body = Bodies.circle(random.int(-width, width), 0, healAmt)
 		this.body.label = 'healthdrop'
-		this.body.collect = this.collect // this references the body in collect since we attach .collect() method to the body itself now
-		this.healAmount = HEAL_AMOUNT / 100 * PLAYER_HEALTHBAR_LENGTH
-		this.body.healAmount = this.healAmount
+		this.healAmount = healAmt / 100 * PLAYER_HEALTHBAR_LENGTH
+		this.body._this = this
+		this.createDOMShape(healAmt)
 		World.add(world, this.body)
 		healthdropsArray.push(this.body)
-		console.log(this)
 	}
 
-	set body(val) {
-		this._body = val
+	set shape(val) {
+		this._shape = val
 	}
 
-	get body() {
-		return this._body
+	get shape() {
+		return this._shape
 	}
 
-	set healAmount(val) {
-		this._healAmount = val
+	set radius(val) {
+		this._radius = val
 	}
 
-	get healAmount() {
-		return this._healAmount
+	get radius() {
+		return this._radius
+	}
+
+	renderShape(render) {
+		this.shape.style.left = this.body.position.x - (this.radius/2) - render.bounds.min.x + 'px'
+		this.shape.style.top = this.body.position.y - (this.radius/2) - render.bounds.min.y + 'px'
+	}
+
+	createDOMShape(healAmt) {
+		let shape = document.createElement('div')
+		shape.classList.add('healthdrop-shape')
+		shape.style.width = `${healAmt * 1.5}px`
+		shape.style.height = `${healAmt * 1.5}px`
+		this.radius = healAmt * 1.5
+		this.domShapesContainer.appendChild(shape)
+		this.shape = shape
 	}
 
 	collect(world, healthdropsArray) {
-		console.log(this)
-		let idx = healthdropsArray.indexOf(this)
+		let idx = healthdropsArray.indexOf(this.body)
 		if (idx > -1) {
-			console.log(true)
-			World.remove(world, this)
+			this.domShapesContainer.removeChild(this.shape)
+			World.remove(world, this.body)
 			healthdropsArray.splice(idx, 1)
 		}
 	}

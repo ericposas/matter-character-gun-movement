@@ -108,29 +108,40 @@ canvas {
 #try-again-button {
 	top: 10px;
 	left: 10px;
+	color: #666;
 	padding: 10px;
-	position: absolute;
-	background-color: #333;
-	border-radius: 2px;
 	font-size: 18px;
 	cursor: pointer;
+	position: absolute;
+	border-radius: 2px;
 	transition: all .35s;
+	background-color: #333;
 	transform: scale(1.0);
-	color: #fff;
 }
 
 #try-again-button:hover {
 	transform: scale(1.05);
+	color: #999;
 }
 
-#health-bars-container {
+#dom-shapes-container {
+	top: 0;
 	z-index: 1;
+	width: $width;
+	height: $height;
+	overflow: hidden;
 	position: absolute;
+	pointer-events: none;
 }
 
 .platform-health {
 	height: 3px;
-	// width: 100px;
 	position: absolute;
 	background-color: yellow;
+}
+
+.healthdrop-shape {
+	border-radius: 20px;
+	position: absolute;
+	background-color: lightgreen;
 }

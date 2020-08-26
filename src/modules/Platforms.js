@@ -21,21 +21,12 @@ export const createPlatform = (world, width, height, position, addToWorldBool, p
 	if (addToWorldBool) { World.add(world, platform) }
 	Body.translate(platform, position)
 	if (platsArray) { platsArray.push(platform) }
-	// platform.destroy = () => {
-	// 	if (platsArray) {
-	// 		let idx = platsArray.indexOf(platform)
-	// 		if (idx > -1) {
-	// 			World.remove(world, platform)
-	// 			platsArray.splice(idx, 1)
-	// 		}
-	// 	}
-	// }
 	return platform
 }
 
 export function DestructiblePlatform(world, width, height, position, dPlatArray) {
 	let platformWidth, platformHeight, healthbarHeight
-	this.healthbarContainer = document.getElementById('health-bars-container')
+	this.healthbarContainer = document.getElementById('dom-shapes-container')
 	this._platform = createPlatform(world, width, height, position, false)
 	this._platform._this = this
 	this._platform.label = 'destructible platform'

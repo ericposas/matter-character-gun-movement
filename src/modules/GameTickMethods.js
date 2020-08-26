@@ -112,7 +112,7 @@ const killEnemy = (player, enemies, enemy, world, ragdolls, bulletForceAngle) =>
 }
 
 const removeEnemyFromWorld = (player, enemies, enemy, world, ragdolls, bulletForceAngle) => {
-	if (enemy._outerLifebar.parentNode == document.body) {
+	if (enemy._outerLifebar.parentNode == document.getElementById('dom-shapes-container')) {
 		// console.log(bulletForceAngle)
 		let enIdx = enemies.indexOf(enemy._composite)
 		if (enIdx > -1) {
@@ -120,8 +120,8 @@ const removeEnemyFromWorld = (player, enemies, enemy, world, ragdolls, bulletFor
 			dispatchEvent(UpdateEnemyCount)
 			enemies.splice(enIdx, 1)
 			World.remove(world, enemy._composite)
-			if (enemy._outerLifebar.parentNode == document.body) {
-				document.body.removeChild(enemy._outerLifebar)
+			if (enemy._outerLifebar.parentNode == document.getElementById('dom-shapes-container')) {
+				document.getElementById('dom-shapes-container').removeChild(enemy._outerLifebar)
 			}
 		}
 		// add a ragdoll in place of enemy character!
@@ -157,8 +157,8 @@ export const checkPlayerCollectHealthDropBegin = (e, i, world, player, healthdro
 		) {
 		let player = e.pairs[i].bodyA
 		let healthdrop = e.pairs[i].bodyB
-		healthdrop.collect(world, healthdropsArray)
-		lifebar.style.width = parseInt(lifebar.style.width) + healthdrop.healAmount + 'px'
+		healthdrop._this.collect(world, healthdropsArray)
+		lifebar.style.width = parseInt(lifebar.style.width) + healthdrop._this.healAmount + 'px'
 		if (parseInt(lifebar.style.width) > PLAYER_HEALTHBAR_LENGTH) {
 			lifebar.style.width = PLAYER_HEALTHBAR_LENGTH + 'px'
 		}
@@ -170,8 +170,8 @@ export const checkPlayerCollectHealthDropBegin = (e, i, world, player, healthdro
 		) {
 		let player = e.pairs[i].bodyB
 		let healthdrop = e.pairs[i].bodyA
-		healthdrop.collect(world, healthdropsArray)
-		lifebar.style.width = parseInt(lifebar.style.width) + healthdrop.healAmount + 'px'
+		healthdrop._this.collect(world, healthdropsArray)
+		lifebar.style.width = parseInt(lifebar.style.width) + healthdrop._this.healAmount + 'px'
 		if (parseInt(lifebar.style.width) > PLAYER_HEALTHBAR_LENGTH) {
 			lifebar.style.width = PLAYER_HEALTHBAR_LENGTH + 'px'
 		}
@@ -240,9 +240,9 @@ const processDamageType = (entity) => {
 		entity.label.indexOf('head') > -1
 		? causeDamage(bar, HEAD_DAMAGE * PLAYER_LIFEBAR_MULTIPLIER)
 		:
-		entity.label.indexOf('body') > -1
-		? causeDamage(bar, BODY_DAMAGE * PLAYER_LIFEBAR_MULTIPLIER)
-		: causeDamage(bar, LIMB_DAMAGE * PLAYER_LIFEBAR_MULTIPLIER)
+			entity.label.indexOf('body') > -1
+			? causeDamage(bar, BODY_DAMAGE * PLAYER_LIFEBAR_MULTIPLIER)
+			: causeDamage(bar, LIMB_DAMAGE * PLAYER_LIFEBAR_MULTIPLIER)
 	}
 }
 

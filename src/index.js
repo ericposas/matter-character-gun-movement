@@ -277,10 +277,10 @@ window.start = () => {
 			spawnEnemies(3, 1000)
 			makePlatformLayout()
 			setTimeout(() => {
-				new HealthDrop(world, healthdrops)
-
+				new HealthDrop(5, world, healthdrops)
+				new HealthDrop(10, world, healthdrops)
 			}, 1000)
-
+			
 		}
 		if (currentLevel == 2) {
 			spawnEnemies(5, 1000)
@@ -446,10 +446,10 @@ window.start = () => {
 				positionEnemyAim(enemy, player)
 			})
 			platforms.forEach(platform => {
-				// positionPlatformHealth(platform) //-- refactor into this function when ready
 				if (platform._this) { platform._this.updateHealthbarPosition(render) }
-				// console.log(platform)
-
+			})
+			healthdrops.forEach(drop => {
+				drop._this.renderShape(render)
 			})
 		}
 	}

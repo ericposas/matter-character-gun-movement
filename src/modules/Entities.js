@@ -8,12 +8,13 @@ import {
 } from './constants/GameConstants'
 import { UpdateEnemyCount } from './events/EventTypes'
 import random from 'random'
-// import { TweenLite } from 'gsap'
 
 // ragdollsArray is not used here, but is now available to the enemy instance
 export const createEnemy = (enemiesArray, bulletsArray, ragdollsArray, player, world, mouse_point, position, swapEnemyBody) => {
 
 	let { player: enemy, playerProps: enemyProps, swapBod, addSwappedBody } = createPlayer(world, 'enemy', mouse_point, position)
+
+	let domShapesContainer = document.getElementById('dom-shapes-container')
 
 	const createEnemyLifeBar = () => {
 		let barWd = 60, barHt = 10
@@ -23,7 +24,7 @@ export const createEnemy = (enemiesArray, bulletsArray, ragdollsArray, player, w
 		let barStyle = `position:absolute;background-color:red;width:${barWd}px;height:${barHt}px;pointer-events:none;`;
 		outerbar.style = outerbarStyle
 		bar.style = barStyle
-		document.body.appendChild(outerbar)
+		domShapesContainer.appendChild(outerbar)
 		outerbar.appendChild(bar)
 		return {
 			bar,
@@ -49,8 +50,8 @@ export const createEnemy = (enemiesArray, bulletsArray, ragdollsArray, player, w
 			shouldShoot = false
 		}
 		enemy.removeLifebar = () => {
-			if (outerbar.parentNode == document.body) {
-				document.body.removeChild(outerbar)
+			if (outerbar.parentNode == domShapesContainer) {
+				domShapesContainer.removeChild(outerbar)
 			}
 		}
 		enemy.ground = false

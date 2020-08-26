@@ -8,6 +8,7 @@ export const BULLET_FORCE = 0.015
 export const BULLET_IMPACT = 0.075
 export const BULLET_FORCE_MULTIPLIER = 6
 export const BULLET_SIZE = 6
+export const PISTOL_LIMIT_TIME = 100
 export const GRENADE_SIZE = 12
 export const GRENADE_FORCE = 0.025
 export const GRENADE_EXPLOSION_TIME = 2000

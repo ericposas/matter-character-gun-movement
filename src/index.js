@@ -10,7 +10,8 @@ import { GROUND, BULLET, BOX, PLAYER_HEAD, PLAYER_BODY,
 	ENEMY_HEAD, ENEMY_BODY } from './modules/constants/CollisionFilterConstants'
 import { BULLET_REMOVAL_TIMEOUT, PLATFORM_X_BUFFER, PLATFORM_Y_BUFFER,
 	BULLET_FORCE, PLAYER_HEALTHBAR_LENGTH, BULLET_SIZE, GRENADE_SIZE, GRENADE_FORCE,
-	GRENADE_EXPLOSION_TIME, GRENADE_EXPLOSION_SIZE, GRENADE_LIMIT_TIME } from './modules/constants/GameConstants'
+	GRENADE_EXPLOSION_TIME, GRENADE_EXPLOSION_SIZE, GRENADE_LIMIT_TIME,
+	PISTOL_LIMIT_TIME } from './modules/constants/GameConstants'
 import { renderMouse, toggleCrouch, renderPlayerMovementViaKeyInput,
 	calcMovingReticlePosition, calculateBulletAngle, setCrouched
 } from './modules/PlayerControls'
@@ -41,7 +42,8 @@ window.start = () => {
 	let currentLevel = 0
 	let keys = []
 	let enemies = [] // composites
-	let bullets = [], grenades = [], grenadeTimeouts = [], lastThrownGrenade = Date.now()
+	let bullets = [], lastBulletShot = Date.now()
+	let grenades = [], grenadeTimeouts = [], lastThrownGrenade = Date.now()
 	let ragdolls = [] // composites
 	let enemiesToBeSpawned = [] // composites
 	let platforms = [] // bodies
@@ -53,6 +55,7 @@ window.start = () => {
 	let waveWon = document.getElementById('wave-won-msg'), waveWonTweenOut = null
 	let tryAgainBtn = document.getElementById('try-again-button')
 	let gameover = document.getElementById('game-over-screen')
+	let domShapesContainer = document.getElementById('dom-shapes-container')
 	let crouched = false
 	let lastDirection = ''
 	let reticlePos = { x: 0, y: 0 }
@@ -93,6 +96,7 @@ window.start = () => {
 		if (gameState === GAME_OVER) {
 			lastGameState = gameState
 			if (waveWonTweenOut) { waveWonTweenOut.kill() }
+			domShapesContainer.childNodes.forEach(node => domShapesContainer.removeChild(node))
 			waveWon.style.display = 'none'
 			gameover.style.display = 'block'
 			tryAgainBtn.style.display = 'block'
@@ -165,7 +169,6 @@ window.start = () => {
 			healthdrops.forEach(drop => {
 				if (drop) {
 					drop._this.collect(world, healthdrops)
-					drop = null
 				}
 			})
 			grenades.forEach(grenade => {
@@ -447,26 +450,31 @@ window.start = () => {
 			}
 		})
 		render.canvas.addEventListener('click', e => {
-			if (gameState === GAMEPLAY && checkGameEntitiesReady() && equippedWeapon == PISTOL) {
-				let playerArm = player.bodies[3]
-				let bullet = Bodies.circle(playerArm.position.x, playerArm.position.y, BULLET_SIZE, {
-					restitution: .35,
-					collisionFilter: {
-						category: BULLET | BOX
+			if (gameState === GAMEPLAY && checkGameEntitiesReady()) {
+				if (equippedWeapon == PISTOL) {
+					if (lastBulletShot + PISTOL_LIMIT_TIME < Date.now()) {
+						lastBulletShot = Date.now()
+						let playerArm = player.bodies[3]
+						let bullet = Bodies.circle(playerArm.position.x, playerArm.position.y, BULLET_SIZE, {
+							restitution: .35,
+							collisionFilter: {
+								category: BULLET | BOX
+							}
+						})
+						bullet.label = 'bullet'
+						World.add(world, bullet)
+						bullets.push(bullet)
+						Body.applyForce(bullet, bullet.position, calculateBulletAngle(player, render, reticlePos))
+						// set time to remove bullet automatically
+						setTimeout(() => {
+							let idx = bullets.indexOf(bullet)
+							if (idx > -1) {
+								World.remove(world, bullet)
+								bullets.splice(idx, 1)
+							}
+						}, BULLET_REMOVAL_TIMEOUT)
 					}
-				})
-				bullet.label = 'bullet'
-				World.add(world, bullet)
-				bullets.push(bullet)
-				Body.applyForce(bullet, bullet.position, calculateBulletAngle(player, render, reticlePos))
-				// set time to remove bullet automatically
-				setTimeout(() => {
-					let idx = bullets.indexOf(bullet)
-					if (idx > -1) {
-						World.remove(world, bullet)
-						bullets.splice(idx, 1)
-					}
-				}, BULLET_REMOVAL_TIMEOUT)
+				}
 			}
 		})
 		document.body.addEventListener('keydown', e => {

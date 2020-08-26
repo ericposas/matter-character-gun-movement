@@ -8,9 +8,9 @@ import { UpdateEnemyCount, DecrementEnemyKillCount } from './events/EventTypes'
 import { HealthDrop } from './items/HealthDrop'
 import { getCSSProp, calcProbability } from './Utils'
 
-export const removeOutOfBoundsPlayer = (player, world, destroyGameObjects, changeGameState) => {
+export const removeOutOfBoundsPlayer = (player, world, destroyPlayer, destroyGameObjects, changeGameState) => {
 	if (player.bodies[0].position.x > world.bounds.max.x || player.bodies[0].position.x < world.bounds.min.x || player.bodies[0].position.y > world.bounds.max.y) {
-		killPlayer(player, world, destroyGameObjects, changeGameState, true, PLAYER_FELL)
+		killPlayer(player, world, destroyPlayer(true), destroyGameObjects, changeGameState, true, PLAYER_FELL)
 	}
 }
 
@@ -74,11 +74,12 @@ const causeDamage = (elm, dmg) => {
 	}
 }
 
-const killPlayer = (player, world, destroyGameObjects, changeGameState, forceDeath, deathType) => {
+const killPlayer = (player, world, destroyPlayer, destroyGameObjects, changeGameState, forceDeath, deathType) => {
 	let lifebar = document.getElementById('player-lifebar-inner')
 	let lifeAmt = parseInt(lifebar.style.width, 10)
 	if (lifeAmt <= 0 || forceDeath == true) {
-		destroyGameObjects()
+		// destroyGameObjects()
+		if (destroyPlayer) { destroyPlayer() }
 		displayDeathMsg(deathType)
 		changeGameState(GAME_OVER)
 		document.getElementById('player-lifebar').style.display = 'none'
@@ -444,12 +445,12 @@ export const enemyBulletHittestEnd = (e, i, player, enemies, world, ragdolls, bu
 	}
 }
 
-export const playerBulletHittestEnd = (e, i, player, world, destroyGameObjects, changeGameState) => {
+export const playerBulletHittestEnd = (e, i, player, world, destroyPlayer, destroyGameObjects, changeGameState) => {
 	if (e.pairs[i].bodyA.label.indexOf('player') > -1 && e.pairs[i].bodyB.label == 'enemy bullet') {
 		let playerBody = e.pairs[i].bodyA
-		killPlayer(player, world, destroyGameObjects, changeGameState, null, PLAYER_SHOT)
+		killPlayer(player, world, destroyPlayer, destroyGameObjects, changeGameState, null, PLAYER_SHOT)
 	} else if (e.pairs[i].bodyB.label.indexOf('player') > -1 && e.pairs[i].bodyA.label == 'enemy bullet') {
 		let playerBody = e.pairs[i].bodyB
-		killPlayer(player, world, destroyGameObjects, changeGameState, null, PLAYER_SHOT)
+		killPlayer(player, world, destroyPlayer, destroyGameObjects, changeGameState, null, PLAYER_SHOT)
 	}
 }

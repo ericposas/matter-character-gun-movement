@@ -11,14 +11,15 @@
 ## TODO
 
 ### general
+- if a grenade hits the player, it make his arm go all wonky 
 - look into 'unsticking' character from platforms/walls when trying to jump on them (and missing)
 - game works fine in an embedded html iframe
 
 ### weapons
 - weapons are unlocked depending on the wave level and have unlimited usage
+- Or... there's an upgrade shop where you can purchase new weapons or upgrade ones that you already have
 - can also upgrade damage or impact force on weapons to make things more interesting
 - add shotgun
-- add smg
 - maybe change cursor depending on the weapon equipped
 
 ### platforms

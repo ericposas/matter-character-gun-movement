@@ -7,7 +7,7 @@ import { matterBoilerplate as boilerplate } from './modules/MatterBoilerplate'
 import { createPlayer, createEnemy } from './modules/Entities'
 import { createGround, createPlatform, DestructiblePlatform } from './modules/Platforms'
 import { GROUND, BULLET, BOX, PLAYER_HEAD, PLAYER_BODY,
-	ENEMY_HEAD, ENEMY_BODY } from './modules/constants/CollisionFilterConstants'
+	ENEMY_HEAD, ENEMY_BODY, GRENADE as GRENADE_COLLISION_FILTER, EXPLOSION } from './modules/constants/CollisionFilterConstants'
 import { BULLET_REMOVAL_TIMEOUT, PLATFORM_X_BUFFER, PLATFORM_Y_BUFFER,
 	BULLET_FORCE, PLAYER_HEALTHBAR_LENGTH, BULLET_SIZE, GRENADE_SIZE, GRENADE_FORCE,
 	GRENADE_EXPLOSION_TIME, GRENADE_EXPLOSION_SIZE, GRENADE_LIMIT_TIME,
@@ -30,6 +30,7 @@ import { UPDATE_ENEMY_COUNT, UpdateEnemyCount, DECREMENT_ENEMY_KILL_COUNT,
 import { getBodyWidth, getBodyHeight } from './modules/Utils'
 import { HealthDrop } from './modules/items/HealthDrop'
 import { PISTOL, GRENADE, SMG } from './modules/constants/Weapons'
+import { createRagdoll } from './modules/Ragdoll'
 // temp weapon images
 import pistolImg from './images/pistol.png'
 import grenadeImg from './images/grenade.png'
@@ -58,6 +59,7 @@ window.start = () => {
 	let gameover = document.getElementById('game-over-screen')
 	let domShapesContainer = document.getElementById('dom-shapes-container')
 	let domCursor = document.getElementById('dom-cursor')
+	let menuDOM = document.getElementById('menu')
 	let crouched = false
 	let lastDirection = ''
 	let reticlePos = { x: 0, y: 0 }
@@ -66,6 +68,7 @@ window.start = () => {
 	let { world, render, engine } = boilerplate()
 	let playerObjects
 	let player, playerProps, mouse_point, mouse_control, playerSwapBod, addSwappedBody
+	let deadPlayer
 
 	registerEventListeners()
 
@@ -86,10 +89,6 @@ window.start = () => {
 			function startGame(e) {
 				changeLevel()
 				changeGameState(GAMEPLAY)
-				equippedWeaponDOM.style.display = 'block'
-				domCursor.style.display = 'block'
-				document.body.style.cursor = 'none'
-				document.getElementById('menu').style.display = 'none'
 			}
 			if (!startBtn.clickListenerHasBeenSet) {
 				startBtn.addEventListener('click', startGame)
@@ -97,10 +96,14 @@ window.start = () => {
 			}
 		}
 		if (gameState === GAMEPLAY) {
-			createGameObjects()
-			buildLevel()
+			destroyGameObjects()
+			setTimeout(() => {
+				createGameObjects()
+				buildLevel()
+			}, 500)
 		}
 		if (gameState === GAME_OVER) {
+			smgShooting = false
 			lastGameState = gameState
 			if (waveWonTweenOut) { waveWonTweenOut.kill() }
 			domCursor.style.display = 'none'
@@ -110,6 +113,10 @@ window.start = () => {
 					domShapesContainer.removeChild(node)
 				}
 			})
+			enemies.forEach(enemy => {
+				enemy.stopShooting(enemies)
+				enemy.removeLifebar()
+			})
 			waveWon.style.display = 'none'
 			gameover.style.display = 'block'
 			tryAgainBtn.style.display = 'block'
@@ -117,11 +124,6 @@ window.start = () => {
 			TweenLite.from(gameover, 1, { left: -200, alpha: 0 })
 			function playAgain(e) {
 				changeGameState(GAMEPLAY)
-				equippedWeaponDOM.style.display = 'none'
-				domCursor.style.display = 'block'
-				document.body.style.cursor = 'none'
-				tryAgainBtn.style.display = 'none'
-				gameover.style.display = 'none'
 			}
 			if (!tryAgainBtn.clickListenerHasBeenSet) {
 				tryAgainBtn.addEventListener('click', playAgain)
@@ -141,9 +143,22 @@ window.start = () => {
 		document.getElementById('player-lifebar-inner').style.cssText = `top:2px;left:2px;width:${PLAYER_HEALTHBAR_LENGTH}px;height:8px;position:relative;background-color:green;`
 	}
 
+	function displayDOMObjects() {
+		menuDOM.style.display = 'none'
+		domCursor.style.display = 'block'
+		equippedWeaponDOM.style.display = 'block'
+		document.body.style.cursor = 'none'
+		tryAgainBtn.style.display = 'none'
+		gameover.style.display = 'none'
+	}
+
 	function createGameObjects() {
 		if (checkGameEntitiesReady() == false) {
-			// console.log('createGameObjects')
+			if (deadPlayer) {
+				World.remove(world, deadPlayer)
+				deadPlayer = null
+			}
+			displayDOMObjects()
 			ground = createGround(world, width, height)
 			playerObjects = createPlayer(world, 'player', null, { x:50, y:0 })
 			player = playerObjects.player
@@ -156,62 +171,79 @@ window.start = () => {
 		}
 	}
 
-	function destroyGameObjects() {
-		if (checkGameEntitiesReady()) {
-			if (player && ground) {
-				World.remove(world, [player, ground])
-			}
-			let en = []
-			enemies.forEach(enemy => {
-				enemy.stopShooting(enemies)
-				enemy.removeLifebar()
-				if (enemy) {
-					World.remove(world, enemy)
-					enemy = null
-				}
-			})
-			bullets.forEach(bullet => {
-				if (bullet) {
-					World.remove(world, bullet)
-					bullet = null
-				}
-			})
-			ragdolls.forEach(ragdoll => {
-				if (ragdoll) {
-					World.remove(world, ragdoll)
-					ragdoll = null
-				}
-			})
-			healthdrops.forEach(drop => {
-				if (drop) {
-					drop._this.collect(world, healthdrops)
-				}
-			})
-			grenades.forEach(grenade => {
-				World.remove(world, grenade)
-				grenade = null
-			})
-			grenadeTimeouts.forEach(tO => {
-				clearTimeout(tO)
-			})
-			keys = []
-			enemies = []
-			bullets = []
-			ragdolls = []
-			healthdrops = []
-			grenades = []
-			grenadeTimeouts = []
-			ground = null
+	function destroyPlayer(fellBool) {
+		let _playerPosition
+		if (player && ground) {
+			_playerPosition = player.bodies[0].position
+			World.remove(world, player)
 			player = null
-			playerProps = null
-			mouse_point = null
-			mouse_control = null
-			addSwappedBody = null
-			playerSwapBod = null
-			destroyEnemiesToBeSpawned()
-			destroyPlatforms()
-			displayPlayerLifeBar('none')
 		}
+		if (_playerPosition) {
+			deadPlayer = createRagdoll(world, 1)
+			let _arr = [ -.1, .1 ]
+			Composite.translate(deadPlayer, _playerPosition)
+			if (!fellBool) {
+				Body.applyForce(deadPlayer.bodies[1], deadPlayer.bodies[1].position, { x: _arr[Math.floor(Math.random() * 2)], y: -.1 })
+			}
+		}
+	}
+
+	function destroyGameObjects() {
+		// if (checkGameEntitiesReady()) {
+		if (player && ground) {
+			World.remove(world, [player, ground])
+		}
+		let en = []
+		enemies.forEach(enemy => {
+			enemy.stopShooting(enemies)
+			enemy.removeLifebar()
+			if (enemy) {
+				World.remove(world, enemy)
+				enemy = null
+			}
+		})
+		bullets.forEach(bullet => {
+			if (bullet) {
+				World.remove(world, bullet)
+				bullet = null
+			}
+		})
+		ragdolls.forEach(ragdoll => {
+			if (ragdoll) {
+				World.remove(world, ragdoll)
+				ragdoll = null
+			}
+		})
+		healthdrops.forEach(drop => {
+			if (drop) {
+				drop._this.collect(world, healthdrops)
+			}
+		})
+		grenades.forEach(grenade => {
+			World.remove(world, grenade)
+			grenade = null
+		})
+		grenadeTimeouts.forEach(tO => {
+			clearTimeout(tO)
+		})
+		keys = []
+		enemies = []
+		bullets = []
+		ragdolls = []
+		healthdrops = []
+		grenades = []
+		grenadeTimeouts = []
+		ground = null
+		player = null
+		playerProps = null
+		mouse_point = null
+		mouse_control = null
+		addSwappedBody = null
+		playerSwapBod = null
+		destroyEnemiesToBeSpawned()
+		destroyPlatforms()
+		displayPlayerLifeBar('none')
+		// }
 	}
 
 	function spawnEnemies(n, rate) {
@@ -294,17 +326,21 @@ window.start = () => {
 	const makePlatformLayout = () => {
 		destroyPlatforms()
 		// .applyForce() allows us to create platforms in the same position without affecting the player.onPlatform bool check
-		Body.applyForce(player.bodies[1], player.bodies[1].position, { x: 0, y: -1 })
-		if (currentLevel == 1) {
-			createPlatform(world, width, 40, { x: 0, y: 340 }, true, platforms)
-			createPlatform(world, 200, 40, { x: 400, y: 100 }, true, platforms)
-		}
-		else
-		if (currentLevel >= 2 && currentLevel <= 5) {
-			createPlatform(world, width, 40, { x: 0, y: 340 }, true, platforms)
-			createPlatform(world, 200, 40, { x: 400, y: 100 }, true, platforms)
-			createPlatform(world, 200, 40, { x: -400, y: 100 }, true, platforms)
-			new DestructiblePlatform(world, 200, 40, { x: 0, y: 0 }, platforms)
+		if (checkGameEntitiesReady()) {
+			if (player) {
+				Body.applyForce(player.bodies[1], player.bodies[1].position, { x: 0, y: -1 })
+			}
+			if (currentLevel == 1) {
+				createPlatform(world, width, 40, { x: 0, y: 340 }, true, platforms)
+				createPlatform(world, 200, 40, { x: 400, y: 100 }, true, platforms)
+			}
+			else
+			if (currentLevel >= 2 && currentLevel <= 5) {
+				createPlatform(world, width, 40, { x: 0, y: 340 }, true, platforms)
+				createPlatform(world, 200, 40, { x: 400, y: 100 }, true, platforms)
+				createPlatform(world, 200, 40, { x: -400, y: 100 }, true, platforms)
+				new DestructiblePlatform(world, 200, 40, { x: 0, y: 0 }, platforms)
+			}
 		}
 	}
 
@@ -472,7 +508,6 @@ window.start = () => {
 						let grenade = Bodies.circle(playerArm.position.x, playerArm.position.y, GRENADE_SIZE, {
 							restitution: 1,
 							collisionFilter: {
-								category: BULLET | BOX
 							}
 						})
 						grenade.label = 'grenade'
@@ -590,7 +625,7 @@ window.start = () => {
 				checkPlayerIsOnPlatformEnd(e, i, player)
 				enemyBulletHittestEnd(e, i, player, enemies, world, ragdolls, calculateBulletAngle(player, render, reticlePos), healthdrops)
 				ragdollBulletHittestEnd(e, i, player, ragdolls, world)
-				playerBulletHittestEnd(e, i, player, world, destroyGameObjects, changeGameState)
+				playerBulletHittestEnd(e, i, player, world, destroyPlayer, destroyGameObjects, changeGameState)
 			}
 		}
 	}
@@ -609,6 +644,11 @@ window.start = () => {
 				drop._this.renderShape(render)
 			})
 		}
+		if (gameState == GAME_OVER) {
+			enemies.forEach(enemy => {
+				positionEnemyAim(enemy, render)
+			})
+		}
 	}
 
 	const gameTick = e => {
@@ -621,7 +661,7 @@ window.start = () => {
 			removeOutOfBoundsBullets(world, bullets)
 			removeOutOfBoundsEnemies(world, enemies)
 			removeOutOfBoundsRagdolls(world, ragdolls)
-			removeOutOfBoundsPlayer(player, world, destroyGameObjects, changeGameState)
+			removeOutOfBoundsPlayer(player, world, destroyPlayer, destroyGameObjects, changeGameState)
 			renderPlayerMovementViaKeyInput(world, render, keys, player, playerProps, ground, lastDirection, crouched, setCrouched, addSwappedBody, playerSwapBod)
 		}
 	}

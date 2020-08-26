@@ -7,3 +7,5 @@ export const ENEMY_BODY = 0x0004
 export const ENEMY_HEAD = 0x0005
 export const BULLET = 0x0006
 export const BOX = 0x0007
+export const GRENADE = 0x0008
+export const EXPLOSION = 0x0009

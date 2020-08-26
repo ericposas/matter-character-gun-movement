@@ -57,7 +57,9 @@ export class HealthDrop {
 	collect(world, healthdropsArray) {
 		let idx = healthdropsArray.indexOf(this.body)
 		if (idx > -1) {
-			this.domShapesContainer.removeChild(this.shape)
+			if (this.shape.parentNode == this.domShapesContainer) {
+				this.domShapesContainer.removeChild(this.shape)
+			}
 			World.remove(world, this.body)
 			healthdropsArray.splice(idx, 1)
 		}

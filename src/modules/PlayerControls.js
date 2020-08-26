@@ -3,11 +3,9 @@ import { BULLET_FORCE } from './constants/GameConstants'
 import { width, height } from '../config'
 
 export const calcMovingReticlePosition = (player, render) => {
-	// console.log(render.bounds)
 	return {
 		x: player.bodies[0].position.x - ((render.bounds.max.x - render.bounds.min.x)/2),
 		y: player.bodies[0].position.y - ((render.bounds.max.y - render.bounds.min.y)/2)
-		// y: player.bodies[0].position.y + ((render.bounds.min.y - render.bounds.max.y)/2)
 	}
 }
 
@@ -58,10 +56,6 @@ export const toggleCrouch = (crouched, setCrouched, player, addSwappedBody, play
 			swapped = addSwappedBody(playerSwapBod('normal', player, x, y))
 			setCrouched(swapped, false)
 		}
-		// else {
-		// 	swapped = addSwappedBody(playerSwapBod('normal', player, x, y))
-		// }
-		// setCrouched(swapped)
 	}
 }
 
@@ -96,8 +90,7 @@ export const renderPlayerMovementViaKeyInput = (world, render, keys, player, pla
 		let playerHeight = (playerBod.bounds.max.y - playerBod.bounds.min.y)
 		let groundHeight = (height - (ground.bounds.max.y - ground.bounds.min.y))
 		groundHeight -= (ground.position.y - groundHeight)
-		// let platformHeight = (height - (player._currentPlatform.height))
-
+		
 		// jump key
 		if (
 				(keys[87] && player.ground) || (keys[87] && player.onPlatform)

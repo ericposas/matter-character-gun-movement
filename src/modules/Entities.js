@@ -47,6 +47,7 @@ export const createEnemy = (enemiesArray, bulletsArray, ragdollsArray, player, w
 			body._barsize = size
 			body._composite = enemy
 		})
+		enemy.setShooting = bool => shouldShoot = bool
 		enemy.stopShooting = () => {
 			shouldShoot = false
 		}
@@ -145,7 +146,7 @@ export const createEnemy = (enemiesArray, bulletsArray, ragdollsArray, player, w
 	let getRandomJumpInterval = () => random.int(ENEMY_JUMP_INTERVAL_MIN, ENEMY_JUMP_INTERVAL_MAX)
 	let jumpTime = getRandomJumpInterval()
 	let jumpInterval = setInterval(() => {
-		if (shouldShoot) {
+		if (shouldShoot && player) {
 			if (enemy.ground && !crouched) {
 				enemy.bodies[1].force = (
 					enemy._direction == 'left'
@@ -191,7 +192,7 @@ const getShortBody = (type, btype, mouse_point, x, y) => {
 	})
 	let head = Bodies.rectangle(x, y, 25, 30, {
 		collisionFilter: {
-			category: PLAYER_BODY,
+			category: type == 'player' ? PLAYER_BODY : ENEMY_BODY,
 			mask: GROUND
 		}
 	})
@@ -212,7 +213,7 @@ const getShortBody = (type, btype, mouse_point, x, y) => {
 		frictionStatic: 1,
 		restitution: 0,
 		collisionFilter: {
-			category: PLAYER_BODY,
+			category: type == 'player' ? PLAYER_BODY : ENEMY_BODY,
 			mask: GROUND
 		}
 	})
@@ -233,14 +234,14 @@ const getShortBody = (type, btype, mouse_point, x, y) => {
 	})
 	let upperarm = Bodies.rectangle(x, y, type == 'player' ? 20 : 40, 15, {
 		collisionFilter: {
-			category: PLAYER_BODY,
+			category: type == 'player' ? PLAYER_BODY : ENEMY_BODY,
 			mask: GROUND
 		}
 	})
 	upperarm.label = type == 'player' ? 'player arm' : 'enemy arm'
 	let lowerarm = Bodies.rectangle(x, y, 20, 12, {
 		collisionFilter: {
-			category: PLAYER_BODY,
+			category: type == 'player' ? PLAYER_BODY : ENEMY_BODY,
 			mask: GROUND
 		}
 	})
@@ -250,7 +251,7 @@ const getShortBody = (type, btype, mouse_point, x, y) => {
 		bodyB: lowerarm,
 		pointA: { x: 10, y: 0 },
 		pointB: { x: 10, y: 0 },
-		length: 0,
+		length: 1,
 		stiffness: 1.0
 	})
 	let bod_to_upperarm = Constraint.create({
@@ -267,7 +268,7 @@ const getShortBody = (type, btype, mouse_point, x, y) => {
 		bodyB: mouse_point,
 		pointA: { x: -15, y: 0 },
 		stiffness: 1.0,
-		length: 1,
+		length: 3,
 		render: {
 			visible: true
 		}
@@ -297,7 +298,7 @@ const getNormalBody = (type, btype, mouse_point, x, y) => {
 	})
 	let head = Bodies.rectangle(x, y, 25, 30, {
 		collisionFilter: {
-			category: PLAYER_BODY,
+			category: type == 'player' ? PLAYER_BODY : ENEMY_BODY,
 			mask: GROUND
 		}
 	})
@@ -318,7 +319,7 @@ const getNormalBody = (type, btype, mouse_point, x, y) => {
 		frictionStatic: 1,
 		restitution: 0,
 		collisionFilter: {
-			category: PLAYER_BODY,
+			category: type == 'player' ? PLAYER_BODY : ENEMY_BODY,
 			mask: GROUND
 		}
 	})
@@ -339,14 +340,14 @@ const getNormalBody = (type, btype, mouse_point, x, y) => {
 	})
 	let upperarm = Bodies.rectangle(x, y, type == 'player' ? 20 : 40, 15, {
 		collisionFilter: {
-			category: PLAYER_BODY,
+			category: type == 'player' ? PLAYER_BODY : ENEMY_BODY,
 			mask: GROUND
 		}
 	})
 	upperarm.label = type == 'player' ? 'player arm' : 'enemy arm'
 	let lowerarm = Bodies.rectangle(x, y, 20, 12, {
 		collisionFilter: {
-			category: PLAYER_BODY,
+			category: type == 'player' ? PLAYER_BODY : ENEMY_BODY,
 			mask: GROUND
 		}
 	})
@@ -356,7 +357,7 @@ const getNormalBody = (type, btype, mouse_point, x, y) => {
 		bodyB: lowerarm,
 		pointA: { x: 10, y: 0 },
 		pointB: { x: 10, y: 0 },
-		length: 0,
+		length: 3,
 		stiffness: 1.0
 	})
 	let bod_to_upperarm = Constraint.create({

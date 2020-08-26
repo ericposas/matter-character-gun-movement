@@ -6,8 +6,8 @@ export function matterBoilerplate(mouseConstraintBool) {
 	let engine = Engine.create()
 	let world = engine.world
 	world.bounds = {
-		min: { x: -width - 500, y: height * -2 },
-		max: { x: width + 500, y: height * 2 }
+		min: { x: -width - (width/2), y: height * -2 },
+		max: { x: width + (width/2), y: height * 2 }
 	}
 
 	// create renderer

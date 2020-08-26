@@ -5,14 +5,15 @@ export const PLAYER_HEALTHBAR_LENGTH = width-24
 export const BULLET_REMOVAL_TIMEOUT = 1000
 export const RAGDOLL_REMOVAL_TIMEOUT = 5000
 export const BULLET_FORCE = 0.015
-export const GRENADE_FORCE = 0.025
 export const BULLET_IMPACT = 0.075
 export const BULLET_FORCE_MULTIPLIER = 6
 export const BULLET_SIZE = 6
 export const GRENADE_SIZE = 12
+export const GRENADE_FORCE = 0.025
 export const GRENADE_EXPLOSION_TIME = 2000
-export const GRENADE_EXPLOSION_FORCE = .30
-export const GRENADE_EXPLOSION_SIZE = 20
+export const GRENADE_EXPLOSION_FORCE = .25
+export const GRENADE_EXPLOSION_SIZE = 15
+export const GRENADE_LIMIT_TIME = 1000
 
 // Enemy Actions Constants
 export const ENEMY_BULLET_FORCE = 0.025

@@ -10,7 +10,7 @@ import { GROUND, BULLET, BOX, PLAYER_HEAD, PLAYER_BODY,
 	ENEMY_HEAD, ENEMY_BODY } from './modules/constants/CollisionFilterConstants'
 import { BULLET_REMOVAL_TIMEOUT, PLATFORM_X_BUFFER, PLATFORM_Y_BUFFER,
 	BULLET_FORCE, PLAYER_HEALTHBAR_LENGTH, BULLET_SIZE, GRENADE_SIZE, GRENADE_FORCE,
-	GRENADE_EXPLOSION_TIME, GRENADE_EXPLOSION_SIZE } from './modules/constants/GameConstants'
+	GRENADE_EXPLOSION_TIME, GRENADE_EXPLOSION_SIZE, GRENADE_LIMIT_TIME } from './modules/constants/GameConstants'
 import { renderMouse, toggleCrouch, renderPlayerMovementViaKeyInput,
 	calcMovingReticlePosition, calculateBulletAngle, setCrouched
 } from './modules/PlayerControls'
@@ -41,7 +41,7 @@ window.start = () => {
 	let currentLevel = 0
 	let keys = []
 	let enemies = [] // composites
-	let bullets = [], grenades = [], grenadeTimeouts = [], lastThrownGrenade // bodies
+	let bullets = [], grenades = [], grenadeTimeouts = [], lastThrownGrenade = Date.now()
 	let ragdolls = [] // composites
 	let enemiesToBeSpawned = [] // composites
 	let platforms = [] // bodies
@@ -138,7 +138,6 @@ window.start = () => {
 
 	function destroyGameObjects() {
 		if (checkGameEntitiesReady()) {
-			// console.log('destroyGameObjects')
 			if (player && ground) {
 				World.remove(world, [player, ground])
 			}
@@ -163,10 +162,26 @@ window.start = () => {
 					ragdoll = null
 				}
 			})
+			healthdrops.forEach(drop => {
+				if (drop) {
+					drop._this.collect(world, healthdrops)
+					drop = null
+				}
+			})
+			grenades.forEach(grenade => {
+				World.remove(world, grenade)
+				grenade = null
+			})
+			grenadeTimeouts.forEach(tO => {
+				clearTimeout(tO)
+			})
 			keys = []
 			enemies = []
 			bullets = []
 			ragdolls = []
+			healthdrops = []
+			grenades = []
+			grenadeTimeouts = []
 			ground = null
 			player = null
 			playerProps = null
@@ -382,41 +397,53 @@ window.start = () => {
 				}
 			}
 		})
+		render.canvas.addEventListener('mousedown', e => {
+			if (gameState === GAMEPLAY && checkGameEntitiesReady()) {
+				if (equippedWeapon == GRENADE) {
+					///....
+				}
+			}
+		})
 		render.canvas.addEventListener('mouseup', e => {
-			if (gameState === GAMEPLAY && checkGameEntitiesReady() && equippedWeapon == GRENADE) {
-				let playerArm = player.bodies[3]
-				let grenade = Bodies.circle(playerArm.position.x, playerArm.position.y, GRENADE_SIZE, {
-					restitution: 1,
-					collisionFilter: {
-						category: BULLET | BOX
+			if (gameState === GAMEPLAY && checkGameEntitiesReady()) {
+				if (equippedWeapon == GRENADE) {
+					if (lastThrownGrenade + GRENADE_LIMIT_TIME < Date.now()) {
+						let playerArm = player.bodies[3]
+						let grenade = Bodies.circle(playerArm.position.x, playerArm.position.y, GRENADE_SIZE, {
+							restitution: 1,
+							collisionFilter: {
+								category: BULLET | BOX
+							}
+						})
+						grenade.label = 'grenade'
+						let movingReticle = calcMovingReticlePosition(player, render)
+						let targetAngle = Vector.angle(player.bodies[0].position, {
+							x: reticlePos.x + movingReticle.x,
+							y: reticlePos.y + movingReticle.y
+						})
+						lastThrownGrenade = Date.now()
+						World.add(world, grenade)
+						// we can just animate the arm throw via the pixi layer
+						// Body.setAngle(playerArm, reticlePos.x > player.bodies[0].position.x ? 20 : -20)
+						grenades.push(grenade)
+						Body.applyForce(grenade, grenade.position, {
+							x: Math.cos(targetAngle) * GRENADE_FORCE,
+							y: Math.sin(targetAngle) * GRENADE_FORCE
+						})
+						let timeout = setTimeout(() => {
+							Body.scale(grenade, GRENADE_EXPLOSION_SIZE, GRENADE_EXPLOSION_SIZE)
+							grenade.label = 'explosion'
+							setTimeout(() => {
+								let idx = grenades.indexOf(grenade)
+								if (idx > -1) {
+									World.remove(world, grenade)
+									grenades.splice(idx, 1)
+								}
+							}, 10)
+						}, GRENADE_EXPLOSION_TIME)
+						grenadeTimeouts.push(timeout)
 					}
-				})
-				grenade.label = 'grenade'
-				let movingReticle = calcMovingReticlePosition(player, render)
-				let targetAngle = Vector.angle(player.bodies[0].position, {
-					x: reticlePos.x + movingReticle.x,
-					y: reticlePos.y + movingReticle.y
-				})
-				World.add(world, grenade)
-				// we can just animate the arm throw via the pixi layer
-				// Body.setAngle(playerArm, reticlePos.x > player.bodies[0].position.x ? 20 : -20)
-				grenades.push(grenade)
-				Body.applyForce(grenade, grenade.position, {
-					x: Math.cos(targetAngle) * GRENADE_FORCE,
-					y: Math.sin(targetAngle) * GRENADE_FORCE
-				})
-				let timeout = setTimeout(() => {
-					Body.scale(grenade, GRENADE_EXPLOSION_SIZE, GRENADE_EXPLOSION_SIZE)
-					grenade.label = 'explosion'
-					setTimeout(() => {
-						let idx = grenades.indexOf(grenade)
-						if (idx > -1) {
-							World.remove(world, grenade)
-							grenades.splice(idx, 1)
-						}
-					}, 10)
-				}, GRENADE_EXPLOSION_TIME)
-				grenadeTimeouts.push(timeout)
+				}
 			}
 		})
 		render.canvas.addEventListener('click', e => {

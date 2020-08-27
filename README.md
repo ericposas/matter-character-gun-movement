@@ -1,6 +1,12 @@
 # Game: Powered by Matter.js javascript physics engine
 
+## Controls
+- W, A, S, D for movement
+- [ SPACEBAR ] to change weapon
+- mouse for aim
+
 ## NOTES
+- game development halted due to architectural issues
 - ._this on a matter body refers to the class/prototype function that controls it so that we can call our custom methods
 - game_state git branch is the latest feature branch
 - could make the menu using standard html or pixi.js graphics
@@ -11,7 +17,7 @@
 ## TODO
 
 ### general
-- if a grenade hits the player, it make his arm go all wonky 
+- if a grenade hits the player, it make his arm go all wonky
 - look into 'unsticking' character from platforms/walls when trying to jump on them (and missing)
 - game works fine in an embedded html iframe
 
